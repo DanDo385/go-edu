@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "text": "Learn Go",
+    "done": false
+  },
+  {
+    "id": 2,
+    "text": "Build project",
+    "done": false
+  },
+  {
+    "id": 3,
+    "text": "Write tests",
+    "done": true
+  }
+]

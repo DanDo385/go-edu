@@ -1,0 +1,32 @@
+syntax = "proto3";
+package telemetry;
+option go_package = "github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/proto";
+
+message Point {
+  string metric = 1;
+  double value = 2;
+  int64 timestamp = 3;
+}
+
+message Ack {
+  int32 points_received = 1;
+}
+
+message Empty {}
+
+message Report {
+  map<string, MetricSummary> metrics = 1;
+}
+
+message MetricSummary {
+  int32 count = 1;
+  double sum = 2;
+  double avg = 3;
+  double min = 4;
+  double max = 5;
+}
+
+service TelemetryService {
+  rpc Push(stream Point) returns (Ack);
+  rpc Summary(Empty) returns (Report);
+}
