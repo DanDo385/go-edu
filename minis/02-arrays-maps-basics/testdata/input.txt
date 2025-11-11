@@ -1,0 +1,10 @@
+go
+is
+awesome
+go
+programming
+language
+go
+is
+fast
+go

@@ -1,0 +1,8 @@
+{"ts":"2024-01-01T12:00:00Z","level":"info","msg":"Server started"}
+{this is malformed json
+{"ts":"2024-01-01T12:00:05Z","level":"error","msg":"Database connection failed"}
+{"ts":"2024-01-01T12:00:02Z","level":"debug","msg":"Processing request"}
+{"ts":"2024-01-01T12:00:10Z","level":"warn","msg":"High memory usage detected"}
+{"ts":"2024-01-01T12:00:03Z","level":"info","msg":"Request completed"}
+{"ts":"2024-01-01T12:00:15Z","level":"error","msg":"Timeout waiting for response"}
+{"ts":"2024-01-01T12:00:08Z","level":"warn","msg":"Slow query detected"}
