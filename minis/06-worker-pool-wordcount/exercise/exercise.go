@@ -1,3 +1,6 @@
+//go:build !solution
+// +build !solution
+
 package exercise
 
 import "context"

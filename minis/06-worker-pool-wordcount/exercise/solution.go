@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Concurrent URL fetching with word frequency counting using worker pools
 

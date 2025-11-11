@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Implement UTF-8-aware string utilities in Go
 

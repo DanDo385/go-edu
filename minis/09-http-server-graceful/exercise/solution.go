@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Build an HTTP server with routes, middleware, and graceful shutdown
 

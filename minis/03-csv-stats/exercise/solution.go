@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Compute per-category statistics from a CSV of financial transactions
 

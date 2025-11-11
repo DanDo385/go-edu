@@ -1,3 +1,6 @@
+//go:build !solution
+// +build !solution
+
 package exercise
 
 // TitleCase converts the first letter of each word to uppercase.

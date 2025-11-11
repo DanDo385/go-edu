@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Parse and filter JSONL (JSON Lines) log entries by severity level
 

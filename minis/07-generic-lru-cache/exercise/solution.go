@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Implement a thread-safe LRU cache with generics and TTL
 

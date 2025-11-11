@@ -1,3 +1,6 @@
+//go:build !solution
+// +build !solution
+
 package exercise
 
 // Item represents a single TODO item.

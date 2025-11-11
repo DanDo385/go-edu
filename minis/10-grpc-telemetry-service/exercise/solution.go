@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 /*
 Problem: Build a gRPC telemetry aggregator with streaming and time windows
 
