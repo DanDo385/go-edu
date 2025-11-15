@@ -1,0 +1,100 @@
+PROJECT 37: HTTP MIDDLEWARE CHAIN
+==================================
+
+STRUCTURE:
+----------
+37-http-middleware-chain/
+├── README.md                          (1,695 lines - comprehensive guide)
+├── cmd/middleware-demo/
+│   └── main.go                        (532 lines - full demonstration)
+└── exercise/
+    ├── exercise.go                    (185 lines - student exercises)
+    ├── exercise_test.go               (577 lines - comprehensive tests)
+    └── solution.go                    (292 lines - complete solution)
+
+FEATURES COVERED:
+-----------------
+✓ Middleware pattern fundamentals
+✓ Function composition and higher-order functions
+✓ Request/response wrapping with custom ResponseWriter
+✓ Context-based data passing (request ID, user info)
+✓ Middleware chaining with proper execution order
+✓ Recovery middleware (panic handling)
+✓ Logging middleware with timing
+✓ Authentication middleware
+✓ CORS middleware
+✓ Method filtering middleware
+✓ Request timeout middleware
+✓ Rate limiting concepts
+
+EXERCISES INCLUDED:
+------------------
+1. Context helpers (WithRequestID, GetRequestID, WithUser, GetUser)
+2. ResponseWriter wrapper (capture status codes and bytes)
+3. Logging middleware (request/response logging with timing)
+4. Recovery middleware (panic handling)
+5. Request ID middleware (unique ID per request)
+6. Auth middleware (token validation)
+7. CORS middleware (configurable origins)
+8. Method middleware (HTTP method filtering)
+9. Chain helper (compose multiple middleware)
+
+HOW TO USE:
+-----------
+# Run the demo
+go run ./minis/37-http-middleware-chain/cmd/middleware-demo
+
+# Test endpoints
+curl http://localhost:8080/
+curl http://localhost:8080/users
+curl http://localhost:8080/stats
+curl http://localhost:8080/panic
+curl -H "Authorization: Bearer secret-token" http://localhost:8080/profile
+
+# Run tests (exercises - should fail)
+go test ./minis/37-http-middleware-chain/exercise
+
+# Run tests (solution - should pass)
+go test ./minis/37-http-middleware-chain/exercise -tags solution
+
+# Run with verbose output
+go test -v ./minis/37-http-middleware-chain/exercise -tags solution
+
+# Run with race detector
+go test -race ./minis/37-http-middleware-chain/exercise -tags solution
+
+README SECTIONS:
+---------------
+1. What Is This About? (Real-world scenarios and challenges)
+2. First Principles (Middleware pattern, http.Handler, context)
+3. Breaking Down the Solution (Step-by-step implementation)
+4. Complete Solution Walkthrough (Full production example)
+5. Key Concepts Explained (Execution order, short-circuiting, etc.)
+6. Common Patterns You Can Reuse (Conditional, metrics, timeout, etc.)
+7. Real-World Applications (Production APIs, microservices, gateways)
+8. Common Mistakes to Avoid (6 common pitfalls with solutions)
+9. Stretch Goals (Advanced features to implement)
+
+LEARNING OBJECTIVES:
+-------------------
+After completing this project, students will understand:
+- How middleware wraps HTTP handlers
+- The importance of middleware execution order
+- How to pass data between middleware layers using context
+- How to capture response metadata (status codes, bytes written)
+- How to build reusable, composable middleware
+- Production patterns for logging, auth, recovery, and CORS
+- How to test middleware in isolation and composition
+
+PRODUCTION PATTERNS:
+-------------------
+✓ Recovery middleware (prevent crashes)
+✓ Request ID tracking (distributed tracing)
+✓ Structured logging with context
+✓ Authentication/authorization
+✓ CORS for cross-origin requests
+✓ Method filtering for security
+✓ Request timeout enforcement
+✓ Graceful error handling
+✓ Response metadata capture
+✓ Middleware composition and reusability

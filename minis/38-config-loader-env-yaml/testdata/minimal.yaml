@@ -1,0 +1,12 @@
+# Minimal configuration - only required fields specified
+# All other fields will use default values
+
+server:
+  port: 3000
+
+database:
+  host: localhost
+  database: minimal_db
+
+logging:
+  level: warn

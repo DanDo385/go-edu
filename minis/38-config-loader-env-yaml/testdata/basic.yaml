@@ -1,0 +1,21 @@
+# Basic configuration example
+# All values are explicitly set (no environment variables or defaults needed)
+
+server:
+  host: localhost
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  host: localhost
+  port: 5432
+  username: devuser
+  password: devpass
+  database: myapp_development
+  max_connections: 10
+
+logging:
+  level: debug
+  format: json
+  output: stdout

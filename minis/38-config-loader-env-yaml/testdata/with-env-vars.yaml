@@ -1,0 +1,21 @@
+# Configuration with environment variable substitution
+# Run with: APP_HOST=0.0.0.0 APP_PORT=9000 DB_HOST=postgres.example.com DB_PASSWORD=secret ./config-demo
+
+server:
+  host: ${APP_HOST}
+  port: ${APP_PORT}
+  read_timeout: 45s
+  write_timeout: 60s
+
+database:
+  host: ${DB_HOST}
+  port: 5432
+  username: appuser
+  password: ${DB_PASSWORD}
+  database: myapp
+  max_connections: 20
+
+logging:
+  level: info
+  format: json
+  output: stdout
