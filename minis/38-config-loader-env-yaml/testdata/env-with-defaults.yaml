@@ -1,0 +1,22 @@
+# Configuration with environment variable defaults
+# Environment variables are used if set, otherwise defaults are applied
+# This is useful for providing sensible defaults while allowing overrides
+
+server:
+  host: ${SERVER_HOST:-0.0.0.0}
+  port: ${UNDEFINED_PORT:-8080}
+  read_timeout: ${READ_TIMEOUT:-30s}
+  write_timeout: ${WRITE_TIMEOUT:-30s}
+
+database:
+  host: ${DB_HOST:-localhost}
+  port: ${DB_PORT:-5432}
+  username: ${DB_USER:-postgres}
+  password: ${DB_PASSWORD:-postgres}
+  database: ${DB_NAME:-myapp}
+  max_connections: ${DB_MAX_CONNS:-15}
+
+logging:
+  level: ${UNDEFINED_LOG_LEVEL:-info}
+  format: ${LOG_FORMAT:-json}
+  output: ${LOG_OUTPUT:-stdout}

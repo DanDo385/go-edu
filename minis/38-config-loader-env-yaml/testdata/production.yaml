@@ -1,0 +1,22 @@
+# Production-like configuration
+# Uses environment variables for sensitive data
+# Run with: PROD_DB_HOST=prod-db.example.com PROD_DB_PASSWORD=secret API_KEY=key123 ./config-demo
+
+server:
+  host: 0.0.0.0
+  port: 8080
+  read_timeout: 60s
+  write_timeout: 60s
+
+database:
+  host: ${PROD_DB_HOST}
+  port: 5432
+  username: prod_user
+  password: ${PROD_DB_PASSWORD}
+  database: myapp_production
+  max_connections: 50
+
+logging:
+  level: info
+  format: json
+  output: /var/log/myapp/app.log

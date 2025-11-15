@@ -1,0 +1,10 @@
+# Built plugins (shared objects)
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Go coverage files
+*.out
+coverage.html

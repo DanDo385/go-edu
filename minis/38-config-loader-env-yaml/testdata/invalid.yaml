@@ -1,0 +1,17 @@
+# Invalid configuration - will fail validation
+# Missing required fields and invalid values
+
+server:
+  host: localhost
+  port: 99999  # Invalid: port must be 1-65535
+
+database:
+  # Missing: host (required)
+  # Missing: database (required)
+  port: 5432
+  max_connections: 0  # Invalid: must be at least 1
+
+logging:
+  level: invalid_level  # Invalid: must be debug, info, warn, or error
+  format: json
+  output: stdout
