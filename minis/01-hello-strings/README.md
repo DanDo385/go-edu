@@ -5,6 +5,7 @@
 Imagine you're writing a program that needs to work with text from around the world—English, Spanish, Japanese, emoji, and more. This project teaches you how to manipulate strings (text) in a way that respects all these different writing systems.
 
 You'll build three utilities:
+
 1. **TitleCase**: Convert text to title case (First Letter Of Each Word Capitalized)
 2. **Reverse**: Flip text backwards while keeping special characters intact
 3. **RuneLen**: Count the actual number of characters (not bytes) in text
@@ -14,6 +15,7 @@ You'll build three utilities:
 ### First Principles: What Is Text in a Computer?
 
 When you type "Hello" on your keyboard, your computer doesn't store the word "Hello" directly. Instead, it stores **numbers**. Each letter gets converted to a number:
+
 - 'H' → 72
 - 'e' → 101
 - 'l' → 108
@@ -34,6 +36,7 @@ Here's where it gets tricky. Simple English letters take **1 byte** (one number)
 **This is the most important concept in this project**: In Go, when you count the length of a string with `len()`, you get the **number of bytes**, not the **number of characters**.
 
 Example:
+
 ```
 "Hello"   → len() = 5 (5 bytes, 5 characters) ✓
 "café"    → len() = 5 (5 bytes, but only 4 characters!) ✗
@@ -41,6 +44,7 @@ Example:
 ```
 
 In Go terminology:
+
 - **Byte**: A single number (0-255) representing part of a character
 - **Rune**: A complete character (what humans think of as "one character")
 
@@ -51,6 +55,7 @@ In Go terminology:
 You have text like: `"hello world"` and you want: `"Hello World"`
 
 Seems simple, right? But consider edge cases:
+
 - Multiple spaces: `"hello    world"` → `"Hello World"` (collapse spaces)
 - Already capitalized: `"Hello World"` → `"Hello World"` (don't break it)
 - Special characters: `"café résumé"` → `"Café Résumé"` (handle accents)
@@ -64,17 +69,20 @@ How do we find where one word ends and another begins? By looking for **whitespa
 `"hello world"` → `["hello", "world"]`
 
 In Go, we use `strings.Fields()` which automatically:
+
 - Splits on ANY whitespace (not just spaces)
 - Removes empty strings from the result
 - Handles multiple consecutive spaces
 
 **Step 2: Capitalize the first character of each word**
 For each word like "hello", we need to:
+
 1. Get the first character (but remember—it might be multiple bytes!)
 2. Make it uppercase
 3. Keep the rest of the word as-is
 
 **The Rune Approach**: Convert the word to a slice of runes (characters), then we can safely access the first rune:
+
 ```
 "hello" → ['h', 'e', 'l', 'l', 'o'] (as runes)
          → ['H', 'e', 'l', 'l', 'o'] (capitalize first)
@@ -117,6 +125,7 @@ func TitleCase(s string) string {
 You want to reverse "Hello" to get "olleH". Easy for English. But what about "Hello👋"?
 
 **Wrong approach** (reversing bytes):
+
 ```
 "Hello👋" (bytes: H e l l o [4 bytes for 👋])
 Reversed bytes: [4 bytes reversed] o l l e H
@@ -124,6 +133,7 @@ Result: "���olleH" (BROKEN EMOJI!)
 ```
 
 **Right approach** (reversing characters):
+
 ```
 "Hello👋" (characters: H e l l o 👋)
 Reversed characters: 👋 o l l e H
@@ -139,6 +149,7 @@ This separates the string into actual characters, where each emoji is ONE rune, 
 
 **Step 2: Reverse the rune slice**
 Use the classic "two-pointer" algorithm:
+
 - Start with a pointer at the beginning and one at the end
 - Swap the elements they point to
 - Move the pointers toward each other
@@ -187,6 +198,7 @@ We need a function that counts what humans see as characters.
 In Go, a **rune** is an integer that represents a single Unicode character. It's defined as `type rune = int32`.
 
 Unicode is a giant table that assigns a unique number to every character in every language:
+
 - 'A' = 65
 - '日' = 26085
 - '😀' = 128512
@@ -198,13 +210,16 @@ So when we count runes, we're counting these unique character codes, which match
 We need to iterate through the string and count each complete character (rune), not each byte.
 
 **Approach 1: Convert to []rune and get length**
+
 ```go
 return len([]rune(s))
 ```
+
 This works but allocates a new slice in memory (potentially wasteful for large strings).
 
 **Approach 2: Use the standard library**
 Go provides `utf8.RuneCountInString()` which:
+
 - Scans through the string
 - Recognizes multi-byte sequences
 - Counts complete characters
@@ -221,6 +236,7 @@ func RuneLen(s string) int {
 That's it! The standard library does the heavy lifting.
 
 **Alternative (educational) implementation**:
+
 ```go
 func RuneLen(s string) int {
     count := 0
