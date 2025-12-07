@@ -260,8 +260,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/12-proofs/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/12-proofs_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go`
+- **Solution:** `exercise/solution.go` (run with `go test -tags solution ./12-proofs/...`)
+- **Tests:** `exercise/exercise_test.go`
 
 ## Next Steps
 

@@ -175,8 +175,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/05-tx-nonces/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/05-tx-nonces_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go` - Student entrypoint with TODOs
+- **Solution:** `exercise/solution.go` - Reference implementation (requires `-tags solution`)
+- **Tests:** `exercise/exercise_test.go` - Table-driven tests exercising the core logic
 
 ## Next Steps
 

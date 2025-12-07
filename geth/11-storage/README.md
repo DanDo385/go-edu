@@ -256,8 +256,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/11-storage/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/11-storage_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go`
+- **Solution:** `exercise/solution.go` (reference implementation, run with `go test -tags solution ./11-storage/...`)
+- **Tests:** `exercise/exercise_test.go`
 
 ## Next Steps
 

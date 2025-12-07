@@ -38,14 +38,11 @@ This track teaches Ethereum development from the ground up, with a nerdy, educat
 
 3. **Run a module**:
    ```bash
-   # Using Makefile (recommended)
-   make run-01  # Run 01-stack solution
+   # Execute the reference solution (requires RPC + solution build tag)
+   INFURA_RPC_URL=... go test -tags solution ./01-stack/...
    
-   # Or manually
-   go run 01-stack/cmd/01-stack_solution/main.go
-   
-   # Or work on the starter version
-   go run 01-stack/cmd/01-stack/main.go
+   # Execute your own work-in-progress implementation
+   INFURA_RPC_URL=... go test ./01-stack/...
    ```
 
 ### Available Make Targets
@@ -58,11 +55,9 @@ This track teaches Ethereum development from the ground up, with a nerdy, educat
 
 ### Project Structure
 
-Each module (`XX-name/`) now mirrors the minis layout:
+Each module (`XX-name/`) mirrors the minis layout:
 - `README.md` - Learning objectives, CS-first-principles explanations, analogies, comparisons, fun facts, and cross-references
-- `cmd/XX-name/main.go` - Starter code with TODO comments
-- `cmd/XX-name_solution/main.go` - Complete solution with detailed educational commentary
-- `exercise/` - Minis-style package with `exercise.go`, `exercise_test.go`, and `solution.go` that you can import into other programs or use to practice Go tooling outside of the CLI demos
+- `exercise/` - Minis-style package with `exercise.go`, `exercise_test.go`, and `solution.go`. Build tags (`!solution` vs `solution`) let you focus on your code while still being able to inspect/execute the reference implementation via `go test -tags solution`.
 
 ## Module Map
 

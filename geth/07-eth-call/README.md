@@ -178,8 +178,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/07-eth-call/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/07-eth-call_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go` - Student entry point with TODO guidance
+- **Solution:** `exercise/solution.go` - Reference implementation (run with `go test -tags solution ./07-eth-call/...`)
+- **Tests:** `exercise/exercise_test.go` - Covers ABI encoding/decoding edge cases
 
 ## Next Steps
 

@@ -173,8 +173,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/09-events/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/09-events_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go`
+- **Solution:** `exercise/solution.go` (build with `-tags solution`)
+- **Tests:** `exercise/exercise_test.go`
 
 ## Next Steps
 

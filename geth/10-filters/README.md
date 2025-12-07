@@ -172,8 +172,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/10-filters/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/10-filters_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go`
+- **Solution:** `exercise/solution.go` (run with `go test -tags solution ./10-filters/...`)
+- **Tests:** `exercise/exercise_test.go`
 
 ## Next Steps
 

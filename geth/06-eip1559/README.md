@@ -172,8 +172,9 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `cmd/06-eip1559/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/06-eip1559_solution/main.go` - Complete implementation with detailed comments
+- **Starter:** `exercise/exercise.go` - Student entry point with TODOs
+- **Solution:** `exercise/solution.go` - Reference implementation (build with `-tags solution`)
+- **Tests:** `exercise/exercise_test.go` - Table-driven cases for nonce/fee logic
 
 ## Next Steps
 
