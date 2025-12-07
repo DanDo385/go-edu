@@ -3,34 +3,76 @@
 
 package exercise
 
-import "io"
+import (
+	"encoding/csv"
+	"fmt"
+	"io"
+	"strconv"
+)
 
-// Stat holds aggregated statistics for a category.
 type Stat struct {
 	Count int     // Number of transactions
 	Sum   float64 // Total amount
 	Avg   float64 // Average amount (Sum / Count)
 }
 
-// SummarizeCSV reads a CSV with headers (id,category,amount) from r and returns
-// per-category statistics.
-//
-// CSV format:
-//   id,category,amount
-//   1,groceries,12.50
-//   2,books,10.00
-//
-// Returns:
-//   map[string]Stat{
-//     "groceries": {Count: 1, Sum: 12.50, Avg: 12.50},
-//     "books": {Count: 1, Sum: 10.00, Avg: 10.00},
-//   }
-//
-// Errors:
-//   - Malformed CSV (wrong number of columns)
-//   - Invalid amount (not a number)
-//   - Missing headers
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
-	// TODO: implement
-	return nil, nil
+
+	csvReader := csv.NewReader(r)
+
+	headers, err := csvReader.Read()
+	if err != nil {
+		if err == io.EOF {
+			return nil, fmt.Errorf("empty CSV file")
+		}
+		return nil, fmt.Errorf("reader header: %w", err)
+	}
+	
+	if len(headers) != 3 || headers[0] != "id" || headers[1] != "category" || headers[2] != "amount" {
+		return nil, fmt.Errorf("invalid header: expected [id,category,amount], got %v", headers)
+	}
+
+	stats := make(map[string]Stat)
+	rowNum := 2
+
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("row %d: %w", rowNum, err)
+		}
+		if len(record) !=3 {
+			return nil, fmt.Errorf("row %d: expected 3 fields, got %d", rowNum, len(record))
+		}
+
+		category := record[1]
+		amountStr := record[2]
+
+		if category == "" {
+			return nil, fmt.Errorf("row %d: empty category", rowNum)
+		}
+
+		amount, err := strconv.ParseFloat(amountStr, 64)
+		if err != nil {
+			return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
+		}
+
+		s := stats[category]
+		s.Count++
+		s.Sum += amount
+		stats[category] = s
+		rowNum++
+	}
+
+	for category, s := range stats {
+		if s.Count > 0 {
+			s.Avg = s.Sum / float64(s.Count)
+			stats[category] = s
+		}
+	}
+
+	return stats, nil
+
 }

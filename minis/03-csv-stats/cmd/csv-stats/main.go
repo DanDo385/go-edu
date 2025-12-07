@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Open the testdata CSV file
-	file, err := os.Open("minis/03-csv-stats/testdata/transactions.csv")
+	file, err := os.Open("../../testdata/transactions.csv")
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
 	}

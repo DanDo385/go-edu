@@ -5,7 +5,7 @@
 Imagine you have a long document and you want to know which words appear most frequently. Maybe you're analyzing customer feedback, studying a book, or processing survey responses. This project teaches you how to count things efficiently using Go's built-in data structures.
 
 You'll build a word frequency analyzer that:
-1. Reads text from a file (one word per line)
+1. Reads text input (one word per line) from a file
 2. Counts how many times each word appears
 3. Finds the most common word
 

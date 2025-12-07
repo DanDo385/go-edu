@@ -94,7 +94,7 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 		if err == io.EOF {
 			return nil, fmt.Errorf("empty CSV file (no header)")
 		}
-		return nil, fmt.Errorf("reading header: %w", err)
+		return nil, fmt.Errorf("reading header: %w", err) // if not io.EOF, return error
 	}
 
 	// Validate header format

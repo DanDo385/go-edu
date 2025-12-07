@@ -97,7 +97,7 @@ Put the words back together with single spaces between them.
 ```go
 func TitleCase(s string) string {
     // Step 1: Split into words
-    words := strings.Fields(s)
+    words := strings.Fields(s) 
 
     // Step 2: Process each word
     for i, word := range words {
