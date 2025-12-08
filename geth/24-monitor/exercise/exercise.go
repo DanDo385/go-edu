@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run is the student entry point for module 24-monitor.
-func Run() {
-	panic("TODO: implement Run for 24-monitor")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

@@ -12,6 +12,8 @@
 
 package exercise
 
+import "fmt"
+
 // TODO: Implement these functions and methods according to the specifications in the tests.
 // Each function tests a different aspect of interface mechanics.
 
@@ -27,8 +29,7 @@ package exercise
 //
 // HINT: Use fmt.Sprintf to format the string.
 func (p Person) String() string {
-	// TODO: Implement this method
-	return ""
+	return fmt.Sprintf("%s (%d years old)", p.Name, p.Age)
 }
 
 // ============================================================================
@@ -43,8 +44,11 @@ func (p Person) String() string {
 //
 // HINT: Use type assertion with the comma-ok idiom: p, ok := s.(Person)
 func GetAge(s Stringer) (int, bool) {
-	// TODO: Implement this function
-	return 0, false
+	p, ok := s.(Person)
+	if !ok {
+		return 0, false
+	}
+	return p.Age, true
 }
 
 // ============================================================================
@@ -63,8 +67,20 @@ func GetAge(s Stringer) (int, bool) {
 //
 // HINT: Use a type switch: switch v := i.(type) { ... }
 func DescribeType(i interface{}) string {
-	// TODO: Implement this function
-	return ""
+	switch v := i.(type) {
+	case int:
+		return fmt.Sprintf("Integer: %d", v)
+	case string:
+		return fmt.Sprintf("String: %s", v)
+	case bool:
+		return fmt.Sprintf("Boolean: %t", v)
+	case Person:
+		return fmt.Sprintf("Person: %s", v.Name)
+	case nil:
+		return "Nil"
+	default:
+		return "Unknown"
+	}
 }
 
 // ============================================================================
@@ -80,9 +96,18 @@ func DescribeType(i interface{}) string {
 //
 // HINT: First check if v == nil, then try type assertion to *Email and check if that's nil.
 func IsValidEmail(v Validator) bool {
-	// TODO: Implement this function
-	// This tests your understanding of the two-part nil problem!
-	return false
+	if v == nil {
+		return false
+	}
+
+	e, ok := v.(*Email)
+	if !ok {
+		return v.IsValid()
+	}
+	if e == nil {
+		return false
+	}
+	return e.IsValid()
 }
 
 // ============================================================================
@@ -96,8 +121,7 @@ func IsValidEmail(v Validator) bool {
 //
 // HINT: Just return b.data
 func (b *Buffer) Read() string {
-	// TODO: Implement this method
-	return ""
+	return b.data
 }
 
 // TODO: Implement Write() for Buffer to satisfy the Writer interface.
@@ -108,7 +132,7 @@ func (b *Buffer) Read() string {
 //
 // HINT: b.data += data
 func (b *Buffer) Write(data string) error {
-	// TODO: Implement this method
+	b.data += data
 	return nil
 }
 
@@ -124,8 +148,8 @@ func (b *Buffer) Write(data string) error {
 //
 // HINT: Use type assertion to ReadWriter: _, ok := i.(ReadWriter)
 func IsReadWriter(i interface{}) bool {
-	// TODO: Implement this function
-	return false
+	_, ok := i.(ReadWriter)
+	return ok
 }
 
 // ============================================================================
@@ -140,7 +164,7 @@ func IsReadWriter(i interface{}) bool {
 //
 // HINT: func (c *Counter) Increment() { c.Value++ }
 func (c *Counter) Increment() {
-	// TODO: Implement this method
+	c.Value++
 }
 
 // CanIncrement checks if a value can be used as an Incrementer.
@@ -151,8 +175,8 @@ func (c *Counter) Increment() {
 //
 // HINT: Use type assertion to Incrementer
 func CanIncrement(i interface{}) bool {
-	// TODO: Implement this function
-	return false
+	_, ok := i.(Incrementer)
+	return ok
 }
 
 // ============================================================================
@@ -171,8 +195,12 @@ func CanIncrement(i interface{}) bool {
 //
 // HINT: Use fmt.Sprintf("%T", v) to get type names.
 func CountTypes(values []interface{}) map[string]int {
-	// TODO: Implement this function
-	return nil
+	counts := make(map[string]int)
+	for _, v := range values {
+		typeName := fmt.Sprintf("%T", v)
+		counts[typeName]++
+	}
+	return counts
 }
 
 // ============================================================================
@@ -188,8 +216,7 @@ func CountTypes(values []interface{}) map[string]int {
 //
 // HINT: The error interface is: type error interface { Error() string }
 func (e ValidationError) Error() string {
-	// TODO: Implement this method
-	return ""
+	return fmt.Sprintf("validation error on %s: %s", e.Field, e.Message)
 }
 
 // ============================================================================
@@ -203,8 +230,7 @@ func (e ValidationError) Error() string {
 //
 // HINT: func (r Rectangle) Area() float64 { return r.Width * r.Height }
 func (r Rectangle) Area() float64 {
-	// TODO: Implement this method
-	return 0
+	return r.Width * r.Height
 }
 
 // TODO: Implement Area() for Circle.
@@ -215,8 +241,7 @@ func (r Rectangle) Area() float64 {
 //
 // HINT: func (c Circle) Area() float64 { return 3.14159 * c.Radius * c.Radius }
 func (c Circle) Area() float64 {
-	// TODO: Implement this method
-	return 0
+	return 3.14159 * c.Radius * c.Radius
 }
 
 // TotalArea calculates the total area of all shapes.
@@ -227,6 +252,9 @@ func (c Circle) Area() float64 {
 //
 // HINT: Loop through shapes and sum shape.Area()
 func TotalArea(shapes []Shape) float64 {
-	// TODO: Implement this function
-	return 0
+	total := 0.0
+	for _, shape := range shapes {
+		total += shape.Area()
+	}
+	return total
 }

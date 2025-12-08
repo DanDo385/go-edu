@@ -1,37 +1,35 @@
 # geth-14-explorer
 
-**Goal:** build a tiny block/tx explorer CLI.
+**Goal:** Build a tiny block/tx explorer that fetches a block, summarizes its header, and (optionally) lists transactions.
 
-## Big Picture
+## Why this matters
+- Block explorers are just structured RPC clients: read a block, decode fields, and render a human-friendly view.
+- Reinforces earlier modules:
+  - 01-stack/02-rpc-basics: dialing RPC with context and handling nil responses.
+  - 05/06: inspecting tx fields (gas, to, hash) without sending anything.
+  - 13-trace/15-receipts: richer views layer on top of the same block anchor.
 
-Block explorers read headers, transactions, and sometimes receipts/logs to present chain activity. Here we fetch a block (latest or numbered) and summarize txs. Extend with receipts/logs/traces for deeper insight.
+## First-principles CS
+- **Data locality:** headers are small (~hundreds of bytes) vs. full blocks with tx objects (KBs). Fetch only what you need.
+- **Interfaces over structs:** a tiny `RPCClient` interface keeps the explorer decoupled from concrete ethclient implementations.
+- **Defensive copying:** types.Block shares internal slices; copying header fields prevents accidental mutation by callers.
 
-## Learning Objectives
-- Fetch a block by number (or latest) with txs.
-- Print header fields and tx summaries (to/value/gasPrice).
-- Understand how explorers stitch together headers, txs, receipts.
+## Nerdy/fun facts
+- Etherscan-like explorers cache block summaries in databases; we’re just doing an on-demand read.
+- Tx objects can omit `From`—you need a signer and chain ID to recover it (see module 05/06 for signing context).
+- A “block explorer” is really a “content-addressable ledger browser”: the block hash is your content address.
 
-## Prerequisites
-- Modules 01–10, plus tx basics.
+## Exercise shape
+- `exercise.go`: TODOs guide you to validate inputs, fetch a block, and build a small Result with optional Tx summaries.
+- `solution.go`: Reference implementation with commentary on choices (defensive copies, minimal TxSummary fields).
+- `exercise_test.go`: currently a scaffold—extend it to test your own explorer output.
 
-## Real-World Analogy
-- Flipping to a specific ledger page and reading every line item.
-
-## Steps
-1. Parse block number (or use latest).
-2. Fetch block with tx objects.
-3. Print header summary + tx list.
-4. (Optional) enrich with receipts/logs (module 15) or traces (module 13).
-
-## Fun Facts & Comparisons
-- Full tx objects are heavier than hashes—use selectively for performance.
-- explorers like Etherscan index receipts/logs in databases for fast queries.
-- ethers.js: `getBlockWithTransactions` mirrors this flow.
-
-## Related Solidity-edu Modules
-- Events & Logging (module 09) — logs enrich tx views.
-- Receipts (module 15) — success/fail and gas usage.
+## Suggested extensions
+- Pull receipts for each tx (module 15) to show status/gasUsed.
+- Add trace links (module 13) for deep debugging.
+- Render logs (module 09) for contract activity insights.
 
 ## Files
-- Starter: `cmd/geth-14-explorer/main.go`
-- Solution: `cmd/geth-14-explorer_solution/main.go`
+- `exercise/exercise.go`: student TODOs.
+- `exercise/solution.go`: reference implementation.
+- `exercise/exercise_test.go`: add your own assertions here.

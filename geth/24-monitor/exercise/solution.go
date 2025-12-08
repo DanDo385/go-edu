@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run contains the reference solution for module 24-monitor.
-func Run() {
-	panic("TODO: provide solution for 24-monitor")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

@@ -11,6 +11,10 @@
 
 package exercise
 
+import (
+	"unsafe"
+)
+
 // TODO: Implement these functions according to the specifications in the tests.
 // Each function tests a different aspect of slice mechanics.
 
@@ -24,8 +28,10 @@ package exercise
 //
 // HINT: Store cap(s) before calling append(), then compare with cap(s) after.
 func GrowSlice(s []int, elem int) (newSlice []int, oldCap, newCap int) {
-	// TODO: Implement this function
-	return nil, 0, 0
+	oldCap = cap(s)
+	newSlice = append(s, elem)
+	newCap = cap(newSlice)
+	return newSlice, oldCap, newCap
 }
 
 // SharesBackingArray returns true if slices a and b share the same backing array.
@@ -38,11 +44,20 @@ func GrowSlice(s []int, elem int) (newSlice []int, oldCap, newCap int) {
 // or use a simpler approach: modify a[0], check if b was affected, then restore.
 // For this exercise, use the simpler approach (no unsafe needed).
 func SharesBackingArray(a, b []int) bool {
-	// TODO: Implement this function
-	// Edge cases:
-	// - What if one or both slices are empty?
-	// - What if the slices don't overlap?
-	return false
+	if len(a) == 0 || len(b) == 0 {
+		return false
+	}
+
+	// Compare underlying memory ranges using unsafe pointers.
+	size := int(unsafe.Sizeof(a[0]))
+	startA := uintptr(unsafe.Pointer(&a[0]))
+	endA := startA + uintptr(size*cap(a))
+
+	startB := uintptr(unsafe.Pointer(&b[0]))
+	endB := startB + uintptr(size*cap(b))
+
+	return (startA >= startB && startA < endB) ||
+		(startB >= startA && startB < endA)
 }
 
 // SafeTruncate truncates a large slice to a smaller size, ensuring the
@@ -60,9 +75,15 @@ func SharesBackingArray(a, b []int) bool {
 //
 // HINT: Allocate a new slice with make(), then use copy().
 func SafeTruncate(s []int, n int) []int {
-	// TODO: Implement this function
-	// Edge case: What if n > len(s)?
-	return nil
+	if n > len(s) {
+		n = len(s)
+	}
+	if n == 0 {
+		return []int{}
+	}
+	out := make([]int, n)
+	copy(out, s[:n])
+	return out
 }
 
 // PreallocateVsDynamic compares pre-allocated vs dynamic growth for building
@@ -81,8 +102,27 @@ func SafeTruncate(s []int, n int) []int {
 // For n=10000, approach 1 should have ~15-20 reallocations,
 // while approach 2 should have 0.
 func PreallocateVsDynamic(n int) (dynamicAllocs, preallocAllocs int) {
-	// TODO: Implement this function
-	return 0, 0
+	var s1 []int
+	prevCap1 := 0
+	for i := 0; i < n; i++ {
+		s1 = append(s1, i)
+		if cap(s1) != prevCap1 {
+			dynamicAllocs++
+			prevCap1 = cap(s1)
+		}
+	}
+
+	s2 := make([]int, 0, n)
+	prevCap2 := cap(s2)
+	for i := 0; i < n; i++ {
+		s2 = append(s2, i)
+		if cap(s2) != prevCap2 {
+			preallocAllocs++
+			prevCap2 = cap(s2)
+		}
+	}
+
+	return dynamicAllocs, preallocAllocs
 }
 
 // ReSliceWithCapLimit creates a sub-slice with limited capacity using
@@ -102,6 +142,5 @@ func PreallocateVsDynamic(n int) (dynamicAllocs, preallocAllocs int) {
 //
 // HINT: Set max = end to make cap = end - start = len.
 func ReSliceWithCapLimit(s []int, start, end int) []int {
-	// TODO: Implement this function
-	return nil
+	return s[start:end:end]
 }

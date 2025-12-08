@@ -173,11 +173,100 @@ In this module, you'll create a CLI that:
 
 **Key learning:** You'll understand the complete transaction lifecycle from building to broadcasting!
 
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1.  **Input Validation** - Validate private key, amount, and gas limit.
+2.  **Nonce Management** - Fetch the pending nonce for the sender's address.
+3.  **Gas Price** - Fetch the suggested gas price from the network.
+4.  **Transaction Creation** - Assemble a new legacy transaction.
+5.  **Transaction Signing** - Sign the transaction with the private key and chain ID.
+6.  **Transaction Sending** - Broadcast the signed transaction to the network.
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code).
+- **How** concepts repeat and build on each other (pattern recognition).
+- **What** fundamental principles are being demonstrated (transaction lifecycle, replay protection).
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Nonce Fetching
+```go
+nonce, err := client.PendingNonceAt(ctx, from)
+if err != nil {
+    return nil, fmt.Errorf("pending nonce: %w", err)
+}
+```
+**Why:** Using the pending nonce is crucial to avoid conflicts with transactions that are in the mempool but not yet mined.
+
+**Building on:** RPC calls from previous modules.
+
+**Repeats in:** Any application that sends transactions.
+
+#### Pattern 2: Transaction Creation
+```go
+tx := types.NewTransaction(nonce, cfg.To, cfg.AmountWei, cfg.GasLimit, gasPrice, cfg.Data)
+```
+**Why:** This function assembles all the necessary fields into a `types.Transaction` object.
+
+**Building on:** Go's struct creation and the `go-ethereum` types package.
+
+**Repeats in:** Any application that creates new transactions.
+
+#### Pattern 3: Transaction Signing
+```go
+signer := types.LatestSignerForChainID(chainID)
+signedTx, err := types.SignTx(tx, signer, cfg.PrivateKey)
+if err != nil {
+    return nil, fmt.Errorf("sign tx: %w", err)
+}
+```
+**Why:** Signing a transaction proves that you own the private key and authorize the state change. The `signer` object incorporates the chain ID to prevent replay attacks (EIP-155).
+
+**Building on:** Cryptographic principles from Module 03.
+
+**Repeats in:** Any application that sends transactions on behalf of a user.
+
+## Deep Dive: Nonce Management
+
+The nonce is the most critical and often misunderstood part of sending transactions.
+
+- **Strict Ordering:** Transactions from a single account are processed strictly in nonce order. If you submit nonce 5, it will not be processed until nonce 4 is confirmed.
+- **Gaps are Problematic:** If you have a pending transaction with nonce 5, and you submit another with nonce 7, the second one will get stuck in the mempool until a transaction with nonce 6 is mined.
+- **Replacing Transactions:** You can replace a pending transaction by sending a new one with the same nonce but a higher gas price.
+
+## Error Handling: Building Robust Systems
+
+Error handling in this module involves wrapping errors from the RPC client and the signing process.
+
+```go
+if err := client.SendTransaction(ctx, signedTx); err != nil {
+    return nil, fmt.Errorf("send tx: %w", err)
+}
+```
+
+If `SendTransaction` fails, the error will be wrapped with "send tx: ". This helps pinpoint the failure to the broadcasting step. Common errors include "nonce too low" or "insufficient funds".
+
+## Testing Strategy
+
+The test file (`exercise/exercise_test.go`) demonstrates several important patterns:
+
+1.  **Mock implementations:** `mockTXClient` implements the `TXClient` interface, allowing us to test our logic without a real Ethereum node.
+2.  **Configuration testing:** We test various configurations, such as providing a nonce manually vs. fetching it automatically.
+3.  **Signature verification:** We can verify that the transaction was signed correctly.
+4.  **"No Send" mode:** The `NoSend` flag allows us to test the transaction creation and signing logic without actually broadcasting the transaction.
+
 ## Files
 
-- **Starter:** `exercise/exercise.go` - Student entrypoint with TODOs
-- **Solution:** `exercise/solution.go` - Reference implementation (requires `-tags solution`)
-- **Tests:** `exercise/exercise_test.go` - Table-driven tests exercising the core logic
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
 
 ## Next Steps
 

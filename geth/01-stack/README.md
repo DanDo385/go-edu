@@ -149,18 +149,310 @@ This is your **first module**, so there are no previous geth modules to referenc
 
 ## What You'll Build
 
-In this module, you'll create a simple CLI that:
-1. Connects to an Ethereum RPC endpoint (Infura, Alchemy, or your own node)
-2. Queries the chain ID (proves you're connected to the right network)
-3. Queries the network ID (legacy identifier)
-4. Fetches the latest block header (proves connectivity and shows current state)
+In this module, you'll implement a library function that:
+1. Validates input parameters (defensive programming)
+2. Connects to an Ethereum RPC endpoint via the RPCClient interface
+3. Queries the chain ID (proves you're connected to the right network)
+4. Queries the network ID (legacy identifier)
+5. Fetches a block header (proves connectivity and shows current state)
+6. Returns a Result struct with defensive copies (immutability pattern)
 
 This is your "hello world" for Ethereum Go development. Every subsequent module builds on these fundamentals!
 
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1. **Input Validation** - Learn defensive programming patterns
+2. **RPC Calls** - Understand how to interact with Ethereum nodes
+3. **Error Handling** - Master Go's idiomatic error wrapping
+4. **Defensive Copying** - Learn why immutability matters in concurrent systems
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code)
+- **How** concepts repeat and build on each other (pattern recognition)
+- **What** fundamental principles are being demonstrated (computer science concepts)
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Input Validation → Early Returns
+```go
+if client == nil {
+    return nil, errors.New("client is nil")
+}
+```
+**Why:** Fail fast, don't continue with invalid state. This pattern appears in every function that accepts external input.
+
+**Building on:** Go's zero values (nil for interfaces) and error handling idioms.
+
+**Repeats in:** Every module where we validate inputs (which is all of them!).
+
+#### Pattern 2: RPC Call → Error Check → Nil Check → Use
+```go
+chainID, err := client.ChainID(ctx)
+if err != nil {
+    return nil, fmt.Errorf("chain id: %w", err)
+}
+if chainID == nil {
+    return nil, errors.New("chain id response was nil")
+}
+```
+**Why:** 
+- RPC calls can fail (network issues, node down, etc.)
+- Even successful calls can return nil (malformed responses)
+- We need to validate before using to prevent nil pointer panics
+
+**Building on:** Go's multiple return values (value, error) pattern.
+
+**Repeats in:** Every RPC call throughout the entire course. This is THE pattern for Ethereum Go development.
+
+#### Pattern 3: Error Wrapping with Context
+```go
+return nil, fmt.Errorf("chain id: %w", err)
+```
+**Why:** The `%w` verb wraps errors, preserving the error chain. This allows:
+- `errors.Is()` to check for specific error types
+- `errors.As()` to extract underlying error details
+- Better error messages that show the full call chain
+
+**Building on:** Go 1.13's error wrapping improvements.
+
+**Repeats in:** Every error return in production Go code.
+
+#### Pattern 4: Defensive Copying
+```go
+return &Result{
+    ChainID:   new(big.Int).Set(chainID),
+    NetworkID: new(big.Int).Set(networkID),
+    Header:    types.CopyHeader(header),
+}, nil
+```
+**Why:** 
+- The RPCClient might return pointers to internal data structures
+- If we return those pointers directly, callers could mutate them
+- This could cause data races in concurrent code or affect other callers
+- By copying, we ensure each caller gets independent data
+
+**Building on:** 
+- Go's pointer semantics (sharing vs copying)
+- Concurrent programming safety (immutability prevents races)
+- Memory management (who owns what data)
+
+**Repeats in:** Every function that returns data from external libraries or shared state.
+
+**Deep dive:** `big.Int` is mutable. If we assigned `chainID` directly, both `Result.ChainID` and the client's internal data would point to the same `big.Int`. Mutating one would mutate both! This is a subtle but critical bug that can cause mysterious failures in production.
+
+### Understanding the Types
+
+#### `RPCClient` Interface
+```go
+type RPCClient interface {
+    ChainID(ctx context.Context) (*big.Int, error)
+    NetworkID(ctx context.Context) (*big.Int, error)
+    HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
+}
+```
+
+**Why an interface?** 
+- Allows testing with mock implementations (see `exercise_test.go`)
+- Decouples our code from specific RPC implementations
+- Follows Go's "accept interfaces, return structs" principle
+
+**Building on:** Go's interface system (duck typing).
+
+**Repeats in:** Every module uses interfaces for testability and flexibility.
+
+#### `Config` Struct
+```go
+type Config struct {
+    BlockNumber *big.Int
+}
+```
+
+**Why separate config?**
+- Separation of concerns: configuration vs logic
+- Makes functions testable (can request specific blocks)
+- Allows callers to control behavior without changing function signature
+
+**Building on:** Functional programming principles (pure functions with explicit inputs).
+
+**Repeats in:** Every function that needs configuration or options.
+
+#### `Result` Struct
+```go
+type Result struct {
+    ChainID   *big.Int
+    NetworkID *big.Int
+    Header    *types.Header
+}
+```
+
+**Why a struct?** 
+- Groups related data together
+- Makes return values self-documenting
+- Easier to extend (can add fields without breaking callers)
+
+**Building on:** Go's struct types and composition.
+
+**Repeats in:** Every function that returns multiple related values.
+
+### Context Propagation: The Thread That Connects Everything
+
+`context.Context` appears in every RPC call. Why?
+
+1. **Cancellation:** Callers can cancel long-running operations
+2. **Timeouts:** Prevents hanging forever on unresponsive nodes
+3. **Request-scoped values:** Can pass metadata through call chains
+
+**Example:**
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+chainID, err := client.ChainID(ctx)
+```
+
+If the RPC call takes longer than 5 seconds, it's automatically cancelled. This is critical for production systems!
+
+**Building on:** Go's context package (introduced in Go 1.7).
+
+**Repeats in:** Every RPC call, every network operation, every long-running task.
+
+## Deep Dive: Why Defensive Copying Matters
+
+Let's explore a concrete example of why defensive copying is critical:
+
+### The Bug (Without Defensive Copying)
+```go
+// BAD: Returning pointers directly
+return &Result{
+    ChainID: chainID,  // Same pointer as client's internal data!
+}
+```
+
+**What happens:**
+1. Function returns `Result` with `ChainID` pointing to client's internal `big.Int`
+2. Caller modifies `result.ChainID.SetUint64(999)`
+3. Client's internal data is also modified!
+4. Next caller gets wrong chain ID
+5. **Data race** if multiple goroutines call the function
+
+### The Fix (With Defensive Copying)
+```go
+// GOOD: Creating independent copy
+return &Result{
+    ChainID: new(big.Int).Set(chainID),  // New big.Int, independent copy
+}
+```
+
+**What happens:**
+1. Function creates a new `big.Int` and copies the value
+2. Caller modifies `result.ChainID` → only affects their copy
+3. Client's internal data remains unchanged
+4. Safe for concurrent use
+
+**This pattern is so important that the tests verify it:**
+```go
+// Mutating the result should not mutate the mock responses (defensive copy)
+res.ChainID.SetUint64(99)
+if mock.chainID.Uint64() != 1 {
+    t.Fatalf("chain id was not copied")
+}
+```
+
+## Error Handling: Building Robust Systems
+
+Go's error handling philosophy: "Errors are values." This means:
+- Errors are first-class citizens (not exceptions)
+- You handle them explicitly (no hidden control flow)
+- Error values can carry context and be inspected
+
+### Error Wrapping Chain
+```go
+chainID, err := client.ChainID(ctx)
+if err != nil {
+    return nil, fmt.Errorf("chain id: %w", err)
+}
+```
+
+**The error chain:**
+1. `client.ChainID()` returns `err` (original error)
+2. We wrap it: `fmt.Errorf("chain id: %w", err)`
+3. Caller can inspect: `errors.Is(err, context.DeadlineExceeded)`
+4. Caller can unwrap: `errors.Unwrap(err)` gets original error
+
+**Why this matters:** When debugging production issues, you can trace exactly where errors originated and why they occurred.
+
+## Testing Strategy
+
+The test file (`exercise_test.go`) demonstrates several important patterns:
+
+1. **Mock implementations:** `mockRPC` implements `RPCClient` interface
+2. **Table-driven tests:** Multiple test cases with different scenarios
+3. **Defensive copy verification:** Tests ensure immutability
+4. **Error case testing:** Tests verify error handling works correctly
+
+**Key insight:** Because we use interfaces, we can test our logic without needing a real Ethereum node. This makes tests fast, reliable, and deterministic.
+
 ## Files
 
-- **Starter:** `cmd/01-stack/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/01-stack_solution/main.go` - Complete implementation with detailed comments
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
+
+## Common Pitfalls & How to Avoid Them
+
+### Pitfall 1: Forgetting Nil Checks
+```go
+// BAD: Can panic if chainID is nil
+result := &Result{ChainID: chainID}
+```
+
+**Fix:** Always check for nil after RPC calls, even if error is nil.
+
+### Pitfall 2: Not Copying Mutable Types
+```go
+// BAD: Shares pointer, mutations affect original
+result := &Result{ChainID: chainID}
+```
+
+**Fix:** Always copy `big.Int` values: `new(big.Int).Set(chainID)`
+
+### Pitfall 3: Ignoring Context
+```go
+// BAD: No timeout, can hang forever
+chainID, err := client.ChainID(context.Background())
+```
+
+**Fix:** Always use context with timeouts in production code.
+
+### Pitfall 4: Not Wrapping Errors
+```go
+// BAD: Loses context about where error occurred
+if err != nil {
+    return nil, err
+}
+```
+
+**Fix:** Wrap errors with context: `fmt.Errorf("chain id: %w", err)`
+
+## How Concepts Build on Each Other
+
+This module introduces patterns that repeat throughout the entire course:
+
+1. **Input validation** → Used in every function
+2. **RPC call pattern** → Used in every module (02-rpc-basics, 03-keys-addresses, etc.)
+3. **Error wrapping** → Used everywhere
+4. **Defensive copying** → Critical for concurrent code (16-concurrency, 22-worker-pool)
+5. **Context propagation** → Used in every network operation
+6. **Interface-based design** → Enables testing and flexibility
+
+**The pattern:** Learn once, apply everywhere. Each module builds on previous patterns while introducing new concepts.
 
 ## Next Steps
 
@@ -169,3 +461,6 @@ After completing this module, you'll move to **02-rpc-basics** where you'll:
 - Understand transaction structures
 - Add retry logic for resilience
 - Learn about JSON-RPC method names and parameters
+- **Build on:** The RPC call pattern you learned here
+- **Extend:** Error handling with retries and backoff
+- **Apply:** The same defensive copying patterns to transaction data

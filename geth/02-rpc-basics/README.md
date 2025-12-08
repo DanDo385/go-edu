@@ -208,10 +208,149 @@ In this module, you'll create a CLI that:
 
 **Key learning:** You'll see the difference between lightweight headers (module 01) and full blocks (this module). This understanding is crucial for building efficient applications!
 
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1.  **Input Validation** - Learn defensive programming patterns.
+2.  **RPC Calls** - Understand how to interact with Ethereum nodes.
+3.  **Error Handling** - Master Go's idiomatic error wrapping.
+4.  **Retry Logic** - Build resilient applications that can handle transient network failures.
+5.  **Defensive Copying** - Learn why immutability matters in concurrent systems.
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code).
+- **How** concepts repeat and build on each other (pattern recognition).
+- **What** fundamental principles are being demonstrated (computer science concepts).
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Input Validation → Early Returns
+```go
+if client == nil {
+    return nil, errors.New("client is nil")
+}
+```
+**Why:** Fail fast, don't continue with invalid state. This pattern appears in every function that accepts external input.
+
+**Building on:** Module 01's validation patterns.
+
+**Repeats in:** Every subsequent module.
+
+#### Pattern 2: RPC Call → Error Check → Nil Check → Use
+```go
+blockNumber, err := client.BlockNumber(ctx)
+if err != nil {
+    return nil, fmt.Errorf("block number: %w", err)
+}
+```
+**Why:** RPC calls can fail, and we need to handle errors gracefully.
+
+**Building on:** The core RPC pattern from Module 01.
+
+**Repeats in:** Every RPC call throughout the entire course. This is THE pattern for Ethereum Go development.
+
+#### Pattern 3: Retry Logic with Context Awareness
+```go
+var block *types.Block
+var lastErr error
+for attempt := 0; attempt <= cfg.Retries; attempt++ {
+    block, lastErr = client.BlockByNumber(ctx, nil)
+    if lastErr == nil {
+        break
+    }
+    select {
+    case <-ctx.Done():
+        return nil, fmt.Errorf("context canceled: %w", ctx.Err())
+    case <-time.After(retryDelay):
+    }
+}
+```
+**Why:** Networks are unreliable. Retries make your application more robust. The `select` statement ensures that we don't wait forever if the context is canceled.
+
+**Building on:** Go's `for` loops, `time` package, and `context` package.
+
+**Repeats in:** Any application that needs to be resilient to network failures.
+
+#### Pattern 4: Defensive Copying
+```go
+return &Result{
+    NetworkID:   new(big.Int).Set(networkID),
+    BlockNumber: blockNumber,
+    Block:       types.CopyBlock(block),
+}, nil
+```
+**Why:** `types.Block` contains pointers. If we don't copy it, the caller could mutate the client's internal data.
+
+**Building on:** The defensive copying pattern from Module 01. `types.CopyBlock` is the equivalent of `types.CopyHeader` for full blocks.
+
+**Repeats in:** Every function that returns data from external libraries or shared state.
+
+## Deep Dive: Retry Logic
+
+Transient errors are a fact of life in distributed systems. A well-built application should be able to recover from them automatically.
+
+### The Bug (Without Retry Logic)
+```go
+block, err := client.BlockByNumber(ctx, nil)
+if err != nil {
+    // Fails on the first error, even if it's temporary
+    return nil, err
+}
+```
+
+### The Fix (With Retry Logic)
+```go
+var block *types.Block
+var lastErr error
+for attempt := 0; attempt <= cfg.Retries; attempt++ {
+    block, lastErr = client.BlockByNumber(ctx, nil)
+    if lastErr == nil {
+        break // Success!
+    }
+    // Wait a bit before retrying
+    time.Sleep(100 * time.Millisecond)
+}
+if lastErr != nil {
+    // All retries failed
+    return nil, lastErr
+}
+```
+This simple loop makes the application much more resilient. In a real production application, you would use exponential backoff to avoid overwhelming the server.
+
+## Error Handling: Building Robust Systems
+
+Error wrapping is crucial for debugging. By wrapping errors, you create a chain of errors that gives you a clear picture of what went wrong.
+
+### Error Wrapping Chain
+```go
+blockNumber, err := client.BlockNumber(ctx)
+if err != nil {
+    return nil, fmt.Errorf("block number: %w", err)
+}
+```
+
+If `client.BlockNumber` returns an error, the error returned by our function will be `block number: <original error>`. This tells us exactly where the error occurred.
+
+## Testing Strategy
+
+The test file (`exercise/exercise_test.go`) demonstrates several important patterns:
+
+1.  **Mock implementations:** `mockRPC` implements the `RPCClient` interface, allowing us to test our logic without a real Ethereum node.
+2.  **Table-driven tests:** We can test multiple scenarios with different inputs and expected outputs.
+3.  **Error case testing:** We can simulate network errors and verify that our retry logic works correctly.
+4.  **Context cancellation testing:** We can verify that our function correctly handles context cancellation.
+
 ## Files
 
-- **Starter:** `cmd/02-rpc-basics/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/02-rpc-basics_solution/main.go` - Complete implementation with detailed comments
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
 
 ## Next Steps
 

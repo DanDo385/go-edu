@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 package exercise
 
 // SafeDeref safely dereferences a pointer.

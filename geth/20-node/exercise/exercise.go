@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run is the student entry point for module 20-node.
-func Run() {
-	panic("TODO: implement Run for 20-node")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

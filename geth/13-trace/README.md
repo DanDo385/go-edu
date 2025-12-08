@@ -33,5 +33,6 @@ Tracing replays a transaction and emits detailed execution logs (opcodes, gas, c
 - Errors & Reverts — see exactly where/why a revert happened.
 
 ## Files
-- Starter: `cmd/geth-13-trace/main.go`
-- Solution: `cmd/geth-13-trace_solution/main.go`
+- Starter: `exercise/exercise.go`
+- Solution: `exercise/solution.go` (run with `go test -tags solution ./13-trace/...`)
+- Tests: `exercise/exercise_test.go`

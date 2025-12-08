@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run contains the reference solution for module 17-indexer.
-func Run() {
-	panic("TODO: provide solution for 17-indexer")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

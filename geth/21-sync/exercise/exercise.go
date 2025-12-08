@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run is the student entry point for module 21-sync.
-func Run() {
-	panic("TODO: implement Run for 21-sync")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

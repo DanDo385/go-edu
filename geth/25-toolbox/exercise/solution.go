@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run contains the reference solution for module 25-toolbox.
-func Run() {
-	panic("TODO: provide solution for 25-toolbox")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

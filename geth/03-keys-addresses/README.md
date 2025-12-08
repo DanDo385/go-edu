@@ -227,10 +227,106 @@ In this module, you'll create a CLI that:
 
 **Key learning:** You'll understand the complete flow from private key → public key → address. This is fundamental to all Ethereum interactions!
 
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1.  **Key Generation** - Learn how to generate a cryptographically secure private key.
+2.  **Address Derivation** - Understand the process of deriving an Ethereum address from a public key.
+3.  **Keystore Management** - Learn how to encrypt and store private keys securely.
+4.  **File I/O** - Practice creating directories and writing files in Go.
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code).
+- **How** concepts repeat and build on each other (pattern recognition).
+- **What** fundamental principles are being demonstrated (cryptography and security concepts).
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Cryptographic Key Generation
+```go
+privKey, err := crypto.GenerateKey()
+if err != nil {
+    return nil, fmt.Errorf("generate secp256k1 key: %w", err)
+}
+```
+**Why:** This is the starting point for any Ethereum account. `crypto.GenerateKey()` uses the OS's secure random number generator to create a new private key.
+
+**Building on:** Go's `crypto` package.
+
+**Repeats in:** Any application that needs to create new Ethereum accounts.
+
+#### Pattern 2: Address Derivation
+```go
+addr := crypto.PubkeyToAddress(privKey.PublicKey)
+```
+**Why:** This function encapsulates the address derivation logic (Keccak-256 hash of the public key, take the last 20 bytes).
+
+**Building on:** The cryptographic principles of hashing and public-key cryptography.
+
+**Repeats in:** Any application that needs to derive an address from a public key.
+
+#### Pattern 3: Keystore Management
+```go
+ks := keystore.NewKeyStore(cfg.OutputDir, keystore.StandardScryptN, keystore.StandardScryptP)
+account, err := ks.ImportECDSA(privKey, cfg.Passphrase)
+if err != nil {
+    return nil, fmt.Errorf("import key into keystore: %w", err)
+}
+```
+**Why:** Storing private keys in plaintext is dangerous. The `keystore` package provides a standard way to encrypt keys with a passphrase.
+
+**Building on:** Go's file I/O and the cryptographic principles of key derivation functions (scrypt) and symmetric encryption (AES).
+
+**Repeats in:** Any application that needs to manage user accounts securely.
+
+## Deep Dive: Keystore Security
+
+The `keystore` package is designed to protect your private keys from being stolen. It does this by encrypting the key with a passphrase.
+
+### Key Derivation Function (KDF)
+
+Instead of using your passphrase directly to encrypt the key, `keystore` uses a KDF (scrypt) to turn your passphrase into a much stronger encryption key. This is a process called "key stretching". It makes brute-force attacks much more difficult.
+
+### Encryption
+
+The private key is encrypted using AES-128-CTR, a standard symmetric encryption algorithm.
+
+### MAC
+
+The keystore file also includes a MAC (Message Authentication Code). This is used to verify that the passphrase is correct and that the file has not been tampered with.
+
+## Error Handling: Building Robust Systems
+
+As in previous modules, we use error wrapping to provide context when errors occur.
+
+```go
+privKey, err := crypto.GenerateKey()
+if err != nil {
+    return nil, fmt.Errorf("generate secp256k1 key: %w", err)
+}
+```
+
+If `crypto.GenerateKey()` fails, the error will be wrapped with "generate secp256k1 key: ". This makes debugging much easier.
+
+## Testing Strategy
+
+The test file (`exercise/exercise_test.go`) demonstrates several important patterns:
+
+1.  **File system interaction:** The tests create and clean up a temporary directory for the keystore files.
+2.  **Passphrase handling:** The tests verify that the keystore can be unlocked with the correct passphrase and fails with an incorrect passphrase.
+3.  **Address verification:** The tests verify that the address derived from the unlocked key matches the original address.
+
 ## Files
 
-- **Starter:** `cmd/03-keys-addresses/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/03-keys-addresses_solution/main.go` - Complete implementation with detailed comments
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
 
 ## Next Steps
 

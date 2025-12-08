@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run contains the reference solution for module 20-node.
-func Run() {
-	panic("TODO: provide solution for 20-node")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

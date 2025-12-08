@@ -16,8 +16,10 @@ package exercise
 //   SafeDeref(&x, 0)  // returns 42
 //   SafeDeref(nil, 0) // returns 0
 func SafeDeref(p *int, defaultValue int) int {
-	// TODO: Implement this
-	return 0
+	if p == nil {
+		return defaultValue
+	}
+	return *p
 }
 
 // Swap exchanges the values of two integers using pointers.
@@ -28,7 +30,9 @@ func SafeDeref(p *int, defaultValue int) int {
 //
 // HINT: Use a temporary variable to hold one value during the swap
 func Swap(a, b *int) {
-	// TODO: Implement this
+	tmp := *a
+	*a = *b
+	*b = tmp
 }
 
 // InitializeMap creates a ready-to-use map if the input is nil.
@@ -39,8 +43,10 @@ func Swap(a, b *int) {
 //
 // This pattern is useful for lazy initialization.
 func InitializeMap(m map[string]int) map[string]int {
-	// TODO: Implement this
-	return nil
+	if m == nil {
+		return make(map[string]int)
+	}
+	return m
 }
 
 // Node represents a node in a linked list.
@@ -62,8 +68,16 @@ type Node struct {
 //   head = AppendNode(head, 2)  // Creates: 1 -> 2 -> nil
 //   head = AppendNode(head, 3)  // Creates: 1 -> 2 -> 3 -> nil
 func AppendNode(head *Node, value int) *Node {
-	// TODO: Implement this
-	return nil
+	newNode := &Node{Value: value}
+	if head == nil {
+		return newNode
+	}
+	cur := head
+	for cur.Next != nil {
+		cur = cur.Next
+	}
+	cur.Next = newNode
+	return head
 }
 
 // ListLength returns the number of nodes in a linked list.
@@ -74,6 +88,10 @@ func AppendNode(head *Node, value int) *Node {
 //
 // HINT: Use a loop, not recursion (to avoid stack overflow for long lists)
 func ListLength(head *Node) int {
-	// TODO: Implement this
-	return 0
+	count := 0
+	for head != nil {
+		count++
+		head = head.Next
+	}
+	return count
 }

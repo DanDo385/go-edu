@@ -3,13 +3,58 @@
 
 package exercise
 
-import "context"
+import (
+	"context"
+	"errors"
+	"fmt"
+	"math/big"
 
-// Run is the student entry point for module 11-storage.
-// TODO: 1. Validate cfg/client and ensure Slot is provided.
-// TODO: 2. Compute the canonical 32-byte slot hash (with mapping key hashing if provided).
-// TODO: 3. Invoke StorageAt for the contract/slot/block.
-// TODO: 4. Return the resolved slot hash and raw 32-byte value to the caller.
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+)
+
+var zeroHash = common.Hash{}
+
+// Run contains the reference solution for module 11-storage.
 func Run(ctx context.Context, client StorageClient, cfg Config) (*Result, error) {
-	panic("TODO: implement Run for 11-storage")
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if client == nil {
+		return nil, errors.New("client is nil")
+	}
+	if cfg.Contract == (common.Address{}) {
+		return nil, errors.New("contract address required")
+	}
+	if cfg.Slot == nil {
+		return nil, errors.New("slot is required")
+	}
+
+	slotHash := slotToHash(cfg.Slot)
+	if len(cfg.MappingKey) > 0 {
+		slotHash = mappingSlotHash(cfg.MappingKey, slotHash)
+	}
+
+	value, err := client.StorageAt(ctx, cfg.Contract, slotHash, cfg.BlockNumber)
+	if err != nil {
+		return nil, fmt.Errorf("storage at slot %s: %w", slotHash.Hex(), err)
+	}
+
+	return &Result{
+		ResolvedSlot: slotHash,
+		Value:        value,
+	}, nil
+}
+
+func slotToHash(slot *big.Int) common.Hash {
+	if slot == nil {
+		return zeroHash
+	}
+	return common.BigToHash(slot)
+}
+
+func mappingSlotHash(key []byte, slot common.Hash) common.Hash {
+	keyPadded := common.LeftPadBytes(key, 32)
+	data := append(keyPadded, slot.Bytes()...)
+	return common.BytesToHash(crypto.Keccak256(data))
 }

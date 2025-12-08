@@ -5,12 +5,12 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 )
 
 // ProofClient captures the single method required to fetch MPT proofs.
 type ProofClient interface {
-	GetProof(ctx context.Context, account common.Address, slots []string, blockNumber *big.Int) (*types.AccountResult, error)
+	GetProof(ctx context.Context, account common.Address, slots []string, blockNumber *big.Int) (*gethclient.AccountResult, error)
 }
 
 // Config controls which account/storage slots to prove.

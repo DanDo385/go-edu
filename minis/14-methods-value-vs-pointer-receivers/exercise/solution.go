@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 package exercise
 
 // This file contains the solutions to all exercises.

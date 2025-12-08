@@ -7,18 +7,18 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 )
 
 type mockProofClient struct {
-	resp    *types.AccountResult
+	resp    *gethclient.AccountResult
 	err     error
 	account common.Address
 	slots   []string
 	block   *big.Int
 }
 
-func (m *mockProofClient) GetProof(ctx context.Context, account common.Address, slots []string, blockNumber *big.Int) (*types.AccountResult, error) {
+func (m *mockProofClient) GetProof(ctx context.Context, account common.Address, slots []string, blockNumber *big.Int) (*gethclient.AccountResult, error) {
 	m.account = account
 	m.slots = append([]string(nil), slots...)
 	m.block = blockNumber
@@ -31,13 +31,13 @@ func (m *mockProofClient) GetProof(ctx context.Context, account common.Address, 
 func TestRunSuccess(t *testing.T) {
 	account := common.HexToAddress("0x000000000000000000000000000000000000c0de")
 	slot := common.HexToHash("0x01")
-	resp := &types.AccountResult{
+	resp := &gethclient.AccountResult{
 		Balance:      big.NewInt(123),
 		Nonce:        7,
 		CodeHash:     common.HexToHash("0x02"),
 		StorageHash:  common.HexToHash("0x03"),
 		AccountProof: []string{"node1", "node2"},
-		StorageProof: []types.StorageResult{
+		StorageProof: []gethclient.StorageResult{
 			{
 				Key:   slot.Hex(),
 				Value: big.NewInt(42),

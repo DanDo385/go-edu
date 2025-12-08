@@ -195,10 +195,118 @@ In this module, you'll create a CLI that:
 
 **Key learning:** You'll understand the fundamental distinction between EOAs and contracts, and how to query account state on the blockchain!
 
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1.  **Input Validation** - Reinforce the pattern of validating inputs.
+2.  **Iterating over Inputs** - Learn how to process a list of inputs.
+3.  **Querying Account State** - Use `BalanceAt` and `CodeAt` to inspect accounts.
+4.  **Defensive Copying** - Practice defensive copying for `big.Int` and `[]byte`.
+5.  **Classifying Accounts** - Use the retrieved state to determine the account type.
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code).
+- **How** concepts repeat and build on each other (pattern recognition).
+- **What** fundamental principles are being demonstrated (account types, state).
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Looping and Querying
+```go
+for _, addr := range cfg.Addresses {
+    bal, err := client.BalanceAt(ctx, addr, cfg.BlockNumber)
+    // ...
+    code, err := client.CodeAt(ctx, addr, cfg.BlockNumber)
+    // ...
+}
+```
+**Why:** This is a common pattern for batch-processing a list of items. For each address, we perform a series of RPC calls to gather the necessary information.
+
+**Building on:** Go's `for...range` loop and the RPC call pattern from previous modules.
+
+**Repeats in:** Any application that needs to process multiple accounts, transactions, or blocks.
+
+#### Pattern 2: Defensive Copying of Slices and `big.Int`
+```go
+if bal != nil {
+    bal = new(big.Int).Set(bal)
+}
+// ...
+codeCopy := append([]byte(nil), code...)
+```
+**Why:** `BalanceAt` returns a `*big.Int` and `CodeAt` returns a `[]byte`. Both are reference types. If we don't copy them, the caller of our function could accidentally mutate the RPC client's internal data.
+
+**Building on:** The defensive copying pattern from Modules 01 and 02.
+
+**Repeats in:** Every function that returns data from external libraries or shared state.
+
+#### Pattern 3: Account Type Classification
+```go
+accType := AccountTypeEOA
+if len(codeCopy) > 0 {
+    accType = AccountTypeContract
+}
+```
+**Why:** The defining characteristic of a contract account is that it has code. If the code length is greater than zero, it's a contract.
+
+**Building on:** The understanding of EOA vs. contract accounts.
+
+**Repeats in:** Any application that needs to differentiate between account types (e.g., block explorers, wallets).
+
+## Deep Dive: Defensive Copying of Slices
+
+In Go, a slice is a descriptor for a contiguous segment of an underlying array. It consists of a pointer to the array, the length of the segment, and its capacity.
+
+When you pass a slice to a function, you are passing a copy of the slice header, but not the underlying array. This means that if the function modifies the elements of the slice, the changes will be visible to the caller.
+
+### The Bug (Without Defensive Copying)
+```go
+// BAD: Returning a slice that points to the client's internal buffer
+return &Result{Code: code}
+```
+
+If the caller modifies `result.Code`, they will be modifying the RPC client's internal buffer, which can lead to unpredictable behavior and data races.
+
+### The Fix (With Defensive Copying)
+```go
+// GOOD: Creating a new slice and copying the data
+codeCopy := append([]byte(nil), code...)
+return &Result{Code: codeCopy}
+```
+`append([]byte(nil), code...)` is an idiomatic way to create a copy of a slice. It creates a new slice and copies the elements from the old slice to the new one.
+
+## Error Handling: Building Robust Systems
+
+Error handling in this module is straightforward. We wrap errors from the RPC client with additional context to make them easier to debug.
+
+```go
+bal, err := client.BalanceAt(ctx, addr, cfg.BlockNumber)
+if err != nil {
+    return nil, fmt.Errorf("balance %s: %w", addr.Hex(), err)
+}
+```
+
+If `BalanceAt` fails, the error message will include the address that caused the failure, making it easy to identify the source of the problem.
+
+## Testing Strategy
+
+The test file (`exercise/exercise_test.go`) demonstrates several important patterns:
+
+1.  **Mock implementations:** `mockAccountClient` implements the `AccountClient` interface, allowing us to test our logic without a real Ethereum node.
+2.  **Table-driven tests:** We can test multiple scenarios with different account states.
+3.  **Defensive copy verification:** The tests ensure that the returned `AccountState` contains copies of the balance and code, not pointers to the mock's internal data.
+
 ## Files
 
-- **Starter:** `cmd/04-accounts-balances/main.go` - Your starting point with TODO comments
-- **Solution:** `cmd/04-accounts-balances_solution/main.go` - Complete implementation with detailed comments
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
 
 ## Next Steps
 

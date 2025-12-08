@@ -3,7 +3,5 @@
 
 package exercise
 
-// Run is the student entry point for module 19-devnets.
-func Run() {
-	panic("TODO: implement Run for 19-devnets")
-}
+// Run currently acts as a placeholder; see module README for full implementation steps.
+func Run() {}

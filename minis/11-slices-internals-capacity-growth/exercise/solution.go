@@ -1,3 +1,6 @@
+//go:build solution
+// +build solution
+
 package exercise
 
 // GrowSlice appends an element and tracks capacity changes.
