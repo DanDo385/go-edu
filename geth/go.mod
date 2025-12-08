@@ -2,7 +2,7 @@ module geth-edu
 
 go 1.24.0
 
-require github.com/ethereum/go-ethereum v1.13.14
+require github.com/ethereum/go-ethereum v1.13.15
 
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
