@@ -25,8 +25,15 @@ Computer science principles highlighted:
 */
 func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	// TODO: Validate input parameters
-	// - Check if ctx is nil and provide a default context if needed
+	// - Check if ctx is nil and provide a default context if needed (use: if ctx == nil { ctx = context.Background() })
 	// - Check if client is nil and return an appropriate error
+	if ctx == nil { // default context if needed
+		ctx = context.Background() // context.Background() is a default context if needed
+	}
+	if client == nil { // return an appropriate error if client is nil
+		return nil, errors.New("client is nil") // return an appropriate error if client is nil
+	}
+
 
 	// TODO: Retrieve Chain ID from the RPC client
 	// - Call client.ChainID(ctx) to get the chain identifier
