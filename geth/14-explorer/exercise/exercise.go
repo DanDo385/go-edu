@@ -5,6 +5,7 @@ package exercise
 
 import (
 	"context"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -43,13 +44,39 @@ type Result struct {
 }
 
 // Run is the student entry point for module 14-explorer.
-//
-// TODOs (implement in exercise.go, see tests/solution for guidance):
-// 1) Validate inputs: ctx non-nil, client non-nil.
-// 2) Fetch the block via BlockByNumber (use cfg.Number, nil means latest).
-// 3) Populate Result fields from the block header (number, hash, parent, gas).
-// 4) If cfg.IncludeTxs, loop block.Transactions() and build TxSummary slice.
-// 5) Return the Result (and bubble up any errors with context).
 func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
-	panic("TODO: implement Run for 14-explorer")
+	// TODO: Validate input parameters
+	// - Check if ctx is nil and provide context.Background() as default
+	// - Check if client is nil and return an appropriate error
+	// Why validate? Block fetching is an RPC call; validate before network operations
+
+	// TODO: Fetch the block via BlockByNumber
+	// - Call client.BlockByNumber(ctx, cfg.Number)
+	// - cfg.Number can be nil (means latest block) or a specific block number
+	// - Handle potential errors from the RPC call
+	// - Validate that the block response is not nil
+
+	// TODO: Extract header and populate Result with basic block info
+	// - Get the block header with block.Header()
+	// - Create a Result struct with:
+	//   - Number: header.Number.Uint64()
+	//   - Hash: block.Hash()
+	//   - Parent: header.ParentHash
+	//   - TxCount: len(block.Transactions())
+	//   - GasUsed: header.GasUsed
+	//   - GasLimit: header.GasLimit
+
+	// TODO: Optionally include transaction summaries
+	// - Check if cfg.IncludeTxs is true
+	// - If yes, create a Txs slice with capacity len(block.Transactions())
+	// - Loop through block.Transactions() and for each tx:
+	//   - Create a TxSummary with Hash (tx.Hash()), To (tx.To()), Gas (tx.Gas())
+	//   - Note: tx.To() returns *common.Address (pointer, can be nil for contract creation)
+	//   - Append to result.Txs
+	// Why optional? Transaction details can be large; only include if requested
+
+	// TODO: Return the completed Result
+	// - Return the Result struct and nil error on success
+
+	return nil, errors.New("not implemented")
 }

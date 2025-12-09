@@ -260,9 +260,300 @@ In this module, you'll create a CLI that:
 
 ## Files
 
-- **Starter:** `exercise/exercise.go`
-- **Solution:** `exercise/solution.go` (run with `go test -tags solution ./12-proofs/...`)
-- **Tests:** `exercise/exercise_test.go`
+- **Exercise:** `exercise/exercise.go` - Your starting point with TODO comments guiding implementation
+- **Solution:** `exercise/solution.go` - Complete implementation with detailed educational comments explaining every concept
+- **Types:** `exercise/types.go` - Interface and struct definitions
+- **Tests:** `exercise/exercise_test.go` - Test suite demonstrating patterns and verifying correctness
+
+## How to Run Tests
+
+To run the tests for this module:
+
+```bash
+# From the project root (go-edu/)
+cd geth/12-proofs
+go test ./exercise/
+
+# Run with verbose output to see test details
+go test -v ./exercise/
+
+# Run solution tests (build with solution tag)
+go test -tags solution -v ./exercise/
+
+# Run specific test
+go test -v ./exercise/ -run TestRun
+```
+
+## Code Structure & Patterns
+
+### The Exercise File (`exercise/exercise.go`)
+
+The exercise file contains TODO comments guiding you through the implementation. Each TODO represents a fundamental concept:
+
+1. **Input Validation** - Learn defensive programming patterns
+2. **Slot String Conversion** - Understand RPC interface adaptation
+3. **Proof Fetching** - Call eth_getProof and handle responses
+4. **Result Construction** - Build AccountProof with defensive copying
+5. **Storage Proof Processing** - Handle nested trie proofs
+
+### The Solution File (`exercise/solution.go`)
+
+The solution file contains detailed educational comments explaining:
+- **Why** each step is necessary (the reasoning behind the code)
+- **How** concepts repeat and build on each other (pattern recognition)
+- **What** fundamental principles are being demonstrated (computer science concepts)
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: Type Conversion for RPC Interfaces
+```go
+// BAD: Passing wrong types to RPC
+slots := []common.Hash{slot1, slot2}
+proof, _ := client.GetProof(ctx, addr, slots, nil) // Type error!
+
+// GOOD: Convert to expected format
+slotStrings := make([]string, len(slots))
+for i, slot := range slots {
+    slotStrings[i] = slot.Hex()
+}
+proof, _ := client.GetProof(ctx, addr, slotStrings, nil)
+```
+
+**Why:** JSON-RPC methods have specific type requirements. Go's type system requires explicit conversions.
+
+**Building on:** Module 11 taught slot calculations. Here we adapt them for RPC calls.
+
+**Repeats in:** All RPC interfaces that use string representations of typed data.
+
+#### Pattern 2: Defensive Copying for Slice Types
+```go
+// BAD: Shares slice backing array
+result.ProofNodes = proof.AccountProof
+
+// GOOD: Creates independent copy
+result.ProofNodes = append([]string(nil), proof.AccountProof...)
+```
+
+**Why:** Slices are reference types. Sharing slice backing arrays allows mutations to affect multiple owners.
+
+**Building on:** Module 01 taught defensive copying for big.Int. Here we extend it to slices.
+
+**Repeats in:** Every function that returns slices from external sources.
+
+#### Pattern 3: Nested Data Processing
+```go
+// Process top-level account proof
+res := &Result{
+    Account: AccountProof{
+        Balance: new(big.Int).Set(proof.Balance),
+        // ... other fields
+    },
+}
+
+// Process nested storage proofs
+if len(proof.StorageProof) > 0 {
+    res.Account.Storage = make([]StorageProof, 0, len(proof.StorageProof))
+    for _, sp := range proof.StorageProof {
+        // Copy each nested proof
+        res.Account.Storage = append(res.Account.Storage, StorageProof{...})
+    }
+}
+```
+
+**Why:** Proofs have nested structure (account trie → storage tries). Each level needs proper handling.
+
+**Building on:** Hierarchical data processing patterns from previous modules.
+
+**Repeats in:** Any system dealing with tree or nested structures.
+
+## Error Handling: Building Robust Systems
+
+### Common Proof Errors
+
+**1. "account does not exist"**
+```
+Cause: Requesting proof for non-existent account
+Solution: Verify account address and block number
+Prevention: Check account existence with client.BalanceAt() first
+```
+
+**2. "missing trie node"**
+```
+Cause: Node doesn't have complete state for the requested block
+Solution: Use archive node, not pruned node
+Prevention: Only query recent blocks on pruned nodes
+```
+
+**3. "invalid storage key"**
+```
+Cause: Storage slot not properly formatted as hex string
+Solution: Use slot.Hex() for conversion
+Prevention: Always use common.Hash type and .Hex() method
+```
+
+**4. "proof verification failed"**
+```
+Cause: Returned proof doesn't match state root (node bug or data corruption)
+Solution: Retry with different node or different block
+Prevention: Use trusted, well-maintained nodes
+```
+
+### Error Wrapping Strategy
+
+```go
+// Layer 1: RPC error
+err := client.GetProof(ctx, addr, slots, blockNum)
+// Error: "missing trie node"
+
+// Layer 2: Add context
+return fmt.Errorf("get proof: %w", err)
+// Error: "get proof: missing trie node"
+
+// Layer 3: Caller adds more context
+return fmt.Errorf("failed to verify account %s: %w", addr.Hex(), err)
+// Error: "failed to verify account 0x742d35...: get proof: missing trie node"
+```
+
+This creates a traceable error chain that shows exactly where and why the failure occurred.
+
+## Testing Strategy
+
+The test file (`exercise_test.go`) demonstrates several important patterns:
+
+1. **Mock implementations:** `mockProofClient` implements `ProofClient` interface
+2. **Table-driven tests:** Multiple test cases with different scenarios
+3. **Defensive copy verification:** Tests ensure immutability
+4. **Nested proof testing:** Tests verify both account and storage proofs
+5. **Error case testing:** Tests verify error handling works correctly
+
+**Key insight:** Because we use interfaces, we can test proof processing logic without needing a real Ethereum node. This makes tests fast, reliable, and deterministic.
+
+## Common Pitfalls & How to Avoid Them
+
+### Pitfall 1: Not Converting Slots to Strings
+```go
+// BAD: Wrong type for RPC method
+slots := []common.Hash{slot1, slot2}
+proof, _ := client.GetProof(ctx, addr, slots, nil) // Compile error or runtime panic
+
+// GOOD: Convert to hex strings
+slotStrings := make([]string, len(slots))
+for i, slot := range slots {
+    slotStrings[i] = slot.Hex()
+}
+proof, _ := client.GetProof(ctx, addr, slotStrings, nil)
+```
+
+**Why it's a problem:** The eth_getProof RPC method expects hex strings, not Hash types.
+
+**Fix:** Always use .Hex() to convert common.Hash to string.
+
+### Pitfall 2: Not Copying Proof Node Slices
+```go
+// BAD: Shares slice backing array
+result.ProofNodes = proof.AccountProof
+
+// Caller later does:
+result.ProofNodes[0] = "0xmalicious"
+// This mutates the original proof data!
+
+// GOOD: Create independent copy
+result.ProofNodes = append([]string(nil), proof.AccountProof...)
+```
+
+**Why it's a problem:** Slices are references. Mutations affect all owners of the slice.
+
+**Fix:** Always use `append([]T(nil), slice...)` to create independent copies.
+
+### Pitfall 3: Forgetting to Process Storage Proofs
+```go
+// BAD: Only returning account proof
+return &Result{
+    Account: AccountProof{...},
+    // Missing storage proofs!
+}
+
+// GOOD: Process all storage proofs
+if len(proof.StorageProof) > 0 {
+    res.Account.Storage = make([]StorageProof, 0, len(proof.StorageProof))
+    for _, sp := range proof.StorageProof {
+        res.Account.Storage = append(res.Account.Storage, ...)
+    }
+}
+```
+
+**Why it's a problem:** Callers expect storage proofs if they requested slots. Missing data breaks their workflow.
+
+**Fix:** Always iterate through and copy all nested proofs.
+
+### Pitfall 4: Using Pruned Nodes for Old Blocks
+```go
+// BAD: Requesting proof from old block on pruned node
+proof, err := client.GetProof(ctx, addr, slots, big.NewInt(100))
+// Error: "missing trie node"
+
+// GOOD: Use archive node or recent blocks
+// For historical proofs, use archive node
+// For recent data, any full node works
+```
+
+**Why it's a problem:** Pruned nodes only keep recent state (~128 blocks). Archive nodes keep all state.
+
+**Fix:** Use archive nodes for historical proofs, or limit queries to recent blocks.
+
+### Pitfall 5: Not Handling Empty Storage Proofs
+```go
+// BAD: Assuming storage proofs always exist
+for _, sp := range proof.StorageProof {
+    // Panics if StorageProof is nil!
+}
+
+// GOOD: Check before processing
+if len(proof.StorageProof) > 0 {
+    for _, sp := range proof.StorageProof {
+        // Safe processing
+    }
+}
+```
+
+**Why it's a problem:** If no slots were requested, StorageProof will be empty. Assuming it exists causes issues.
+
+**Fix:** Always check `len(proof.StorageProof) > 0` before processing.
+
+## How Concepts Build on Each Other
+
+This module builds on patterns from previous modules while introducing new concepts:
+
+1. **From Module 01-stack:**
+   - Context validation → Same pattern here
+   - RPC call pattern → Extended for proof fetching
+   - Error wrapping → Consistent usage
+   - Defensive copying → Extended to nested structures
+
+2. **From Module 11-storage:**
+   - Storage slot calculations → Used in proof keys
+   - Storage addressing → Proven cryptographically here
+   - Historical queries → Proofs work the same way
+
+3. **New in this module:**
+   - Merkle proof concepts (logarithmic proof size)
+   - Nested trie structure (account trie → storage tries)
+   - Type conversion for RPC (Hash → string)
+   - Proof node collection and copying
+
+4. **Patterns that repeat throughout the course:**
+   - Input validation → Every function
+   - Defensive copying → All mutable types and slices
+   - Error wrapping → All error returns
+   - Interface-based testing → All modules
+
+**The progression:**
+- Module 01: Read block headers (contains state roots)
+- Module 11: Read storage slots (raw state data)
+- Module 12: Get proofs (cryptographic verification)
+- Future modules: Verify proofs, build light clients
+
+Each module layers new concepts on top of existing patterns, building your understanding incrementally.
 
 ## Next Steps
 

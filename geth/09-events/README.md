@@ -177,6 +177,101 @@ In this module, you'll create a CLI that:
 - **Solution:** `exercise/solution.go` (build with `-tags solution`)
 - **Tests:** `exercise/exercise_test.go`
 
+## How to Run Tests
+
+```bash
+# From the project root (go-edu/)
+cd geth/09-events
+go test ./exercise/
+
+# Run with verbose output
+go test -v ./exercise/
+
+# Run solution tests
+go test -tags solution -v ./exercise/
+```
+
+## Code Structure & Patterns
+
+### Key Patterns You'll Learn
+
+#### Pattern 1: FilterQuery Construction
+```go
+query := ethereum.FilterQuery{
+    Addresses: []common.Address{tokenAddr},
+    FromBlock: startBlock,
+    ToBlock:   endBlock,
+    Topics:    [][]common.Hash{{eventSignature}},
+}
+```
+
+**Why:** Filters narrow log searches. Without filtering, querying millions of logs is impossible.
+
+**Building on:** Module 07-08 queried current state. Module 09 queries historical state changes.
+
+#### Pattern 2: Topic Filtering with nil Placeholders
+```go
+// Filter by from only
+Topics: [][]common.Hash{{eventSig}, {fromAddr}}
+
+// Filter by to only (nil placeholder for from)
+Topics: [][]common.Hash{{eventSig}, nil, {toAddr}}
+
+// Filter by both
+Topics: [][]common.Hash{{eventSig}, {fromAddr}, {toAddr}}
+```
+
+**Why:** Topic positions matter. nil means "match any value" while preserving position.
+
+**Building on:** Understanding indexed parameters from Solidity.
+
+## Error Handling
+
+**Common Errors:**
+
+1. **"query returned more than X results"** - Block range too large, narrow the range
+2. **"invalid block range"** - ToBlock < FromBlock
+3. **"log missing topics"** - Malformed event, validate event structure
+
+## Testing Strategy
+
+Tests demonstrate:
+1. **Mock log client** - Test without real node
+2. **Topic filtering** - Verify correct filtering logic
+3. **Event decoding** - Test extraction from raw logs
+4. **Error cases** - Malformed logs, missing topics
+
+## Common Pitfalls
+
+### Pitfall 1: Block Range Too Large
+```go
+// BAD: Query millions of blocks (slow/fails)
+FromBlock: big.NewInt(0)
+ToBlock: nil // latest
+
+// GOOD: Limit range
+FromBlock: big.NewInt(18000000)
+ToBlock: big.NewInt(18001000) // 1000 blocks
+```
+
+### Pitfall 2: Wrong Topic Position
+```go
+// BAD: Wrong position for to address
+Topics: [][]common.Hash{{eventSig}, {toAddr}} // Wrong!
+
+// GOOD: nil placeholder for from
+Topics: [][]common.Hash{{eventSig}, nil, {toAddr}}
+```
+
+## How Concepts Build on Each Other
+
+- Module 07: Query current state (view functions)
+- Module 08: Same with typed bindings
+- Module 09: Query historical state (events)
+- Future: Subscribe to new events (real-time)
+
+Events complement state queries - state shows "what is", events show "what changed".
+
 ## Next Steps
 
 After completing this module, you'll move to **10-filters** where you'll:

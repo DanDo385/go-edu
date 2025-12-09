@@ -21,68 +21,76 @@ var (
 	selectorTotalSupply = selector("totalSupply()")
 )
 
-// Run is the student entry point for module 07-eth-call.
+/*
+Problem: Query ERC20 token metadata using manual ABI encoding/decoding.
+
+This module teaches you how to interact with contracts without using typed bindings.
+You'll manually encode function selectors and decode return values, giving you a deep
+understanding of how contract calls work at the ABI level.
+
+Computer science principles highlighted:
+  - ABI encoding/decoding: Understanding how function calls are encoded as bytes
+  - Function selectors: First 4 bytes of keccak256(functionSignature)
+  - eth_call: Simulating contract execution without sending transactions
+  - Manual memory management: Decoding dynamic types (strings) from raw bytes
+*/
 func Run(ctx context.Context, client CallClient, cfg Config) (*Result, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	if client == nil {
-		return nil, errors.New("client is nil")
-	}
-	if cfg.Contract == (common.Address{}) {
-		return nil, errors.New("contract address required")
-	}
+	// TODO: Validate input parameters
+	// - Check if ctx is nil and provide a default context if needed
+	// - Check if client is nil and return an appropriate error
+	// - Check if cfg.Contract is the zero address and return an error
+	// - Contract address is required because we need to know which contract to call
 
-	call := func(selector []byte) ([]byte, error) {
-		msg := ethereum.CallMsg{
-			To:   &cfg.Contract,
-			Data: selector,
-		}
-		return client.CallContract(ctx, msg, cfg.BlockNumber)
-	}
+	// TODO: Create a helper function for making contract calls
+	// - This function should take a function selector (4 bytes) as input
+	// - Build an ethereum.CallMsg with:
+	//   * To: pointer to cfg.Contract address
+	//   * Data: the function selector (encoded function call)
+	// - Call client.CallContract(ctx, msg, cfg.BlockNumber) to execute
+	// - Return the raw bytes or error
+	// - Why a helper? This pattern (build CallMsg → CallContract) repeats for each function
+	// - This demonstrates the DRY principle (Don't Repeat Yourself)
 
-	nameBytes, err := call(selectorName)
-	if err != nil {
-		return nil, fmt.Errorf("call name(): %w", err)
-	}
-	name, err := decodeString(nameBytes)
-	if err != nil {
-		return nil, fmt.Errorf("decode name(): %w", err)
-	}
+	// TODO: Call and decode name() function
+	// - Use the selectorName constant (already defined at top of file)
+	// - Call the helper function with selectorName to get raw bytes
+	// - Handle errors from the call (network failures, contract reverts)
+	// - Decode the raw bytes using decodeString helper (already implemented)
+	// - Handle errors from decoding (invalid ABI encoding)
+	// - name() returns a string, which is a dynamic type in ABI encoding
+	// - String encoding: offset (32 bytes) + length (32 bytes) + data (padded)
 
-	symbolBytes, err := call(selectorSymbol)
-	if err != nil {
-		return nil, fmt.Errorf("call symbol(): %w", err)
-	}
-	symbol, err := decodeString(symbolBytes)
-	if err != nil {
-		return nil, fmt.Errorf("decode symbol(): %w", err)
-	}
+	// TODO: Call and decode symbol() function
+	// - Follow the same pattern as name()
+	// - Use selectorSymbol constant
+	// - Call the helper → decode with decodeString → handle errors
+	// - Notice the repetition: call → check error → decode → check error
+	// - This pattern is fundamental to all contract interactions
 
-	decBytes, err := call(selectorDecimals)
-	if err != nil {
-		return nil, fmt.Errorf("call decimals(): %w", err)
-	}
-	decimals, err := decodeUint8(decBytes)
-	if err != nil {
-		return nil, fmt.Errorf("decode decimals(): %w", err)
-	}
+	// TODO: Call and decode decimals() function
+	// - Follow the same pattern but use selectorDecimals
+	// - Decode with decodeUint8 (already implemented)
+	// - decimals() returns uint8, which is a static type
+	// - Static types are simpler: just 32 bytes, right-aligned
+	// - Why uint8? Decimals are typically 6-18, so uint8 (0-255) is sufficient
 
-	supplyBytes, err := call(selectorTotalSupply)
-	if err != nil {
-		return nil, fmt.Errorf("call totalSupply(): %w", err)
-	}
-	totalSupply, err := decodeUint256(supplyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("decode totalSupply(): %w", err)
-	}
+	// TODO: Call and decode totalSupply() function
+	// - Follow the same pattern but use selectorTotalSupply
+	// - Decode with decodeUint256 (already implemented)
+	// - totalSupply() returns uint256, a static 32-byte type
+	// - uint256 can represent very large numbers (up to 2^256 - 1)
+	// - This is why we use *big.Int in Go (native ints would overflow)
 
-	return &Result{
-		Name:        name,
-		Symbol:      symbol,
-		Decimals:    decimals,
-		TotalSupply: totalSupply,
-	}, nil
+	// TODO: Construct and return the Result struct
+	// - Create a new Result struct with all decoded values:
+	//   * Name: decoded name string
+	//   * Symbol: decoded symbol string
+	//   * Decimals: decoded decimals uint8
+	//   * TotalSupply: decoded totalSupply *big.Int
+	// - Return the result with nil error on success
+	// - Why no defensive copying? These values are already copies from decoding
+
+	return nil, errors.New("not implemented")
 }
 
 func selector(sig string) []byte {
