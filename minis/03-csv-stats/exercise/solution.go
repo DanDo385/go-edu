@@ -79,11 +79,20 @@ type Stat struct {
 //   Row 2: "2,books,invalid"   → Error: "row 3: invalid amount"
 //   Result: nil, error (fail-fast)
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
-	// Create a CSV reader
+	// ============================================================================
+	// CSV READER: Struct with internal state
+	// ============================================================================
 	// csv.Reader automatically handles:
 	// - Line breaks within quoted fields
 	// - Escaped quotes (double quotes: "He said ""hello""")
 	// - Different line endings (\n vs \r\n)
+	//
+	// Memory semantics:
+	// - csv.NewReader returns a csv.Reader STRUCT (not a pointer!)
+	// - But the struct contains pointers to: buffer, io.Reader, etc.
+	// - So csvReader is a value type, but shares internal state
+	// - Passing csvReader to another function copies the struct, but pointers
+	//   inside still reference the same buffers
 	csvReader := csv.NewReader(r)
 
 	// Read the header row
@@ -152,15 +161,38 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 			return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
 		}
 
-		// Update statistics for this category
+		// ====================================================================
+		// MAP UPDATE: Read-Modify-Write pattern for struct values
+		// ====================================================================
 		// Map lookup returns the zero value (Stat{Count:0, Sum:0.0}) if key doesn't exist
 		// This is perfect for aggregation: we can read, modify, and write back
+		//
+		// CRITICAL CONCEPT: Maps store VALUES, not pointers
+		// - stats[category] returns a COPY of the Stat struct
+		// - s is a local variable (lives on stack) containing the copy
+		// - Modifying s does NOT modify the map
+		// - We MUST write s back to update the map
+		//
+		// Memory:
+		// - stats is a map (reference type, points to hash table on heap)
+		// - stats[category] performs hash lookup, copies Stat from map to stack
+		// - s.Count++ and s.Sum += amount modify the stack copy
+		// - stats[category] = s copies s back into the map (overwrites old value)
+		//
+		// Why not stats[category].Count++?
+		// - Go prohibits this! Map elements are not addressable
+		// - You can't take address of stats[category] because the hash table
+		//   might resize and move elements to different memory locations
+		//
+		// Alternative: Use *Stat as map value type
+		// - stats := make(map[string]*Stat)
+		// - Stores pointers to Stat structs (heap allocated)
+		// - Can modify in-place: stats[category].Count++
+		// - Trade-off: More allocations, pointer indirection, nil checks
 		s := stats[category]
 		s.Count++
 		s.Sum += amount
 		stats[category] = s
-		// Note: We must write back to the map because structs are value types!
-		// Alternatively: Use *Stat (pointer) as the map value type to modify in-place
 
 		rowNum++
 	}

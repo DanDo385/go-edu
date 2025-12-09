@@ -155,6 +155,7 @@ func TitleCase(s string) string {
 // - Rune slices for character-level operations
 // - Two-pointer reversal algorithm (in-place swap)
 // - String immutability: we must allocate a new string
+// - Pointer semantics: slices reference underlying arrays
 //
 // Three-Input Iteration Table:
 //
@@ -173,23 +174,70 @@ func TitleCase(s string) string {
 //   After swap loop  → [👋, i, H]
 //   Result: "👋iH" (correctly preserves emoji)
 func Reverse(s string) string {
-	// Convert string to slice of runes (Unicode code points)
-	// Why? Because reversing bytes would corrupt multi-byte characters:
+	// ============================================================================
+	// CONVERSION: string → []rune
+	// ============================================================================
+	// Why convert? Because reversing bytes would corrupt multi-byte characters:
 	// - "👋" in UTF-8 is 4 bytes: [0xF0, 0x9F, 0x91, 0x8B]
 	// - Reversing those bytes would produce invalid UTF-8!
 	// - But as a rune, it's a single value we can safely move
+	//
+	// Memory allocation:
+	// - Creates a new array on the heap (size = rune count * 4 bytes)
+	// - Returns a slice header pointing to it
+	// - The slice 'runes' contains: { ptr *rune, len int, cap int }
 	runes := []rune(s)
 
-	// Two-pointer reversal: swap elements from both ends moving inward
+	// ============================================================================
+	// TWO-POINTER SWAP: In-place modification
+	// ============================================================================
 	// This is the classic O(n/2) in-place reversal algorithm
+	// Initialize: i = 0 (left pointer), j = len(runes)-1 (right pointer)
+	// Loop condition: i < j (stop when pointers meet/cross)
+	// Post-iteration: i, j = i+1, j-1 (move pointers inward)
+	//
+	// Why this works:
+	// - We swap elements at positions i and j
+	// - After each swap, move i right and j left
+	// - When pointers meet, all elements have been swapped
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		// Simultaneous assignment (Go feature): swap without temp variable
-		// Equivalent to: temp := runes[i]; runes[i] = runes[j]; runes[j] = temp
+		// ====================================================================
+		// SIMULTANEOUS ASSIGNMENT: Go's tuple assignment
+		// ====================================================================
+		// This is a Go language feature for swapping without a temp variable
+		// How it works:
+		// 1. Evaluate RIGHT side: create tuple (runes[j], runes[i])
+		// 2. Assign to LEFT side: runes[i] = tuple[0], runes[j] = tuple[1]
+		//
+		// Why safe? Both values are evaluated BEFORE any assignment
+		// Equivalent to:
+		//   temp := runes[i]
+		//   runes[i] = runes[j]
+		//   runes[j] = temp
+		//
+		// IMPORTANT: This modifies the underlying array!
+		// - runes[i] and runes[j] are not pointers
+		// - They're direct indexed access to array elements
+		// - Assignment changes the array data (which lives on the heap)
+		// - The slice 'runes' still points to the same array
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
-	// Convert []rune back to string
-	// This allocates a new string with the UTF-8 encoding of the runes
+	// ============================================================================
+	// CONVERSION: []rune → string
+	// ============================================================================
+	// string(runes) creates a NEW string:
+	// 1. Allocates a byte array on the heap
+	// 2. Encodes each rune to UTF-8 bytes
+	// 3. Returns a string struct { ptr *byte, len int }
+	//
+	// Memory:
+	// - The []rune array can now be garbage collected (no longer referenced)
+	// - The new string shares no memory with the rune slice
+	//
+	// Return: We return the string BY VALUE
+	// - Copies the string struct (pointer + length, ~16 bytes)
+	// - Does NOT copy the actual string data (it's shared immutably)
 	return string(runes)
 }
 
@@ -198,6 +246,7 @@ func Reverse(s string) string {
 // Go Concepts Demonstrated:
 // - utf8.RuneCountInString(): efficient rune counting
 // - Byte vs rune distinction (the most common gotcha for new Go devs!)
+// - Pass by value: parameter is copied
 //
 // Why not just len(s)?
 // - len(s) returns the byte count, not character count
@@ -221,17 +270,60 @@ func Reverse(s string) string {
 //   utf8.RuneCountInString recognizes multi-byte sequences
 //   Result: 2 runes (not 8!)
 func RuneLen(s string) int {
-	// Use the standard library function for correctness and performance
+	// ============================================================================
+	// PARAMETER: s is passed by value
+	// ============================================================================
+	// The string parameter s is passed BY VALUE:
+	// - Copies the string struct (pointer to data + length)
+	// - Does NOT copy the actual string bytes (they're shared)
+	// - This is why passing strings is efficient in Go
+	//
+	// Example: If caller has str = "hello", calling RuneLen(str):
+	// - Copies str's pointer and length (~16 bytes copied)
+	// - Both caller's str and our s point to same "hello" data
+	// - Safe because strings are immutable (can't be modified)
+
+	// ============================================================================
+	// STDLIB FUNCTION: utf8.RuneCountInString
+	// ============================================================================
+	// Why use this instead of len([]rune(s))?
+	// 1. Performance: Doesn't allocate memory (O(n) time, O(1) space)
+	// 2. Correctness: Handles malformed UTF-8 gracefully
+	// 3. Optimization: Uses assembly on many architectures
+	//
+	// How it works internally:
+	// - Iterates through string bytes
+	// - Decodes each UTF-8 sequence
+	// - Counts how many runes (code points) exist
+	// - Never allocates memory on the heap
+	//
+	// Alternative implementations (for learning):
+	//
+	// Method 1: Convert to []rune (allocates!)
+	//   return len([]rune(s))
+	//   Problem: Allocates a rune slice on the heap (wasteful)
+	//
+	// Method 2: range loop (no allocation)
+	//   count := 0
+	//   for range s {
+	//       count++
+	//   }
+	//   return count
+	//   Note: range over string iterates RUNES, not bytes!
+	//
+	// Method 3: Manual decoding (educational)
+	//   count := 0
+	//   for len(s) > 0 {
+	//       _, size := utf8.DecodeRuneInString(s)
+	//       count++
+	//       s = s[size:]  // Advance by size bytes (creates new string header)
+	//   }
+	//   return count
+	//   Note: s = s[size:] doesn't modify caller's s (we have a copy!)
+	//
+	// We use utf8.RuneCountInString because it's the most efficient
 	// This is implemented in assembly on many platforms for speed
 	return utf8.RuneCountInString(s)
-
-	// Alternative implementation (educational, less efficient):
-	// count := 0
-	// for range s {
-	//     count++
-	// }
-	// return count
-	// The `for range` loop over a string iterates runes, not bytes!
 }
 
 /*

@@ -1,6 +1,6 @@
-# Teaching Guide: First-Principles Approach to Go Learning
+# Teaching Guide: Educational Philosophy for Go Projects
 
-This document explains the educational philosophy behind the enhanced README files for projects 1-10.
+This document explains the educational philosophy behind both learning tracks (minis/ and geth/) and how to use them effectively for teaching Go.
 
 ## Educational Philosophy
 

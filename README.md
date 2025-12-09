@@ -1,231 +1,320 @@
-# Go 10x Minis: A Practical Learning Journey
+# Go Educational Projects: From Fundamentals to Ethereum
 
-A comprehensive Go learning repository featuring **10 progressively challenging mini-projects** from beginner to advanced, each with complete implementations, extensive documentation, and production-quality tests.
+A comprehensive Go learning repository featuring **two progressive tracks**: 50 general Go mini-projects and 25 Ethereum/go-ethereum projects. Each project includes complete implementations, extensive documentation, and production-quality tests.
 
-## 🎯 Overview
+## Overview
 
-This repository is designed to take you from Go fundamentals to real-world backend patterns through hands-on practice. Each project includes:
+This repository teaches Go from first principles through hands-on practice, progressing from basic string manipulation to building production-grade Ethereum tooling. Each project includes:
 
 - **Stub exercises** (`exercise/exercise.go`) for you to implement
-- **Complete reference solutions** (`exercise/solution.go`) with line-by-line explanations
+- **Complete reference solutions** (`exercise/solution.go` or `solution/`) with line-by-line explanations
 - **Comprehensive tests** that demonstrate idiomatic Go testing patterns
 - **Detailed READMEs** explaining concepts, trade-offs, and Go's unique strengths
 
-## 🚀 Quick Start
+## Two Learning Tracks
+
+### Track 1: Go Fundamentals (minis/)
+**50 progressive projects** covering Go core concepts, concurrency, networking, and backend patterns.
+
+**Topics covered:**
+- Fundamentals: strings, arrays, maps, structs, interfaces
+- File I/O: CSV, JSON, JSONL parsing and processing
+- Concurrency: goroutines, channels, worker pools, race detection
+- HTTP: clients, servers, middleware, graceful shutdown
+- Advanced: generics, reflection, plugins, state machines
+- Cryptography: SHA256, Merkle trees, Ed25519, proof-of-work
+- Blockchain basics: transactions, blocks, mempool, P2P gossip
+
+### Track 2: Ethereum Development (geth/)
+**25 progressive projects** for building production-grade Ethereum tooling with go-ethereum.
+
+**Topics covered:**
+- Foundation: Ethereum stack, RPC, keys, addresses, accounts
+- Transactions: nonces, signing, EIP-1559 dynamic fees
+- Smart Contracts: ABI encoding, abigen, typed bindings
+- Events & Logs: event decoding, filters, WebSocket subscriptions
+- Storage & Proofs: storage slots, Merkle Patricia tries, cryptographic verification
+- Advanced: transaction tracing, indexing, chain reorgs
+- Operations: node management, sync status, mempool monitoring
+
+## Quick Start
 
 ### Prerequisites
 
 - **Go ≥1.22** ([install guide](https://go.dev/doc/install))
 - Basic command-line familiarity
 - A text editor or IDE (VS Code with Go extension recommended)
+- **For geth/ projects:** An Ethereum RPC endpoint (Infura, Alchemy, or local node)
 
 ### Setup
 
 ```bash
 # Clone this repository
-git clone https://github.com/example/go-10x-minis.git
-cd go-10x-minis
+git clone <your-repo-url>
+cd go-edu
 
 # Initialize dependencies and verify all projects build
 make setup
 
 # List all available projects
-make list
+make list           # List all projects
+make list-minis     # List only minis projects
+make list-geth      # List only geth projects
 ```
 
 ### Running Projects
 
 ```bash
-# Run a specific project
-make run P=01-hello-strings
+# Run a specific project (works for both minis/ and geth/)
+make run P=minis/01-hello-strings
+make run P=geth/01-stack
 
-# Run all tests
-make test
+# Shorter aliases
+make run P=01-hello-strings    # Assumes minis/ if no prefix
+make run-geth P=01-stack       # Explicit geth/
 
-# Run benchmarks (projects 7 and 10)
-make bench
+# Run tests
+make test                      # Test all projects
+make test P=minis/03-csv-stats # Test specific project
+make test P=geth/02-rpc-basics
+
+# Run benchmarks
+make bench                     # Run all benchmarks
+make bench P=minis/07-generic-lru-cache
 
 # Clean build cache
 make clean
 ```
 
-## 📚 The Learning Path
+### For Ethereum Projects (geth/)
 
-### Beginner (Projects 1-2)
+Set up your RPC endpoint:
 
-**01. hello-strings** - String manipulation fundamentals
-Learn: `strings` package, UTF-8 handling, table-driven tests
-Time: 30 minutes
+```bash
+# Option 1: Environment variable
+export INFURA_RPC_URL=https://mainnet.infura.io/v3/YOUR_PROJECT_ID
 
-**02. arrays-maps-basics** - Data structures and file I/O
-Learn: Slices, maps, `bufio`, sorting
-Time: 45 minutes
+# Option 2: Create .env file
+cp .env.example .env
+# Edit .env with your RPC URL
 
-### Easy-Medium (Projects 3-5)
+# Run a geth project
+INFURA_RPC_URL=... make run P=geth/01-stack
+```
 
-**03. csv-stats** - Structured data processing
-Learn: `encoding/csv`, structs, streaming I/O, error handling
-Time: 1 hour
+## Learning Paths
 
-**04. jsonl-log-filter** - JSON parsing and custom types
-Learn: `encoding/json`, custom type marshaling, sorting algorithms
-Time: 1 hour
+### Path 1: Complete Beginner
+Start with minis track, then move to geth:
 
-**05. cli-todo-files** - Persistent CLI application
-Learn: `flag` package, JSON persistence, interfaces, file handling
-Time: 1.5 hours
+1. **minis/01-02**: Strings, arrays, maps (1-2 hours)
+2. **minis/03-05**: CSV, JSON, file I/O (3-4 hours)
+3. **minis/06**: Goroutines and channels (2 hours)
+4. **minis/11-25**: Deep dive into Go internals and concurrency (8-10 hours)
+5. **geth/01-10**: Ethereum fundamentals (6-8 hours)
+6. Continue with advanced projects in both tracks
 
-### Medium-Hard (Projects 6-8)
+### Path 2: Ethereum-Focused
+Already know Go? Jump to geth track:
 
-**06. worker-pool-wordcount** - Concurrency patterns
-Learn: Goroutines, channels, worker pools, `context` cancellation
-Time: 2 hours
+1. **minis/01-05**: Quick Go refresher (2-3 hours)
+2. **minis/06**: Concurrency patterns (2 hours)
+3. **geth/01-10**: Ethereum basics (6-8 hours)
+4. **geth/11-25**: Advanced Ethereum development (10-15 hours)
 
-**07. generic-lru-cache** - Advanced data structures
-Learn: Generics, `sync.Mutex`, `container/list`, thread safety
-Time: 2.5 hours
+### Path 3: Blockchain-Focused
+Learn cryptography and blockchain concepts:
 
-**08. http-client-retries** - Resilient HTTP clients
-Learn: `net/http`, exponential backoff, jitter, context timeouts
-Time: 2 hours
+1. **minis/01-05**: Go basics (2-3 hours)
+2. **minis/39-45**: Cryptography and blockchain (SHA256, Merkle trees, PoW, P2P) (6-8 hours)
+3. **geth/01-25**: Production Ethereum development (15-20 hours)
 
-### Advanced (Projects 9-10)
-
-**09. http-server-graceful** - Production HTTP servers
-Learn: `http.ServeMux`, middleware, graceful shutdown, OS signals
-Time: 2.5 hours
-
-**10. grpc-telemetry-service** - Modern RPC and streaming
-Learn: gRPC, protobuf, bidirectional streaming, service architecture
-Time: 3-4 hours
-
-## 🎓 Core Concepts Covered
-
-### Fundamentals
-- **Type system**: Structs, interfaces, type parameters (generics)
-- **Error handling**: Idiomatic error returns, error wrapping with `fmt.Errorf`
-- **Pointers & values**: When to use pointers vs. value semantics
-- **Zero values**: Go's predictable initialization
-
-### Standard Library Mastery
-- **I/O**: `io.Reader`/`io.Writer`, `bufio`, file operations
-- **Encoding**: JSON, CSV, Protocol Buffers
-- **Text processing**: `strings`, `unicode/utf8`, regular expressions
-- **HTTP**: Client and server patterns, `httptest` for testing
-- **Concurrency**: Goroutines, channels, `sync` primitives, `context`
-
-### Testing & Quality
-- **Table-driven tests**: The idiomatic Go testing pattern
-- **Subtests**: `t.Run()` for organized test output
-- **Benchmarking**: `testing.B` for performance measurement
-- **Test fixtures**: Using `testdata/` and `t.TempDir()`
-- **HTTP testing**: `httptest.Server` for deterministic tests
-
-### Production Patterns
-- **Worker pools**: Bounded concurrency for resource management
-- **Graceful shutdown**: Clean termination with signal handling
-- **Retry logic**: Exponential backoff with jitter
-- **Caching**: LRU eviction with TTL support
-- **Middleware**: Composable HTTP request processing
-
-## 🌟 Why Go Excels
-
-### 1. **Simplicity + Power**
-Go has just 25 keywords, yet handles concurrency, networking, and systems programming elegantly. Compare to Rust's steep learning curve or Python's GIL limitations.
-
-### 2. **Deployment Joy**
-Compile once → single static binary → run anywhere. No Docker layers with Python interpreters, no Node.js version conflicts, no JVM memory overhead.
-
-### 3. **Predictable Concurrency**
-Goroutines + channels provide structured concurrency that's easier to reason about than:
-- Python's asyncio (callback hell)
-- JavaScript promises (error handling complexity)
-- Java threads (low-level, error-prone)
-
-### 4. **Standard Library Excellence**
-`net/http` includes a production-grade HTTP server **out of the box**. `encoding/json`, `database/sql`, `crypto/*` — all first-class. Most projects need zero third-party dependencies.
-
-### 5. **Tooling Consistency**
-- `go fmt` → universal formatting (no debates!)
-- `go test` → testing built into the language
-- `go mod` → dependency management without `package.json` chaos
-- `go vet` → static analysis for free
-
-### 6. **Performance + Safety**
-Faster than Python/Ruby/Node.js, safer than C/C++. Memory-safe without garbage collection pauses like Java. Compile times measured in seconds, not minutes (looking at you, Rust).
-
-## 🛠️ Project Structure
+## Project Structure
 
 ```
-go-10x-minis/
-├── README.md              # This file
-├── go.mod                 # Module definition
-├── Makefile               # Convenience commands
+go-edu/
+├── README.md                  # This file - unified guide
+├── Makefile                   # Common commands for both tracks
+├── go.mod                     # Module definition
 ├── .gitignore
-└── minis/
-    ├── 01-hello-strings/
-    │   ├── README.md                    # Project overview
-    │   ├── cmd/hello-strings/main.go    # CLI runner
+│
+├── minis/                     # Track 1: Go Fundamentals
+│   ├── 01-hello-strings/
+│   │   ├── README.md                    # Project overview
+│   │   ├── cmd/hello-strings/main.go    # CLI runner
+│   │   └── exercise/
+│   │       ├── exercise.go              # Your implementation
+│   │       ├── solution.go              # Reference solution
+│   │       └── exercise_test.go         # Tests
+│   ├── 02-arrays-maps-basics/
+│   │   ├── testdata/input.txt           # Test fixtures
+│   │   └── ...
+│   └── ... (projects 03-50)
+│
+└── geth/                      # Track 2: Ethereum Development
+    ├── README.md              # Geth track overview
+    ├── 01-stack/
+    │   ├── README.md          # CS-first-principles explanations
     │   └── exercise/
-    │       ├── exercise.go              # Stub for you to implement
-    │       ├── solution.go              # Reference implementation
-    │       └── exercise_test.go         # Comprehensive tests
-    ├── 02-arrays-maps-basics/
-    │   ├── testdata/input.txt           # Test fixtures
-    │   └── ...
-    └── ... (projects 3-10)
+    │       ├── exercise.go
+    │       ├── solution.go
+    │       └── exercise_test.go
+    ├── 02-rpc-basics/
+    └── ... (projects 03-25)
 ```
 
-## 💡 How to Use This Repository
+## How to Use This Repository
 
-**IMPORTANT**: Each project has both `exercise.go` (stubs for you to implement) and `solution.go` (complete reference). Since both define the same functions, **you must choose one approach**:
+Each project has both `exercise.go` (stubs for you to implement) and `solution.go` (complete reference). **Choose your approach:**
 
 ### Option 1: Implement First (Recommended)
-1. **Rename `solution.go`** to `solution.go.reference` (prevents compilation conflicts)
-2. Read the project's `README.md` to understand requirements
-3. Implement your solution in `exercise/exercise.go` (replace the `TODO` comments)
-4. Run tests: `go test ./minis/<project>/...`
-5. Compare your code with `solution.go.reference` to learn alternative approaches
 
-### Option 2: Study the Solution
-1. **Rename `exercise.go`** to `exercise.go.bak`
-2. Read `solution.go` carefully, understanding each comment
-3. Run tests to see it working: `go test ./minis/<project>/...`
-4. Delete `solution.go`, restore `exercise.go.bak`, and reimplement from memory
+```bash
+cd minis/01-hello-strings/exercise   # or geth/01-stack/exercise
+mv solution.go solution.go.reference # Prevent compilation conflicts
+
+# Read README, implement in exercise.go, then test
+go test
+
+# Compare with reference
+cat solution.go.reference
+```
+
+### Option 2: Study First
+
+```bash
+cd minis/01-hello-strings/exercise
+mv exercise.go exercise.go.bak
+
+# Study solution.go, run tests
+go test -tags=solution
+
+# Reimplement from memory
+rm solution.go
+mv exercise.go.bak exercise.go
+# Implement and test
+```
 
 ### Option 3: Test-Driven Development
-1. **Rename `solution.go`** to `solution.go.reference`
-2. Read tests in `exercise_test.go` to understand expected behavior
-3. Implement just enough in `exercise.go` to make one test pass
-4. Repeat until all tests pass
-5. Refactor and compare with `solution.go.reference`
 
-**Quick Start Command** (to prepare project 01 for implementation):
 ```bash
 cd minis/01-hello-strings/exercise
 mv solution.go solution.go.reference
-# Now implement in exercise.go and run: go test
+
+# Read tests to understand requirements
+cat exercise_test.go
+
+# Implement just enough to pass one test at a time
+go test
 ```
 
-## 🤝 Contributing
+## Makefile Commands Reference
 
-Found a bug? Have a better solution? Want to add an 11th project?
+| Command | Description |
+|---------|-------------|
+| `make setup` | Initialize dependencies, verify builds |
+| `make list` | List all projects (both tracks) |
+| `make list-minis` | List only minis projects |
+| `make list-geth` | List only geth projects |
+| `make run P=<path>` | Run specific project |
+| `make test` | Run all tests |
+| `make test P=<path>` | Test specific project |
+| `make bench` | Run all benchmarks |
+| `make bench P=<path>` | Benchmark specific project |
+| `make clean` | Clean build cache |
+| `make help` | Show all available commands |
+
+**Examples:**
+```bash
+make run P=minis/01-hello-strings
+make run P=geth/02-rpc-basics
+make test P=minis/06-worker-pool-wordcount
+make bench P=minis/07-generic-lru-cache
+```
+
+## Key Go Concepts Covered
+
+### Fundamentals (minis/01-25)
+- Type system: structs, interfaces, generics
+- Error handling: idiomatic returns, wrapping
+- Pointers vs values, zero values
+- Slices internals, capacity growth
+- Maps, nil gotchas
+
+### Standard Library Mastery
+- I/O: `io.Reader`/`io.Writer`, `bufio`
+- Encoding: JSON, CSV, Protocol Buffers
+- HTTP: clients, servers, `httptest`
+- Concurrency: goroutines, channels, `sync`, `context`
+
+### Concurrency Patterns (minis/18-27)
+- Worker pools with backpressure
+- Fan-in, fan-out with `select`
+- Race detection and fixes
+- Mutex vs RWMutex vs atomics
+- `sync.Once`, `sync.Pool`
+
+### Performance & Profiling (minis/28-29)
+- pprof: CPU and memory profiling
+- Benchmarking with `testing.B`
+- Escape analysis and inlining
+
+### Ethereum Specifics (geth/01-25)
+- JSON-RPC patterns and error handling
+- secp256k1 cryptography, key management
+- ABI encoding/decoding
+- Event logs and Bloom filters
+- Merkle Patricia tries and proofs
+- Transaction tracing and debugging
+- Chain reorganization handling
+- Production monitoring patterns
+
+## Why Go Excels
+
+### 1. Simplicity + Power
+25 keywords, yet handles concurrency, networking, and systems programming elegantly.
+
+### 2. Deployment Joy
+Single static binary → run anywhere. No runtime dependencies, no version conflicts.
+
+### 3. Predictable Concurrency
+Goroutines + channels provide structured concurrency that's easier than:
+- Python's asyncio (callback complexity)
+- JavaScript promises (error handling)
+- Java threads (low-level, error-prone)
+
+### 4. Standard Library Excellence
+Production-grade HTTP server, JSON, database drivers — all built-in. Most projects need zero third-party dependencies.
+
+### 5. Tooling Consistency
+- `go fmt` → universal formatting
+- `go test` → testing built into language
+- `go mod` → dependency management
+- `go vet` → static analysis
+
+### 6. Performance + Safety
+Faster than Python/Ruby/Node.js, safer than C/C++. Memory-safe without GC pauses like Java.
+
+## Contributing
+
+Found a bug? Have a better solution? Want to add a project?
 
 1. Open an issue describing your idea
-2. Submit a PR following the existing code style
+2. Submit a PR following existing code style
 3. Ensure all tests pass: `make test`
 
-## 📖 Additional Resources
+## Additional Resources
 
 - [Effective Go](https://go.dev/doc/effective_go) - Official style guide
-- [Go by Example](https://gobyexample.com/) - Annotated code examples
+- [Go by Example](https://gobyexample.com/) - Annotated examples
 - [Go Blog](https://go.dev/blog/) - Deep dives by the Go team
-- [Concurrency Patterns](https://go.dev/talks/2012/concurrency.slide) - Rob Pike's classic talk
+- [go-ethereum Documentation](https://geth.ethereum.org/docs/)
+- [Ethereum JSON-RPC Spec](https://ethereum.org/en/developers/docs/apis/json-rpc/)
 
-## 📜 License
+## License
 
-MIT License - feel free to use this for learning, teaching, or as a foundation for your own projects.
+MIT License - use freely for learning, teaching, or building your own projects.
 
 ---
 
-**Happy Coding!** 🎉 Start with `make run P=01-hello-strings` and work your way up!
+**Happy Coding!** Start with `make list` to see all projects, then dive in with `make run P=minis/01-hello-strings`

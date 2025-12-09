@@ -28,12 +28,11 @@ func main() {
 	// Demo 2: Read from a string (shows io.Reader flexibility)
 	fmt.Println("=== Reading from string ===")
 	input := `go
-is
-awesome
-go
-rocks
-go
-`
+	is
+	awesome
+	go
+	rocks
+	go`
 	freq, mostCommon, err := exercise.FreqFromReader(strings.NewReader(input))
 	if err != nil {
 		log.Fatalf("Error reading string: %v", err)
