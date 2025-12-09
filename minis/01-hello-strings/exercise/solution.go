@@ -46,35 +46,106 @@ import (
 // - strings.Fields(): splits on any Unicode whitespace (spaces, tabs, newlines)
 // - []rune conversion: allows character-level manipulation
 // - unicode.ToUpper(): handles all Unicode uppercase rules (not just ASCII)
-// - strings.Builder: efficient string concatenation (reduces allocations)
+// - Pass by value vs reference semantics
 func TitleCase(s string) string {
+	// ============================================================================
+	// PARAMETER PASSING: s is passed by VALUE
+	// ============================================================================
+	// In Go, ALL parameters are passed by value (copy the bytes).
+	// However, strings have special semantics:
+	// - A string is internally: struct { ptr *byte; len int }
+	// - When you pass a string, you copy the pointer + length (cheap!)
+	// - You DON'T copy the actual string data (it's shared)
+	// - Strings are immutable, so sharing is safe
+	//
+	// Memory: If s = "hello world", passing it copies ~16 bytes (pointer + len),
+	// not 11 bytes of actual data. This is why passing strings is efficient.
+
 	// Split the input string into words using whitespace as delimiter
 	// strings.Fields() is preferred over strings.Split() because it:
 	// 1. Handles all Unicode whitespace (spaces, tabs, newlines, non-breaking spaces)
 	// 2. Automatically trims leading/trailing whitespace
 	// 3. Collapses multiple consecutive spaces
+	//
+	// ============================================================================
+	// SLICE CREATION: words is a slice
+	// ============================================================================
+	// Slices in Go are: struct { ptr *element; len, cap int }
+	// The slice 'words' is a REFERENCE to an underlying array
+	// - The slice header lives on the stack (if it doesn't escape)
+	// - The underlying array lives on the heap (allocated by strings.Fields)
+	// - Modifying words[i] changes the underlying array
+	// - Passing words to another function passes the slice header BY VALUE
+	//   (copies ptr + len + cap, but the ptr still points to same array!)
 	words := strings.Fields(s)
 
-	// Process each word: capitalize first rune, lowercase the rest
+	// ============================================================================
+	// RANGE LOOP: value semantics
+	// ============================================================================
+	// range returns (index, value) where:
+	// - i is the index (int, copied)
+	// - word is a COPY of words[i] (string copied, but data shared as explained above)
+	// - Modifying 'word' won't change words[i]
+	// - You MUST use words[i] = ... to modify the slice
 	for i, word := range words {
-		// Convert string to []rune to work with characters (not bytes)
+		// ========================================================================
+		// CONVERSION: string → []rune allocates memory
+		// ========================================================================
 		// This is critical for UTF-8 correctness:
-		// - The string "café" as bytes is [99 97 102 195 169]
-		// - As runes it's [99 97 102 233] where 233 is the single character 'é'
+		// - The string "café" as bytes is [99 97 102 195 169] (5 bytes)
+		// - As runes it's [99 97 102 233] (4 runes) where 233 is 'é'
+		//
+		// Memory allocation:
+		// - Go allocates a new []rune on the heap (size = rune count * 4 bytes)
+		// - Decodes UTF-8 from string into runes
+		// - Returns a slice pointing to this new array
+		//
+		// The rune slice is: struct { ptr *rune; len, cap int }
+		// - 'runes' is the slice header (on stack)
+		// - The actual rune array is on the heap
 		runes := []rune(word)
+
 		if len(runes) > 0 {
-			// Capitalize the first rune using unicode.ToUpper()
-			// This handles all Unicode case rules (e.g., German ß → SS)
+			// ====================================================================
+			// INDEXING: Direct modification through slice
+			// ====================================================================
+			// runes[0] is a rune (int32), which is a VALUE type
+			// We're assigning to a slice element, which MODIFIES the underlying array
+			//
+			// unicode.ToUpper() takes a rune BY VALUE and returns a rune BY VALUE
+			// - The input rune is copied (4 bytes, cheap)
+			// - A new rune is returned (4 bytes)
+			// - No pointers involved, no heap allocation
 			runes[0] = unicode.ToUpper(runes[0])
-			// Note: We don't lowercase the rest to preserve existing capitalization
-			// If you wanted "hELLO" → "Hello", add: runes[1:] = unicode.ToLower(...)
 		}
-		// Convert back to string and update the slice
+
+		// ========================================================================
+		// CONVERSION: []rune → string allocates memory
+		// ========================================================================
+		// string(runes) creates a NEW string:
+		// - Allocates memory for UTF-8 encoded bytes
+		// - Encodes each rune to UTF-8
+		// - Returns a new string (immutable)
+		//
+		// Memory: The old []rune array can now be garbage collected (if not referenced)
+		//
+		// SLICE MODIFICATION: words[i] = ... updates the underlying array
+		// - We're not modifying the slice header
+		// - We're changing the data that words[i] points to
+		// - This IS visible to anyone holding a reference to the same slice
 		words[i] = string(runes)
 	}
 
-	// Join words back together with single spaces
-	// Alternative: Use strings.Builder for large strings (avoids intermediate allocations)
+	// ============================================================================
+	// RETURN: strings.Join creates a new string
+	// ============================================================================
+	// strings.Join(words, " ") concatenates all strings:
+	// - Calculates total length needed
+	// - Allocates ONE byte array for the result
+	// - Copies all strings into it with separators
+	// - Returns a new string (immutable)
+	//
+	// We return this string BY VALUE (copies pointer + len, shares data)
 	return strings.Join(words, " ")
 }
 
