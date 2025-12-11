@@ -104,7 +104,7 @@ The **worker pool** pattern limits concurrency by using a fixed number of gorout
                 ▼               ▼               ▼
           ┌─────────┐     ┌─────────┐     ┌─────────┐
           │Worker 1 │     │Worker 2 │     │Worker 3 │
-          │(goroutine)     │(goroutine)     │(goroutine)
+          │(goroutine)    │(goroutine)    │(goroutine)
           └────┬────┘     └────┬────┘     └────┬────┘
                │               │               │
                │   Fetch URL, count words      │

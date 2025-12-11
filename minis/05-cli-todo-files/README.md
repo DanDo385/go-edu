@@ -343,6 +343,7 @@ func (fs *fileStore) Add(text string) Item {
 
 If we used value receiver `(fs fileStore)`, we'd modify a **copy** of the struct!
 
+
 ### Why Return Interface from Constructor?
 
 ```go
