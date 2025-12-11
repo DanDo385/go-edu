@@ -1,191 +1,362 @@
-# Ethereum Go Development Track
+# Ethereum Go Development Track - Quick Start Guide
 
-25 progressive Ethereum/Go projects (01-stack through 25-toolbox) from beginner to "I can build production-grade Ethereum tooling". Each module builds on previous concepts, with detailed explanations from computer science first principles.
+Learn Ethereum development with Go through 25 progressive hands-on projects, from basic RPC connections to production-grade tooling.
 
-## Philosophy
+## Overview
 
-This track teaches Ethereum development from the ground up, with a nerdy, educational tone that:
-- Explains concepts from **computer science first principles**
-- Uses **analogies** and **comparisons** to make concepts accessible
-- Includes **fun facts** and **nerdy details** for deeper understanding
-- **Cross-references** previous modules to show how concepts build on each other
-- **Ties concepts together** as they repeat throughout the course
+This track contains **25 modules** that teach you how to build Ethereum applications using Go and the go-ethereum (geth) library. Each module is a standalone project with exercises, tests, and complete reference solutions.
 
-## Quick Start
+**What you'll learn:**
+- JSON-RPC client programming
+- Cryptographic key management
+- Transaction building and signing
+- Smart contract interaction (ABI encoding, typed bindings)
+- Event filtering and real-time monitoring
+- Storage proofs and Merkle tries
+- Production patterns (indexing, reorg handling, health monitoring)
 
-### Prerequisites
-- Go 1.22 or later
-- An Ethereum RPC endpoint (Infura, Alchemy, or your own node)
+## Prerequisites
 
-### Setup
+### Required
+- **Go 1.22+** ([install](https://go.dev/doc/install))
+- **An Ethereum RPC endpoint** (choose one):
+  - Public RPC: [Infura](https://infura.io), [Alchemy](https://alchemy.com), [QuickNode](https://quicknode.com)
+  - Local node: Run your own Geth/Erigon node
+  - Local devnet: Use [Anvil](https://book.getfoundry.sh/anvil/) or Hardhat
 
-1. **Configure RPC endpoint** (choose one):
-   ```bash
-   # Option 1: Set environment variable
-   export INFURA_RPC_URL=https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
-   
-   # Option 2: Copy .env.example to .env and edit
-   cp .env.example .env
-   # Then edit .env with your RPC URL
-   ```
+### Optional (for specific modules)
+- **Anvil** (module 19 - devnets) - Install via Foundry
+- **SQLite** (module 17 - indexer) - Usually pre-installed on macOS/Linux
 
-2. **Install dependencies**:
-   ```bash
-   make tidy
-   # or manually:
-   go mod tidy
-   ```
+## Quick Setup
 
-3. **Run a module**:
-   ```bash
-   # Execute the reference solution (requires RPC + solution build tag)
-   INFURA_RPC_URL=... go test -tags solution ./01-stack/...
-   
-   # Execute your own work-in-progress implementation
-   INFURA_RPC_URL=... go test ./01-stack/...
-   ```
+### 1. Get an RPC Endpoint
 
-### Available Make Targets
+**Option A: Use a Public RPC (Easiest)**
 
-- `make tidy` - Update Go dependencies
-- `make build` - Build all module binaries
-- `make clean` - Remove build artifacts and databases
-- `make run-01` through `make run-25` - Run specific module solutions
-- `make help` - Show all available targets
+Sign up for a free account at [Infura](https://infura.io) or [Alchemy](https://alchemy.com) and get your API key.
 
-### Project Structure
+```bash
+# Set environment variable (Linux/macOS)
+export INFURA_RPC_URL="https://mainnet.infura.io/v3/YOUR_PROJECT_ID"
 
-Each module (`XX-name/`) mirrors the minis layout:
-- `README.md` - Learning objectives, CS-first-principles explanations, analogies, comparisons, fun facts, and cross-references
-- `exercise/` - Minis-style package with `exercise.go`, `exercise_test.go`, and `solution.go`. Build tags (`!solution` vs `solution`) let you focus on your code while still being able to inspect/execute the reference implementation via `go test -tags solution`.
+# Or create a .env file in the geth/ directory
+echo 'INFURA_RPC_URL=https://mainnet.infura.io/v3/YOUR_PROJECT_ID' > .env
+```
 
-## Module Map
+**Option B: Run a Local Node (Advanced)**
+
+```bash
+# Requires ~1TB disk space and several hours to sync
+geth --http --http.api eth,net,web3 --syncmode snap
+```
+
+### 2. Install Dependencies
+
+```bash
+# From the repository root
+cd /path/to/go-edu
+go mod tidy
+```
+
+### 3. Run Your First Module
+
+```bash
+# From repository root
+make test P=geth/01-stack
+
+# Or directly
+cd geth/01-stack/exercise
+INFURA_RPC_URL=... go test -v
+```
+
+## Project Structure
+
+Each module follows the same structure:
+
+```
+geth/
+├── 01-stack/
+│   ├── README.md           # Module documentation (see READMESUMMARY.md)
+│   └── exercise/
+│       ├── exercise.go     # Your implementation (TODO stubs)
+│       ├── solution.go     # Reference solution (build tags)
+│       ├── types.go        # Interfaces and types
+│       └── exercise_test.go # Test suite
+├── 02-rpc-basics/
+│   └── ... (same structure)
+└── ... (modules 03-25)
+```
+
+## How to Use
+
+### Option 1: Implement Exercises (Recommended)
+
+Each module has TODO comments guiding you through implementation:
+
+```bash
+# 1. Navigate to a module
+cd geth/01-stack/exercise
+
+# 2. Read the module README
+cat README.md
+
+# 3. Implement the TODOs in exercise.go
+# (exercise.go and solution.go use build tags to avoid conflicts)
+
+# 4. Run tests against YOUR implementation
+INFURA_RPC_URL=... go test -v
+
+# 5. Compare with reference solution
+INFURA_RPC_URL=... go test -tags=solution -v
+```
+
+### Option 2: Study Solutions First
+
+If you prefer to learn by reading:
+
+```bash
+cd geth/01-stack/exercise
+
+# Run tests with solution
+INFURA_RPC_URL=... go test -tags=solution -v
+
+# Read the solution code
+cat solution.go
+```
+
+### Option 3: Use the Makefile (Convenient)
+
+From the repository root:
+
+```bash
+# Test a specific module (auto-detects geth/)
+make test P=geth/01-stack
+make test P=01-stack  # Also works
+
+# Test with solution
+INFURA_RPC_URL=... go test -tags=solution ./geth/01-stack/...
+
+# List all modules
+make list-geth
+```
+
+## Module Roadmap
 
 ### Foundation (Modules 01-04)
-**Building blocks:** Understanding the Ethereum stack, RPC basics, cryptographic identity, and account types.
+Start here! Learn the basics of connecting to Ethereum and querying data.
 
-1. **01-stack:** Execution vs consensus clients, JSON-RPC basics, chain ID, block headers
-2. **02-rpc-basics:** Full blocks, transaction structures, retry logic, JSON-RPC method details
-3. **03-keys-addresses:** secp256k1 cryptography, key generation, address derivation, keystore files
-4. **04-accounts-balances:** EOA vs contract accounts, balance queries, code storage
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 01 | stack | Ethereum architecture, RPC connections, chain ID |
+| 02 | rpc-basics | JSON-RPC methods, block structures, retry logic |
+| 03 | keys-addresses | Key generation, address derivation, keystore files |
+| 04 | accounts-balances | EOA vs contracts, balance queries, code detection |
 
 ### Transactions (Modules 05-06)
-**Building blocks:** Understanding how transactions work, from signing to execution.
+Build and send transactions to the network.
 
-5. **05-tx-nonces:** Transaction nonces, legacy transaction building, signing, broadcasting
-6. **06-eip1559:** EIP-1559 dynamic fees, base fee, priority fee, gas price calculations
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 05 | tx-nonces | Legacy transactions, nonces, signing, broadcasting |
+| 06 | eip1559 | EIP-1559 dynamic fees, base fee, priority fee |
 
-### Contract Interaction (Modules 07-08)
-**Building blocks:** Calling contracts, encoding/decoding data, typed bindings.
+### Smart Contracts (Modules 07-09)
+Interact with deployed smart contracts.
 
-7. **07-eth-call:** Manual ABI encoding/decoding, view calls, error handling
-8. **08-abigen:** Typed contract bindings, code generation, type-safe contract calls
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 07 | eth-call | Manual ABI encoding, read-only calls, function selectors |
+| 08 | abigen | Typed contract bindings, code generation, CallOpts |
+| 09 | events | Event filtering, log decoding, topics vs data |
 
-### Events & Logs (Modules 09-10)
-**Building blocks:** Understanding events, logs, and real-time updates.
+### Real-Time Monitoring (Module 10)
+Watch the blockchain in real-time.
 
-9. **09-events:** Event decoding, ERC20 Transfer logs, log parsing
-10. **10-filters:** WebSocket subscriptions, newHeads filters, polling fallback
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 10 | filters | WebSocket subscriptions, newHeads, polling fallback |
 
-### Storage & Proofs (Modules 11-12)
-**Building blocks:** Understanding storage layout, Merkle proofs, and cryptographic verification.
+### Advanced Queries (Modules 11-13)
+Deep dive into storage, proofs, and execution tracing.
 
-11. **11-storage:** Storage slots, mapping/array layouts, `eth_getStorageAt`
-12. **12-proofs:** Merkle Patricia tries, `eth_getProof`, storage proofs, account proofs
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 11 | storage | Raw storage slots, mapping hashes, Solidity layout |
+| 12 | proofs | Merkle-Patricia tries, eth_getProof, light clients |
+| 13 | trace | debug_traceTransaction, call trees, gas analysis |
 
-### Advanced Debugging (Modules 13-15)
-**Building blocks:** Deep transaction analysis, tracing, and receipt inspection.
+### Building Tools (Modules 14-16)
+Combine concepts to build useful tools.
 
-13. **13-trace:** `debug_traceTransaction`, call trees, gas analysis, execution traces
-14. **14-explorer:** Building a mini block/tx explorer CLI
-15. **15-receipts:** Transaction receipts, status codes, logs, cumulative gas
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 14 | explorer | Block/transaction explorer, data summarization |
+| 15 | receipts | Transaction receipts, status codes, logs |
+| 16 | concurrency | Worker pools, concurrent RPC calls, context timeouts |
 
-### Production Patterns (Modules 16-18)
-**Building blocks:** Concurrency, indexing, and handling chain reorganizations.
+### Production Patterns (Modules 17-19)
+Learn patterns for production applications.
 
-16. **16-concurrency:** Fan-out/fan-in patterns, worker pools, concurrent RPC calls
-17. **17-indexer:** ERC20 transfer indexing, SQLite storage, efficient data structures
-18. **18-reorgs:** Chain reorganizations, parent hash mismatches, rescanning logic
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 17 | indexer | ERC20 indexer, SQLite storage, event processing |
+| 18 | reorgs | Chain reorganization detection, rescanning logic |
+| 19 | devnets | Local development networks, Anvil, account funding |
 
-### Development & Testing (Module 19)
-**Building blocks:** Local development networks and testing tools.
+### Node Operations (Modules 20-24)
+Monitor and operate Ethereum nodes.
 
-19. **19-devnets:** Anvil fork, account impersonation, funding accounts, local testing
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 20 | node | Node info, client version, peer count |
+| 21 | sync | Sync progress, sync modes (full/snap/light) |
+| 22 | peers | P2P networking, gossip protocols, connectivity |
+| 23 | mempool | Pending transactions, txpool visibility, MEV |
+| 24 | monitor | Health checks, block lag detection, alerting |
 
-### Node Operations (Modules 20-22)
-**Building blocks:** Understanding node internals, sync status, and peer management.
+### Capstone (Module 25)
+Put it all together.
 
-20. **20-node:** Node information, client version, peer count, sync status
-21. **21-sync:** Full/snap/light sync modes, sync progress, sync status
-22. **22-peers:** Peer management, gossip health, peer information
+| Module | Name | What You'll Learn |
+|--------|------|-------------------|
+| 25 | toolbox | Swiss Army CLI combining all previous concepts |
 
-### Monitoring & Operations (Modules 23-25)
-**Building blocks:** Production monitoring, mempool visibility, and comprehensive tooling.
+## Running Tests
 
-23. **23-mempool:** Pending transaction visibility, mempool caveats, transaction propagation
-24. **24-monitor:** Head freshness, lag detection, health monitoring
-25. **25-toolbox:** Swiss Army CLI combining status/block/tx/events queries
+### Basic Test Commands
 
-## Cross-Links to Solidity-edu
+```bash
+# Run tests for a module (YOUR implementation)
+cd geth/01-stack/exercise
+INFURA_RPC_URL=... go test
 
-This track complements the Solidity-edu foundry track:
+# Verbose output (see each test)
+INFURA_RPC_URL=... go test -v
 
-- **Storage/mappings/arrays** ↔ modules 01, 11, 12
-  - Solidity storage slots → Ethereum storage trie → Merkle proofs
-- **Events/logging** ↔ modules 09, 15
-  - Solidity events → Ethereum logs → Bloom filters → Event queries
-- **Gas/transactions** ↔ modules 05, 06, 13, 14
-  - Solidity gas costs → Transaction gas → Gas analysis → Trace debugging
-- **Access control/EOA vs contract** ↔ modules 03, 04
-  - Solidity `msg.sender` → Address derivation → Account types → Access control
+# Run specific test
+INFURA_RPC_URL=... go test -v -run TestGetStatus
 
-## Learning Path
+# Run solution tests
+INFURA_RPC_URL=... go test -tags=solution -v
+```
 
-### Beginner Path (Modules 01-10)
-Start here if you're new to Ethereum Go development:
-1. Understand the Ethereum stack (01)
-2. Learn RPC basics (02)
-3. Generate keys and addresses (03)
-4. Query accounts and balances (04)
-5. Build and send transactions (05-06)
-6. Interact with contracts (07-08)
-7. Work with events (09-10)
+### Using Make Commands
 
-### Intermediate Path (Modules 11-18)
-Deep dive into storage, proofs, and production patterns:
-1. Understand storage layout (11)
-2. Learn Merkle proofs (12)
-3. Debug transactions (13-15)
-4. Build concurrent applications (16)
-5. Create indexers (17)
-6. Handle reorgs (18)
+```bash
+# From repository root
+make test P=geth/01-stack        # Test specific module
+make test P=geth/01-stack -v     # Verbose
+```
 
-### Advanced Path (Modules 19-25)
-Production operations and monitoring:
-1. Set up devnets (19)
-2. Monitor nodes (20-22)
-3. Track mempool (23)
-4. Build monitoring tools (24)
-5. Create comprehensive tooling (25)
+### Test Requirements
+
+- **RPC endpoint required:** Most tests need `INFURA_RPC_URL` environment variable
+- **Network access:** Tests make real RPC calls (not mocked)
+- **Rate limits:** Public RPCs have rate limits; tests may fail if hit
+- **Some tests need specific modules:** Module 19 needs Anvil installed
+
+## Common Issues & Solutions
+
+### "dial tcp: i/o timeout"
+**Problem:** Can't connect to RPC endpoint
+**Solution:** Check your `INFURA_RPC_URL` is set correctly and you have internet access
+
+### "429 Too Many Requests"
+**Problem:** Hit RPC rate limit
+**Solution:** Wait a moment and retry, or upgrade your RPC plan
+
+### "missing INFURA_RPC_URL"
+**Problem:** Environment variable not set
+**Solution:** `export INFURA_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY`
+
+### "debug_traceTransaction not supported"
+**Problem:** Public RPCs often disable debug methods
+**Solution:** Use a different RPC provider or run your own node
+
+### Tests pass with solution but fail with exercise
+**Problem:** Your implementation has bugs
+**Solution:** Compare your `exercise.go` with `solution.go` and read the comments
+
+## Build Tags Explained
+
+Go build tags let us have both `exercise.go` and `solution.go` in the same directory without conflicts:
+
+- **Default** (no tags): Compiles `exercise.go` (your implementation)
+  ```bash
+  go test
+  ```
+
+- **With -tags=solution**: Compiles `solution.go` (reference solution)
+  ```bash
+  go test -tags=solution
+  ```
+
+**How it works:**
+- `exercise.go` has: `//go:build !solution`
+- `solution.go` has: `//go:build solution`
+
+## Learning Paths
+
+### Path 1: Beginner (Never used Go-Ethereum)
+Follow modules sequentially 01→25. Each builds on previous concepts.
+
+**Estimated time:** 20-30 hours total
+
+### Path 2: Experienced (Know Go, new to Ethereum)
+- Skim modules 01-04 (basics)
+- Focus on 05-09 (transactions and contracts)
+- Deep dive 11-13 (storage, proofs, tracing)
+- Practice 16-25 (production patterns)
+
+**Estimated time:** 10-15 hours
+
+### Path 3: Ethereum Expert (New to go-ethereum)
+- Quick read 01-02 (ethclient API)
+- Jump to areas of interest (e.g., 17 for indexing, 13 for tracing)
+- Use as reference when building your own tools
+
+**Estimated time:** 5-10 hours
+
+## Additional Resources
+
+### Documentation
+- **Module Details:** See [READMESUMMARY.md](./READMESUMMARY.md) for comprehensive documentation of all 25 modules
+- **go-ethereum Docs:** https://geth.ethereum.org/docs/
+- **JSON-RPC Spec:** https://ethereum.org/en/developers/docs/apis/json-rpc/
+- **Go by Example:** https://gobyexample.com/
+
+### Tools
+- **Infura:** https://infura.io (free tier available)
+- **Alchemy:** https://alchemy.com (free tier available)
+- **Foundry (Anvil):** https://book.getfoundry.sh/anvil/
+- **Etherscan:** https://etherscan.io (for verifying data)
+
+### Related Tracks
+- **minis/**: General Go fundamentals (strings, concurrency, HTTP, etc.)
+- See main [README.md](../README.md) for the complete learning path
 
 ## Contributing
 
-Each module follows a consistent structure:
-- **README.md:** Comprehensive explanations with CS-first-principles, analogies, comparisons, fun facts, and cross-references
-- **Starter code:** TODO comments guiding implementation
-- **Solution code:** Detailed educational commentary explaining every concept
+Found a bug? Have a question? Want to add a module?
 
-When adding new modules:
-1. Follow the naming convention: `XX-name/`
-2. Include comprehensive README with educational content
-3. Add TODO comments to starter code
-4. Provide detailed solution commentary
-5. Cross-reference related modules
-6. Update this README's module map
+1. Check existing issues at the repository
+2. Open a new issue with details
+3. Submit a PR following existing code style
 
-## Resources
+## What's Next?
 
-- [Go Ethereum Documentation](https://geth.ethereum.org/docs/)
-- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
-- [Ethereum Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf)
-- [Solidity-edu Track](../foundry/README.md) - Complementary Solidity learning track
+1. **Set up your RPC endpoint** (see Quick Setup above)
+2. **Start with module 01-stack:** `cd geth/01-stack && cat README.md`
+3. **Implement the TODOs** in `exercise.go`
+4. **Run tests:** `INFURA_RPC_URL=... go test -v`
+5. **Move to module 02** and repeat!
+
+**Ready to start?** Run this command:
+
+```bash
+# From repository root
+make test P=geth/01-stack
+```
+
+Good luck! 🚀
