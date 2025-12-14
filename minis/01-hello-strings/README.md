@@ -102,7 +102,7 @@ func TitleCase(s string) string {
     // Step 2: Process each word
     for i, word := range words {
         // Convert to runes so we can work with characters, not bytes
-        runes := []rune(word)
+        runes := []rune(word) 
 
         if len(runes) > 0 {
             // Capitalize first rune
