@@ -10,22 +10,22 @@ package exercise
 // - "io" for the Reader interface
 // - "strconv" for string to float conversion
 //
-// import (
-//     "encoding/csv"
-//     "fmt"
-//     "io"
-//     "strconv"
-// )
+import (
+    "encoding/csv"
+    "fmt"
+    "io"
+    "strconv"
+)
 
 // Stat holds aggregated statistics for a category
 // This is a STRUCT TYPE (value type, not reference type)
 //
 // TODO: Define the Stat struct
-// type Stat struct {
-//     Count int     // Number of transactions in this category
-//     Sum   float64 // Total amount for this category
-//     Avg   float64 // Average amount (Sum / Count)
-// }
+type Stat struct {
+    Count int     // Number of transactions in this category
+    Sum   float64 // Total amount for this category
+    Avg   float64 // Average amount (Sum / Count)
+}
 //
 // Key Go concepts for structs:
 // - Structs are VALUE types (copied when assigned or passed)
