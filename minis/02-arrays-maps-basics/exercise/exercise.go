@@ -9,11 +9,13 @@ package exercise
 // - "io" for the Reader interface
 // - "strings" for string manipulation (ToLower, TrimSpace)
 //
-// import (
-//     "bufio"
-//     "io"
-//     "strings"
-// )
+// 
+import (
+	"bufio"
+	"io"
+	"strings"
+)
+
 
 // FreqFromReader reads words from r (one per line) and returns:
 // - A frequency map (word -> count)
@@ -21,7 +23,7 @@ package exercise
 // - An error if reading fails
 //
 // TODO: Implement FreqFromReader function
-// Function signature: func FreqFromReader(r io.Reader) (map[string]int, string, error)
+func FreqFromReader(r io.Reader) (map[string]int, string, error) {
 //
 // Steps to implement:
 //
@@ -31,6 +33,7 @@ package exercise
 //    - The map variable stores a pointer to the hash table
 //    - nil maps can't be written to, so we must initialize with make()
 //    - Alternative: freq := map[string]int{} also works
+	freq := make(map[string]int)
 //
 // 2. Create a scanner to read line-by-line
 //    - Use: scanner := bufio.NewScanner(r)
@@ -38,7 +41,7 @@ package exercise
 //    - But it contains a pointer to internal buffers
 //    - Passing scanner to functions copies the struct, but the pointer inside
 //      still points to the same buffer (shared state)
-//
+	scanner := bufio.NewScanner(r)
 // 3. Loop through each line
 //    - Use: for scanner.Scan() { ... }
 //    - Scan() MODIFIES the scanner's internal state (advances position)
@@ -46,19 +49,24 @@ package exercise
 //    - scanner.Text() returns the current line as a string
 //      * This returns a NEW string (copy of data from buffer)
 //      * Safe to store - won't be overwritten on next Scan()
-//
+	for scanner.Scan() {
+		line := scanner.Text()
+		
+	
 // 4. Normalize each word
 //    - Use: word := strings.ToLower(strings.TrimSpace(line))
 //    - strings.TrimSpace(line) creates a NEW string (substring, may share data)
 //    - strings.ToLower(...) creates another NEW string
 //    - Strings are IMMUTABLE - these functions never modify the input
 //    - Each function call may allocate memory for the result
-//
+		word := strings.ToLower(strings.TrimSpace(line))
 // 5. Skip blank lines
 //    - Use: if word == "" { continue }
 //    - String comparison (==) compares CONTENTS, not pointers
 //    - Empty string "" is a zero-length string (not nil!)
-//
+		if word == "" {
+			continue
+		}
 // 6. Increment count in map
 //    - Use: freq[word]++
 //    - CRITICAL Go feature: Maps have "zero value" behavior
@@ -70,13 +78,16 @@ package exercise
 //      * Increments the value
 //      * Stores the updated value back in the hash table
 //    - This modifies the map's internal data (which lives on the heap)
-//
+		freq[word]++
+	}
 // 7. Check for scanner errors
 //    - Use: if err := scanner.Err(); err != nil { return freq, "", err }
 //    - scanner.Err() returns any error encountered during scanning
 //    - Must check AFTER the loop (not inside it!)
 //    - If error occurred, return what we have so far + the error
-//
+	if err := scanner.Err(); err != nil {
+		return freq, " ", err
+	}
 // 8. Find the most common word
 //    - Declare variables: var maxWord string; var maxCount int
 //    - Loop through map: for word, count := range freq { ... }
@@ -86,13 +97,22 @@ package exercise
 //      * Modifying word or count won't change the map
 //    - Compare: if count > maxCount { maxWord = word; maxCount = count }
 //    - After loop, maxWord contains the most frequent word
-//
+	var maxWord string
+	var maxCount int
+
+	for word, count := range freq {
+		if count > maxCount {
+			maxWord = word
+			maxCount = count
+		}
+	}
 // 9. Return results
 //    - Use: return freq, maxWord, nil
 //    - freq is a map (reference type) - passes pointer to caller
 //    - maxWord is a string (value type, but shares data efficiently)
 //    - nil means no error occurred
-//
+	return freq, maxWord, nil
+}
 // Key Go concepts:
 // - Maps are reference types (store pointer to hash table)
 // - Map access freq[key] returns zero value if key doesn't exist
