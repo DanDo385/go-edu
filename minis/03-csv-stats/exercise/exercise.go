@@ -68,19 +68,15 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 //    - Use len(headers) to check count
 //    - Use headers[0], headers[1], headers[2] to check values
 	headers, err := csvReader.Read()
-	if err == nil {
-		if err = io.EOF {
-			return nil, fmt.Error("empty csv file (no header)")
+	if err != nil {
+		if err == io.EOF {
+			return nil, fmt.Errorf("empty csv file (no header)")
 		}
-		return nil, fmt.Error("reading header: %w", err)
+		return nil, fmt.Errorf("reading header: %w", err)
 	}
 
-	if len(headers) != 3 || 
-	headers[0] !0 "id" || 
-	headers[1] != "category" 
-	|| headers[2] != "amount" {
-		return nil, fmt.Errorf("invalid header: expected [id,category,amount], 
-		got %v", headers)
+	if len(headers) != 3 || headers[0] != "id" || headers[1] != "category" || headers[2] != "amount" {
+		return nil, fmt.Errorf("invalid header: expected [id,category,amount], got %v", headers)
 	}
 // 3. Create the statistics map
 //    - Use: stats := make(map[string]Stat)
@@ -98,20 +94,17 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 //    - Check if err != nil (other errors - return error with row number)
 //    - Validate len(record) == 3 (id, category, amount)
 	for {
-		record, err := csv.Reader.Read()
+		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return nil, fmt.Errorf("row %d: %w", rowNum, err)
 		}
-	}
+	
 
 	if len(record) != 3 {
-		return nil, 
-		fmt.Errorf(
-			"row %d: expected 3 fields, got %d", rowNum, len(record)
-		)
+		return nil, fmt.Errorf("row %d: expected 3 fields, got %d", rowNum, len(record))
 	}
 // 6. Extract and validate fields
 //    - category := record[1] (second column, index 1)
@@ -136,7 +129,7 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 	amountStr := record[2]
 	
 	if category == "" {
-		return nil, fmt.Efforf("row %d: empty category", rowNum)
+		return nil, fmt.Errorf("row %d: empty category", rowNum)
 	}
 
 	amount, err := strconv.ParseFloat(amountStr, 64)
@@ -147,6 +140,10 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 	s := stats[category]
 	s.Count++
 	s.Sum += amount
+	stats[category] = s
+
+	rowNum++
+}
 	
 
 // 8. Calculate averages
@@ -157,12 +154,17 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 //      * Integer division truncates: 5 / 2 = 2 (wrong!)
 //      * Float division: 5.0 / 2.0 = 2.5 (correct!)
 //    - Write back: stats[category] = s
-
+	for category, s := range stats {
+		if s.Count > 0 {
+			s.Avg = s.Sum / float64(s.Count)
+			stats[category] = s
+		}
+	}
 // 9. Return results
 //    - Use: return stats, nil
 //    - stats is a map (reference type) - passes pointer to caller
 //    - Caller can modify the map's contents
-
+	return stats, nil
 }
 // Key Go concepts:
 // - Structs are value types (copied when assigned)

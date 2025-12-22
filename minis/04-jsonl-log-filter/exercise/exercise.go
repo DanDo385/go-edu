@@ -13,34 +13,34 @@ package exercise
 // - "strings" for string manipulation (trimming whitespace)
 // - "time" for timestamp handling
 //
-// import (
-//     "bufio"
-//     "encoding/json"
-//     "fmt"
-//     "io"
-//     "sort"
-//     "strings"
-//     "time"
-// )
+import (
+    "bufio"
+    "encoding/json"
+    "fmt"
+    "io"
+    "sort"
+    "strings"
+    "time"
+)
 
 // Level represents log severity (enum-like type in Go)
 // This is an INTEGER type, not a string, for efficient comparisons
 //
 // TODO: Define the Level type
 // type Level int
-//
+type Level int 
 // Key Go concepts:
 // - Type alias: Level is a distinct type (not just an int)
 // - You can define methods on it (like UnmarshalJSON below)
 // - Enum pattern: Use iota to auto-generate sequential integer constants
 
 // TODO: Define severity level constants using iota
-// const (
-//     Debug Level = iota  // 0 - Most verbose, includes everything
-//     Info                // 1 - Informational messages
-//     Warn                // 2 - Warning messages
-//     Error               // 3 - Error messages
-// )
+const (
+    Debug Level = iota  // 0 - Most verbose, includes everything
+    Info                // 1 - Informational messages
+    Warn                // 2 - Warning messages
+    Error               // 3 - Error messages
+)
 //
 // Key Go concepts:
 // - iota is a constant generator that starts at 0 and increments
@@ -52,11 +52,11 @@ package exercise
 // This is a STRUCT TYPE (value type, not reference type)
 //
 // TODO: Define the Entry struct with JSON tags
-// type Entry struct {
-//     TS    time.Time `json:"ts"`     // Timestamp in RFC3339 format
-//     Level Level     `json:"level"`  // Severity level (will use custom unmarshaler)
-//     Msg   string    `json:"msg"`    // Log message text
-// }
+type Entry struct {
+    TS    time.Time `json:"ts"`     // Timestamp in RFC3339 format
+    Level Level       `json:"level"` // Severity level (will use custom unmarshaler)
+    Msg   string      `json:"msg"`  // Log message text
+}
 //
 // Key Go concepts for struct tags:
 // - Struct tags are metadata attached to fields
@@ -71,7 +71,7 @@ package exercise
 //
 // TODO: Implement UnmarshalJSON method for Level type
 // Function signature: func (l *Level) UnmarshalJSON(data []byte) error
-//
+func (l *Level) UnmarshalJSON(data []byte) error {
 // WHY POINTER RECEIVER (*Level, not Level)?
 // - This method MUST modify the Level value that's being unmarshaled
 // - If we used (l Level), we'd get a COPY - changes wouldn't affect original
@@ -83,23 +83,39 @@ package exercise
 // 1. Declare a string variable to hold the unmarshaled JSON value
 //    - Use: var s string
 //    - This will receive the string value from JSON (e.g., "info")
-//
+	var s string
 // 2. Unmarshal the raw JSON bytes into the string
 //    - Use: if err := json.Unmarshal(data, &s); err != nil { return err }
 //    - data is []byte containing the JSON value (e.g., `"info"` with quotes)
 //    - json.Unmarshal needs a pointer (&s) to write the result
 //    - This handles unquoting: `"info"` becomes just `info`
 //    - If data is not a valid JSON string, return error with fmt.Errorf
-//
+	if err := json.Unmarshal(data, &s); err != nil {
+		return fmt.Errorf("level must be a string: %w", err)
+	}
 // 3. Convert string to Level enum using a switch statement
 //    - Use strings.ToLower(s) for case-insensitive matching
 //    - Match cases: "debug" → Debug, "info" → Info, "warn" → Warn, "error" → Error
 //    - Also accept "warning" as an alias for Warn (multiple values in one case)
 //    - For each match: *l = <Level constant> (dereference pointer and assign)
 //    - Default case: return fmt.Errorf("invalid level: %q", s)
-//
+	switch strings.ToLower(s) {
+	case "debug":
+		*l = Debug // Assigns 0 to the memory location pointed to by l
+	case "info":
+		*l = Info // Assigns 1
+	case "warn", "warning": // Multiple case values (comma-separated)
+		*l = Warn // Assigns 2
+	case "error":
+		*l = Error // Assigns 3
+	default:
+		// Return error if string doesn't match any valid level.
+		// The fmt.Errorf allocation happens on the heap (escape analysis determines this).
+		return fmt.Errorf("invalid level: %q (must be debug/info/warn/error)", s)
+	}
 // 4. Return nil on success
-//
+	return nil
+}
 // Key Go concepts:
 // - Pointer receiver: Method can modify the receiver value
 // - Dereferencing: *l = value writes to the memory location l points to
@@ -128,7 +144,7 @@ package exercise
 // - error: Non-nil if any lines were skipped (malformed JSON), includes count
 //
 // TODO: Implement FilterLogs function
-// Function signature: func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error)
+func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //
 // PARAMETER PASSING SEMANTICS:
 // - r is an io.Reader interface (passed by value, but interfaces are small)
@@ -160,14 +176,14 @@ package exercise
 //      * nil slice has len=0, cap=0, ptr=nil
 //      * append() will allocate backing array when first element is added
 //      * Capacity grows exponentially (roughly doubles each time)
-//
+	var entries []Entry
 // 2. Create a buffered scanner for line-by-line reading
 //    - Use: scanner := bufio.NewScanner(r)
 //    - bufio.Scanner is a STRUCT (value type) but contains pointers internally
 //    - Scanner maintains internal buffer (default 64KB) for efficiency
 //    - Reads from io.Reader and splits by newlines automatically
 //    - Memory: Scanner buffer is reused for each line (no allocations per line)
-//
+	var skippedCount int
 // 3. Loop through lines
 //    - Use: for scanner.Scan() { ... }
 //    - scanner.Scan() advances to next line, returns false at EOF or error
@@ -175,12 +191,12 @@ package exercise
 //      * Returns a string (points to scanner's internal buffer)
 //      * IMPORTANT: This string is only valid until next Scan() call
 //      * If you need to keep it, make a copy: line = string([]byte(line))
-//
+		scanner := bufio.NewScanner(r)
 // 4. Skip empty lines
 //    - Use: if strings.TrimSpace(line) == "" { continue }
 //    - TrimSpace removes leading/trailing whitespace
 //    - Empty lines are common in log files (blank lines between sections)
-//
+		lineNum := 0
 // 5. Parse JSON line into Entry struct
 //    - Declare: var e Entry (zero value: TS is zero time, Level is 0, Msg is "")
 //    - Use: err := json.Unmarshal([]byte(line), &e)
