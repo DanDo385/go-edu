@@ -177,13 +177,15 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * append() will allocate backing array when first element is added
 //      * Capacity grows exponentially (roughly doubles each time)
 	var entries []Entry
+	var skippedCount int
 // 2. Create a buffered scanner for line-by-line reading
 //    - Use: scanner := bufio.NewScanner(r)
 //    - bufio.Scanner is a STRUCT (value type) but contains pointers internally
 //    - Scanner maintains internal buffer (default 64KB) for efficiency
 //    - Reads from io.Reader and splits by newlines automatically
 //    - Memory: Scanner buffer is reused for each line (no allocations per line)
-	var skippedCount int
+	scanner := bufio.NewScanner(r)
+	lineNum := 0
 // 3. Loop through lines
 //    - Use: for scanner.Scan() { ... }
 //    - scanner.Scan() advances to next line, returns false at EOF or error
@@ -191,12 +193,16 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * Returns a string (points to scanner's internal buffer)
 //      * IMPORTANT: This string is only valid until next Scan() call
 //      * If you need to keep it, make a copy: line = string([]byte(line))
-		scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		lineNum++
+		line := scanner.Text()
 // 4. Skip empty lines
 //    - Use: if strings.TrimSpace(line) == "" { continue }
 //    - TrimSpace removes leading/trailing whitespace
 //    - Empty lines are common in log files (blank lines between sections)
-		lineNum := 0
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
 // 5. Parse JSON line into Entry struct
 //    - Declare: var e Entry (zero value: TS is zero time, Level is 0, Msg is "")
 //    - Use: err := json.Unmarshal([]byte(line), &e)
@@ -208,12 +214,16 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * if err != nil { skipped++; continue }
 //      * This is "fail-soft" approach: skip bad lines but keep processing
 //      * Alternative: "fail-fast" would return error immediately
-//
+		var e Entry 
+		if err := json.Unmarshal([]byte(line), &e); err != nil {
+			skippedCount++
+			continue
+		}
 // 6. Filter by level
 //    - Check: if e.Level >= minLevel { ... }
 //    - Since Level is an int enum, >= comparison is simple and fast
 //    - Only keep entries that meet or exceed the minimum severity
-//
+  		if e.Level >= minLevel {
 // 7. Append matching entries
 //    - Use: entries = append(entries, e)
 //    - append() copies e (the Entry struct) into the slice
@@ -223,13 +233,17 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * Returns new slice header pointing to new array
 //      * Old array can be garbage collected if no other references
 //    - MUST assign result: entries = append(...) because slice header may change
-//
+		entries = append(entries, e)
+		}
+	}
 // 8. Check for scanner errors after loop
 //    - Use: if err := scanner.Err(); err != nil { return nil, err }
 //    - scanner.Err() returns nil if we reached EOF normally
 //    - Returns non-nil for I/O errors (disk failure, network timeout, etc.)
 //    - This separates I/O errors from malformed JSON (which we handled above)
-//
+		if err := scanner.Err(); err != nil { 
+			return nil, fmt.Errorf("reading input: %w", err)
+		}
 // 9. Sort entries by timestamp
 //    - Use: sort.Slice(entries, func(i, j int) bool { ... })
 //    - sort.Slice takes a "less" function (comparator)
@@ -243,7 +257,7 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * sort.Slice sorts IN-PLACE (modifies entries slice)
 //      * Uses quicksort internally (O(n log n) comparisons, O(log n) stack)
 //      * No allocations (just swaps elements in existing array)
-//
+	sort.Slice(entries, func(i, j int) bool {
 // 10. Return results
 //     - If skipped > 0:
 //       * return entries, fmt.Errorf("skipped %d malformed lines", skipped)
@@ -252,7 +266,15 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //     - If skipped == 0:
 //       * return entries, nil
 //       * Complete success
-//
+		return entries[i].TS.Before(entries[j].TS)
+	})	
+	var err error
+	if skippedCount > 0 {
+		err = fmt.Errorf("skipped %d malformed lines", skippedCount)
+	}
+	return entries, err
+}
+
 // Key Go concepts:
 // - Slices are reference types (share backing array)
 // - append() may reallocate (must assign result)
