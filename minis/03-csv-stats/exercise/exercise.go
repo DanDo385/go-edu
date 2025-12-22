@@ -24,7 +24,7 @@ import (
 type Stat struct {
     Count int     // Number of transactions in this category
     Sum   float64 // Total amount for this category
-    Avg   float64 // Average amount (Sum / Count)
+    Avg    float64 // Average amount (Sum / Count)
 }
 //
 // Key Go concepts for structs:
@@ -50,7 +50,7 @@ type Stat struct {
 // - error: Any validation or parsing errors
 //
 // TODO: Implement SummarizeCSV function
-// Function signature: func SummarizeCSV(r io.Reader) (map[string]Stat, error)
+func SummarizeCSV(r io.Reader) (map[string]Stat, error)
 //
 // Steps to implement:
 //
@@ -58,7 +58,7 @@ type Stat struct {
 //    - Use: csvReader := csv.NewReader(r)
 //    - csv.Reader is a STRUCT (value type) but contains pointers internally
 //    - The Reader maintains internal state (position in file, buffer, etc.)
-//
+	csvReader := csv.NewReader(r)
 // 2. Read and validate the header row
 //    - Use: headers, err := csvReader.Read()
 //    - Read() returns []string (slice of column values) and error
@@ -67,22 +67,45 @@ type Stat struct {
 //    - Validate headers match exactly: ["id", "category", "amount"]
 //    - Use len(headers) to check count
 //    - Use headers[0], headers[1], headers[2] to check values
-//
+	headers, err := csvReader.Read()
+	if err == nil {
+		if err = io.EOF {
+			return nil, fmt.Error("empty csv file (no header)")
+		}
+		return nil, fmt.Error("reading header: %w", err)
+	}
+
+	if len(headers) != 3 || headers[0] !0 "id" || headers[1] != "category" || headers[2] != "amount" {
+		return nil, fmt.Errorf("invalid header: expected [id,category,amount], got %v", headers)
+	}
 // 3. Create the statistics map
 //    - Use: stats := make(map[string]Stat)
 //    - Map will store category → Stat
 //    - Map is a REFERENCE type (stores pointer to hash table)
-//
+	stats := make(map[string]Stat)
 // 4. Track row number for error messages
 //    - Use: rowNum := 2 (start at 2: row 1 is header)
 //    - Increment after processing each row: rowNum++
-//
+	rowNum := 2
+
 // 5. Loop through data rows
 //    - Use: for { record, err := csvReader.Read(); ... }
 //    - Check if err == io.EOF (end of file - break from loop)
 //    - Check if err != nil (other errors - return error with row number)
 //    - Validate len(record) == 3 (id, category, amount)
-//
+	for {
+		record, err := csv.Reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("row %d: %w", rowNum, err)
+		}
+	}
+
+	if len(record) != 3 {
+		return nil, fmt.Errorf("row %d: expected 3 fields, got %d", rowNum, len(record))
+	}
 // 6. Extract and validate fields
 //    - category := record[1] (second column, index 1)
 //    - amountStr := record[2] (third column, index 2)
@@ -92,9 +115,8 @@ type Stat struct {
 //      * First arg is string to parse
 //      * Second arg is bit size (64 for float64)
 //      * If parsing fails, return error with row number and invalid value
-//
-// 7. Update statistics in map
 //    - CRITICAL: You cannot modify struct fields directly in a map!
+
 //    - WRONG: stats[category].Count++ // Compile error!
 //    - RIGHT:
 //      * Read: s := stats[category]
