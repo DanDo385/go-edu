@@ -3,6 +3,12 @@
 
 package exercise
 
+import (
+	"strings"
+	"unicode"
+	"unicode/utf8"
+)
+
 // TODO: Import required packages
 // You'll need:
 // - "strings" for string manipulation functions
@@ -20,6 +26,18 @@ package exercise
 // TODO: Implement TitleCase function
 // Function signature: func TitleCase(s string) string
 //
+
+func TitleCase(s string) string {
+	words := strings.Fields(s)
+	for i, word := range words {
+		runes := []rune(word)
+		if len(runes) > 0 {
+			runes[0] = unicode.ToUpper(runes[0])
+		}
+		words[i] = string(runes)
+	}
+	return strings.Join(words, " ")
+}
 // Steps to implement:
 // 1. Split the string into words using strings.Fields(s)
 //    - Why Fields? It automatically handles multiple spaces and all whitespace types
@@ -65,6 +83,14 @@ package exercise
 //
 // TODO: Implement Reverse function
 // Function signature: func Reverse(s string) string
+
+func Reverse(s string) string {
+	runes := []rune(s)
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
 //
 // Steps to implement:
 // 1. Convert string to []rune
@@ -95,6 +121,7 @@ package exercise
 // func Reverse(s string) string {
 //     return ""
 // }
+
 
 // RuneLen returns the number of UTF-8 runes (characters) in the string,
 // not the byte count. This is important for strings with non-ASCII characters.
@@ -129,6 +156,9 @@ package exercise
 // func RuneLen(s string) int {
 //     return 0
 // }
+func RuneLen(s string) int {
+	return utf8.RuneCountInString(s)
+}
 
 // After implementing all functions:
 // - Run: go test ./...

@@ -144,10 +144,10 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 		return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
 	}
 
-	s:= stats[category]
+	s := stats[category]
 	s.Count++
 	s.Sum += amount
-
+	
 
 // 8. Calculate averages
 //    - After reading all rows, loop through map again

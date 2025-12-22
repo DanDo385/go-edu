@@ -37,7 +37,7 @@ package exercise
 import (
 	"strings"
 	"unicode"
-	"unicode/utf8"
+	
 )
 
 // TitleCase converts the first letter of each word to uppercase.
@@ -48,35 +48,7 @@ import (
 // - unicode.ToUpper(): handles all Unicode uppercase rules (not just ASCII)
 // - Pass by value vs reference semantics
 func TitleCase(s string) string {
-	// ============================================================================
-	// PARAMETER PASSING: s is passed by VALUE
-	// ============================================================================
-	// In Go, ALL parameters are passed by value (copy the bytes).
-	// However, strings have special semantics:
-	// - A string is internally: struct { ptr *byte; len int }
-	// - When you pass a string, you copy the pointer + length (cheap!)
-	// - You DON'T copy the actual string data (it's shared)
-	// - Strings are immutable, so sharing is safe
-	//
-	// Memory: If s = "hello world", passing it copies ~16 bytes (pointer + len),
-	// not 11 bytes of actual data. This is why passing strings is efficient.
 
-	// Split the input string into words using whitespace as delimiter
-	// strings.Fields() is preferred over strings.Split() because it:
-	// 1. Handles all Unicode whitespace (spaces, tabs, newlines, non-breaking spaces)
-	// 2. Automatically trims leading/trailing whitespace
-	// 3. Collapses multiple consecutive spaces
-	//
-	// ============================================================================
-	// SLICE CREATION: words is a slice
-	// ============================================================================
-	// Slices in Go are: struct { ptr *element; len, cap int }
-	// The slice 'words' is a REFERENCE to an underlying array
-	// - The slice header lives on the stack (if it doesn't escape)
-	// - The underlying array lives on the heap (allocated by strings.Fields)
-	// - Modifying words[i] changes the underlying array
-	// - Passing words to another function passes the slice header BY VALUE
-	//   (copies ptr + len + cap, but the ptr still points to same array!)
 	words := strings.Fields(s)
 
 	// ============================================================================
