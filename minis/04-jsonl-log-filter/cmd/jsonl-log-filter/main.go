@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -9,8 +10,12 @@ import (
 )
 
 func main() {
-	// Open the testdata JSONL file
-	file, err := os.Open("minis/04-jsonl-log-filter/testdata/logs.jsonl")
+	// Define and parse command-line flags
+	filePath := flag.String("file", "minis/04-jsonl-log-filter/testdata/logs.jsonl", "Path to the JSONL log file")
+	flag.Parse()
+
+	// Open the specified JSONL file
+	file, err := os.Open(*filePath)
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
 	}
@@ -32,7 +37,6 @@ func main() {
 			entry.Msg,
 		)
 	}
-
 	fmt.Printf("\nTotal entries: %d\n", len(entries))
 }
 
