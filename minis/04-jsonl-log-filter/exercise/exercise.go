@@ -47,7 +47,6 @@ const (
 // - First const gets iota (0), subsequent consts auto-increment (1, 2, 3, ...)
 // - This creates an ordered enum where Debug < Info < Warn < Error
 // - Integer comparison (>=) is fast and safe
-
 // Entry represents a single log entry
 // This is a STRUCT TYPE (value type, not reference type)
 //
@@ -68,7 +67,6 @@ type Entry struct {
 
 // UnmarshalJSON implements custom JSON unmarshaling for Level
 // This method allows us to convert JSON strings ("debug", "info") to Level enum values
-//
 // TODO: Implement UnmarshalJSON method for Level type
 // Function signature: func (l *Level) UnmarshalJSON(data []byte) error
 func (l *Level) UnmarshalJSON(data []byte) error {
@@ -176,16 +174,16 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * nil slice has len=0, cap=0, ptr=nil
 //      * append() will allocate backing array when first element is added
 //      * Capacity grows exponentially (roughly doubles each time)
-	var entries []Entry
-	var skippedCount int
+		var entries []Entry
+		var skippedCount int
 // 2. Create a buffered scanner for line-by-line reading
 //    - Use: scanner := bufio.NewScanner(r)
 //    - bufio.Scanner is a STRUCT (value type) but contains pointers internally
 //    - Scanner maintains internal buffer (default 64KB) for efficiency
 //    - Reads from io.Reader and splits by newlines automatically
 //    - Memory: Scanner buffer is reused for each line (no allocations per line)
-	scanner := bufio.NewScanner(r)
-	lineNum := 0
+		scanner := bufio.NewScanner(r)
+		lineNum := 0
 // 3. Loop through lines
 //    - Use: for scanner.Scan() { ... }
 //    - scanner.Scan() advances to next line, returns false at EOF or error
@@ -193,9 +191,9 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * Returns a string (points to scanner's internal buffer)
 //      * IMPORTANT: This string is only valid until next Scan() call
 //      * If you need to keep it, make a copy: line = string([]byte(line))
-	for scanner.Scan() {
-		lineNum++
-		line := scanner.Text()
+		for scanner.Scan() {
+			lineNum++
+			line := scanner.Text()
 // 4. Skip empty lines
 //    - Use: if strings.TrimSpace(line) == "" { continue }
 //    - TrimSpace removes leading/trailing whitespace
@@ -257,7 +255,7 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //      * sort.Slice sorts IN-PLACE (modifies entries slice)
 //      * Uses quicksort internally (O(n log n) comparisons, O(log n) stack)
 //      * No allocations (just swaps elements in existing array)
-	sort.Slice(entries, func(i, j int) bool {
+		sort.Slice(entries, func(i, j int) bool {
 // 10. Return results
 //     - If skipped > 0:
 //       * return entries, fmt.Errorf("skipped %d malformed lines", skipped)
@@ -267,13 +265,13 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 //       * return entries, nil
 //       * Complete success
 		return entries[i].TS.Before(entries[j].TS)
-	})	
-	var err error
-	if skippedCount > 0 {
-		err = fmt.Errorf("skipped %d malformed lines", skippedCount)
+		})	
+		var err error
+		if skippedCount > 0 {
+			err = fmt.Errorf("skipped %d malformed lines", skippedCount)
+		}
+		return entries, err
 	}
-	return entries, err
-}
 
 // Key Go concepts:
 // - Slices are reference types (share backing array)
