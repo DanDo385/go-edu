@@ -15,152 +15,142 @@ type Block struct {
 }
 
 // Exercise 1: Calculate Block Hash
-// Implement a function that calculates the SHA-256 hash of a block.
-//
-// Requirements:
-// - Concatenate fields in order: Index, Timestamp, Data, PrevHash, Nonce
-// - Compute SHA-256 hash
-// - Return as hexadecimal string
-//
-// Hints:
-// - Use crypto/sha256 for hashing
-// - Use fmt.Sprintf() to concatenate fields
-// - Use encoding/hex to convert bytes to hex string
 func CalculateBlockHash(b Block) string {
-	// TODO: Implement this function
-	// 1. Concatenate all block fields into a single string
-	// 2. Compute SHA-256 hash of that string
-	// 3. Convert the hash to a hexadecimal string
-	// 4. Return the hex string
+	// TODO: Implement this function.
 
-	return "" // Replace with your implementation
+	// The hash of a block is a cryptographic fingerprint of its contents. It must be deterministic.
+
+	// Step 1: Create a single string by concatenating all the important block fields.
+	// - The order must be consistent.
+	// - Use `fmt.Sprintf` to combine `Index`, `Timestamp`, `Data`, `PrevHash`, and `Nonce`.
+	// - `record := fmt.Sprintf("%d%d%s%s%d", ...)`
+
+	// Step 2: Compute the SHA-256 hash of the string.
+	// - The hash function takes a byte slice, so convert the string: `[]byte(record)`.
+	// - `hash := sha256.Sum256([]byte(record))`
+
+	// Step 3: Convert the hash (which is a `[32]byte` array) to a hexadecimal string.
+	// - The `encoding/hex` package is perfect for this.
+	// - `return hex.EncodeToString(hash[:])`
+
+	return ""
 }
 
 // Exercise 2: Validate Proof of Work
-// Implement a function that checks if a hash meets the difficulty requirement.
-//
-// Requirements:
-// - Check if hash starts with 'difficulty' number of zeros
-// - Return true if valid, false otherwise
-//
-// Hints:
-// - Use strings.Repeat() to create target string of zeros
-// - Use strings.HasPrefix() to check the prefix
 func IsValidProof(hash string, difficulty int) bool {
-	// TODO: Implement this function
-	// 1. Create a target string with 'difficulty' number of zeros
-	// 2. Check if hash starts with this target
-	// 3. Return true if it does, false otherwise
+	// TODO: Implement this function.
 
-	return false // Replace with your implementation
+	// Proof-of-work in this system means finding a hash that starts with a certain number of zeros.
+	// The `difficulty` determines how many zeros are required.
+
+	// Step 1: Create the target prefix.
+	// - This is a string consisting of `difficulty` zeros.
+	// - `target := strings.Repeat("0", difficulty)`
+
+	// Step 2: Check if the hash has the required prefix.
+	// - `return strings.HasPrefix(hash, target)`
+
+	return false
 }
 
 // Exercise 3: Mine a Block
-// Implement the mining algorithm that finds a valid nonce.
-//
-// Requirements:
-// - Start with nonce = 0
-// - Calculate hash, check if valid
-// - If not valid, increment nonce and repeat
-// - Update block's Nonce and Hash fields when found
-// - Return the number of attempts
-//
-// Hints:
-// - Use a loop that continues until proof is valid
-// - Use CalculateBlockHash() and IsValidProof()
-// - Don't forget to update both block.Nonce and block.Hash
 func MineBlock(block *Block, difficulty int) int {
-	// TODO: Implement this function
-	// 1. Initialize attempts counter
-	// 2. Loop until valid proof found:
-	//    a. Set block.Nonce to current attempt
-	//    b. Calculate hash
-	//    c. Check if hash is valid
-	//    d. If valid, update block.Hash and return attempts
-	//    e. If not valid, increment attempts and continue
-	// 3. Return number of attempts
+	// TODO: Implement this function.
 
-	return 0 // Replace with your implementation
+	// "Mining" is the process of finding a `Nonce` that results in a block hash meeting the `difficulty` requirement.
+	// This is a brute-force search.
+
+	// Step 1: Use an infinite `for` loop that starts with `attempts := 0`.
+	// - `for attempts := 0; ; attempts++ { ... }`
+
+	// Step 2: Inside the loop, set the block's nonce.
+	// - `block.Nonce = attempts`
+
+	// Step 3: Calculate the hash for the block with this new nonce.
+	// - `hash := CalculateBlockHash(*block)`
+	// - Note: `CalculateBlockHash` takes a `Block` by value, so we dereference the pointer.
+
+	// Step 4: Check if the new hash is a valid proof.
+	// - `if IsValidProof(hash, difficulty) { ... }`
+
+	// Step 5: If the proof is valid:
+	//   - You've found the block!
+	//   - Set the block's `Hash` field: `block.Hash = hash`.
+	//   - Return the number of `attempts` it took.
+
+	return 0
 }
 
 // Exercise 4: Validate Blockchain
-// Implement a function that validates an entire blockchain.
-//
-// Requirements:
-// - Check each block's hash is correct
-// - Check each block's proof of work is valid
-// - Check each block links to previous block
-// - Return true if all checks pass, false otherwise
-//
-// Hints:
-// - Loop through blocks starting at index 1 (skip genesis)
-// - Use CalculateBlockHash() and IsValidProof()
-// - Check block.PrevHash == previousBlock.Hash
 func ValidateChain(chain []Block, difficulty int) bool {
-	// TODO: Implement this function
-	// 1. Handle edge case: empty or single block chain
-	// 2. Loop through each block (starting from index 1):
-	//    a. Get current and previous block
-	//    b. Verify stored hash matches calculated hash
-	//    c. Verify proof of work is valid
-	//    d. Verify PrevHash links to previous block
-	//    e. Return false if any check fails
-	// 3. Return true if all blocks pass all checks
+	// TODO: Implement this function.
 
-	return false // Replace with your implementation
+	// This function verifies the integrity of the entire chain.
+
+	// Step 1: Handle edge cases.
+	// - If the chain is empty, it's trivially valid.
+	// - If the chain has only one block (the genesis block), calculate its hash and check its proof-of-work.
+
+	// Step 2: Loop through the chain from the second block (`i = 1`).
+	// - `for i := 1; i < len(chain); i++ { ... }`
+
+	// Step 3: Inside the loop, for each `current` block and its `previous` block:
+	//   a. **Verify Hash Integrity**: Check if `current.Hash` is equal to the result of `CalculateBlockHash(current)`. If not, the block's data was tampered with. Return `false`.
+	//   b. **Verify Proof of Work**: Check if `IsValidProof(current.Hash, difficulty)` is `true`. If not, the block is invalid. Return `false`.
+	//   c. **Verify Chain Link**: Check if `current.PrevHash` is equal to `previous.Hash`. This is the most critical check. If they don't match, the chain is broken. Return `false`.
+
+	// Step 4: If the loop completes without finding any issues, the chain is valid. Return `true`.
+
+	return false
 }
 
 // Exercise 5: Adjust Difficulty
-// Implement difficulty adjustment to maintain target block time.
-//
-// Requirements:
-// - Calculate actual time for last N blocks
-// - Compare to expected time (targetBlockTime * N)
-// - Increase difficulty if too fast (actual < expected/2)
-// - Decrease difficulty if too slow (actual > expected*2)
-// - Keep difficulty unchanged if in acceptable range
-// - Minimum difficulty is 1
-//
-// Hints:
-// - Use timestamps of first and last block in window
-// - Number of time intervals = number of blocks - 1
-// - Return currentDifficulty if chain is too short
 func AdjustDifficulty(chain []Block, targetBlockTime int64, currentDifficulty int) int {
-	// TODO: Implement this function
-	// 1. Check if chain has enough blocks (need at least 2)
-	// 2. Determine window size (e.g., last 10 blocks)
-	// 3. Calculate actual time: lastBlock.Timestamp - firstBlock.Timestamp
-	// 4. Calculate expected time: targetBlockTime * (number of intervals)
-	// 5. Compare actual vs expected:
-	//    - If actual < expected/2: increase difficulty
-	//    - If actual > expected*2: decrease difficulty (min 1)
-	//    - Otherwise: keep current difficulty
-	// 6. Return adjusted difficulty
+	// TODO: Implement this function.
 
-	return currentDifficulty // Replace with your implementation
+	// The goal is to keep the average block time close to `targetBlockTime`.
+
+	// Step 1: Check if there are enough blocks to make an adjustment.
+	// - If the chain has fewer than, say, 10 blocks, it's too early to tell. Return the `currentDifficulty`.
+
+	// Step 2: Define a window of recent blocks to analyze.
+	// - For example, the last 10 blocks.
+
+	// Step 3: Calculate the actual time it took to mine those blocks.
+	// - `actualTime := chain[len(chain)-1].Timestamp - chain[len(chain)-10].Timestamp`
+
+	// Step 4: Calculate the expected time for that many blocks.
+	// - `expectedTime := targetBlockTime * 9` (9 intervals between 10 blocks).
+
+	// Step 5: Compare and adjust.
+	// - If `actualTime` is much faster than `expectedTime` (e.g., `actualTime < expectedTime / 2`), increase the difficulty.
+	// - If `actualTime` is much slower (e.g., `actualTime > expectedTime * 2`), decrease the difficulty.
+	// - Make sure the difficulty never goes below 1.
+	// - Otherwise, keep the difficulty the same.
+
+	return currentDifficulty
 }
 
 // Exercise 6: Calculate Mining Probability
-// Calculate the probability of finding a block within given time.
-//
-// Requirements:
-// - Calculate expected attempts based on difficulty (16^difficulty)
-// - Calculate lambda: hashRate / expectedAttempts
-// - Use Poisson formula: P = 1 - e^(-lambda * time)
-// - Return probability as a float between 0 and 1
-//
-// Hints:
-// - Use math.Pow(16, difficulty) for expected attempts
-// - Use math.Exp(x) for e^x
-// - Lambda represents the rate parameter of the Poisson process
 func MiningProbability(hashRate float64, difficulty int, timeSeconds float64) float64 {
-	// TODO: Implement this function
-	// 1. Calculate expected attempts: 16^difficulty
-	// 2. Calculate lambda: hashRate / expectedAttempts
-	// 3. Calculate probability: 1 - e^(-lambda * time)
-	// 4. Return the probability
+	// TODO: Implement this function.
 
-	return 0.0 // Replace with your implementation
+	// This function models the block finding process as a Poisson process.
+
+	// Step 1: Calculate the size of the search space (the expected number of hashes you need to try to find one block).
+	// - Since our hash is hexadecimal, each character has 16 possibilities.
+	// - `expectedAttempts := math.Pow(16, float64(difficulty))`
+
+	// Step 2: Calculate lambda (λ), the average number of blocks you expect to find per second.
+	// - `lambda := hashRate / expectedAttempts`
+
+	// Step 3: Use the Poisson probability formula to find the probability of finding *at least one* block in the given time.
+	// - The probability of finding *zero* blocks is `e^(-λ * t)`.
+	// - Therefore, the probability of finding at least one is `1 - e^(-λ * t)`.
+	// - `probability := 1 - math.Exp(-lambda * timeSeconds)`
+
+	// Step 4: Return the probability.
+	return 0.0
 }
 
 // Helper function for testing - creates a simple blockchain
@@ -193,58 +183,36 @@ func CreateTestChain(numBlocks int, difficulty int) []Block {
 }
 
 // STRETCH GOAL: Merkle Root
-// Build a Merkle tree from a list of transactions and return the root hash.
-//
-// A Merkle tree is a binary tree of hashes where:
-// - Leaf nodes are hashes of individual transactions
-// - Internal nodes are hashes of their children concatenated
-// - The root is a single hash representing all transactions
-//
-// This allows efficient verification that a transaction is in a block.
 func BuildMerkleRoot(transactions []string) string {
-	// TODO: (Stretch goal - optional)
-	// 1. If no transactions, return empty or zero hash
-	// 2. Create leaf nodes (hash of each transaction)
-	// 3. While more than one node remains:
-	//    a. Pair up nodes
-	//    b. Hash each pair together
-	//    c. If odd number, duplicate last node
-	// 4. Return the final root hash
+	// TODO: (Stretch goal) Implement a proper Merkle tree.
+
+	// Step 1: Handle edge cases (zero or one transaction).
+	// Step 2: Create the "leaf" nodes by hashing each individual transaction.
+	// Step 3: In a loop, build the tree level by level until only one hash (the root) remains.
+	//   - `for len(nodes) > 1 { ... }`
+	//   - Inside the loop, take pairs of hashes, concatenate them, and hash the result to create the parent nodes for the next level.
+	//   - If you have an odd number of nodes at any level, duplicate the last one and hash it with itself.
+	// Step 4: Return the final root hash.
 
 	return ""
 }
 
 // STRETCH GOAL: Mining Pool Share Calculation
-// Calculate how rewards should be distributed among pool miners
-// based on their contributed hash power.
-//
-// A mining pool combines hash power from multiple miners.
-// When the pool finds a block, the reward is split proportionally.
-type Miner struct {
-	ID       string
-	HashRate float64
-	Shares   int // Number of "near-valid" hashes submitted
-}
-
 func CalculatePoolRewards(miners []Miner, blockReward float64) map[string]float64 {
-	// TODO: (Stretch goal - optional)
-	// 1. Calculate total shares from all miners
-	// 2. For each miner, calculate their proportion: miner.Shares / totalShares
-	// 3. Multiply proportion by blockReward
-	// 4. Return map of miner ID to reward amount
+	// TODO: (Stretch goal) Implement proportional reward distribution.
+
+	// Step 1: Calculate the total number of shares contributed by all miners in the pool.
+	// Step 2: Create a map to store the rewards for each miner.
+	// Step 3: Loop through each miner.
+	//   - Calculate their proportion of the total shares: `float64(miner.Shares) / float64(totalShares)`.
+	//   - Calculate their reward: `proportion * blockReward`.
+	//   - Store it in the rewards map.
+	// Step 4: Return the map.
 
 	return nil
 }
 
 // STRETCH GOAL: Estimate Attack Cost
-// Calculate the cost for an attacker to rewrite N blocks.
-//
-// To rewrite history, an attacker must:
-// 1. Re-mine the target block with modified data
-// 2. Re-mine all subsequent blocks
-// 3. Catch up to (and surpass) the honest chain
-//
-// This requires enormous computational resources.
 func EstimateAttackCost(
 	numBlocks int,
 	difficulty int,
@@ -253,37 +221,37 @@ func EstimateAttackCost(
 	electricityCostPerKWh float64,
 	minerWattage float64,
 ) float64 {
-	// TODO: (Stretch goal - optional)
-	// 1. Calculate expected time for attacker to mine N blocks
-	// 2. During that time, honest miners add more blocks
-	// 3. Calculate total blocks attacker must mine
-	// 4. Calculate energy consumption
-	// 5. Return total electricity cost
+	// TODO: (Stretch goal) Implement the attack cost estimation.
+
+	// This is a simplified model. It assumes the attacker must re-mine N blocks plus any blocks the honest network finds during the attack.
+
+	// Step 1: Calculate the expected number of hashes per block for the given difficulty.
+	// Step 2: Calculate the time it would take the attacker to mine `numBlocks`.
+	// Step 3: Calculate how many blocks the honest network would find in that time.
+	// Step 4: The attacker must mine the original `numBlocks` plus the new honest blocks. Calculate the total time this would take the attacker.
+	// Step 5: Convert this total time into energy usage (kWh) based on the `minerWattage`.
+	// Step 6: Multiply the energy usage by the `electricityCostPerKWh` to get the final cost.
 
 	return 0.0
 }
 
 // STRETCH GOAL: Selfish Mining Simulation
-// Simulate a selfish mining attack where a miner withholds blocks
-// to gain advantage over honest miners.
-//
-// Selfish mining: Instead of broadcasting found blocks immediately,
-// attacker keeps them secret and continues mining on their private chain.
-// If they get ahead, they broadcast their longer chain, making honest
-// miners' work worthless.
 func SimulateSelfishMining(
 	honestHashRate float64,
 	selfishHashRate float64,
 	numBlocks int,
 	difficulty int,
 ) (honestBlocks int, selfishBlocks int) {
-	// TODO: (Stretch goal - optional)
-	// 1. Both honest and selfish miners mine blocks
-	// 2. Honest miners broadcast immediately
-	// 3. Selfish miner withholds blocks
-	// 4. Selfish miner broadcasts when they're ahead
-	// 5. Return count of blocks each side successfully added
+	// TODO: (Stretch goal) Implement a simplified selfish mining simulation.
 
+	// This is a complex simulation. A simplified model would be:
+	// - In a loop, decide who finds the next block based on their proportion of the total hash rate.
+	// - If the honest network finds a block, increment their public chain length.
+	// - If the selfish miner finds a block, increment their *private* chain length.
+	// - Implement the selfish miner's strategy:
+	//   - If their private chain is longer than the public chain by 2 or more, they can broadcast it, invalidating the public chain's work.
+	//   - If the public chain catches up, they are forced to broadcast their chain in a race.
+	// - Keep track of how many blocks each side successfully gets into the "real" chain over a simulation of `numBlocks` total blocks.
 	return 0, 0
 }
 

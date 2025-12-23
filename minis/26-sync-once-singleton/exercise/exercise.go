@@ -25,15 +25,19 @@ type Counter struct {
 }
 
 // Initialize sets the counter value exactly once.
-//
-// REQUIREMENTS:
-// - Use sync.Once to ensure initialization runs exactly once
-// - Set c.value to the provided initialValue
-// - Subsequent calls should be no-ops (value doesn't change)
-//
-// HINT: Use c.once.Do(func() { ... })
 func (c *Counter) Initialize(initialValue int) {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+
+	// `sync.Once` is a synchronization primitive that will perform an action exactly once.
+	// It's commonly used for thread-safe, lazy initialization.
+
+	// Step 1: Use the `Do` method of the `sync.Once` field.
+	// - `c.once.Do(func() { ... })`
+	// - The function you pass to `Do` will be executed only on the very first call to `Initialize` across all goroutines.
+	// - All subsequent calls to `Initialize` will do nothing, but they will wait for the first call's function to complete if it's still running.
+
+	// Step 2: Inside the function, perform the initialization.
+	// - `c.value = initialValue`
 }
 
 // GetValue returns the current counter value.
@@ -47,28 +51,30 @@ func (c *Counter) GetValue() int {
 
 // ConfigManager manages a singleton configuration.
 type ConfigManager struct {
-	// TODO: Add necessary fields
-	// You'll need:
-	// - A *Config field to store the configuration
-	// - A sync.Once to ensure one-time initialization
+	cfg  *Config
+	once sync.Once
 }
 
 // Global config manager instance
 var configManager = &ConfigManager{}
 
 // GetConfig returns the singleton configuration.
-//
-// REQUIREMENTS:
-// - Initialize the config exactly once using sync.Once
-// - Return a *Config with:
-//   - DatabaseURL: "postgres://localhost:5432/app"
-//   - APIKey: "secret-key-123"
-//   - Port: 8080
-// - All calls should return the same *Config instance
-//
-// HINT: Use sync.Once.Do() to initialize the config field
 func GetConfig() *Config {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+
+	// This is the classic singleton pattern in Go. A package-level variable (`configManager`) holds the instance,
+	// and a function (`GetConfig`) provides global access to it, ensuring it's initialized only once.
+
+	// Step 1: Use the `Do` method of the global `configManager`'s `sync.Once` field.
+	// - `configManager.once.Do(func() { ... })`
+
+	// Step 2: Inside the function, create the configuration.
+	// - This is where you would typically read from a file, parse environment variables, etc. For this exercise, you'll just create the struct.
+	// - `configManager.cfg = &Config{...}`
+
+	// Step 3: Return the config.
+	// - `return configManager.cfg`
+	// - Because `Do` blocks until the function completes, you are guaranteed that `configManager.cfg` is not nil when you return it, even on the very first call.
 	return nil
 }
 
@@ -78,28 +84,29 @@ func GetConfig() *Config {
 
 // DatabaseManager manages a singleton database connection.
 type DatabaseManager struct {
-	// TODO: Add necessary fields
-	// You'll need:
-	// - A *Database field
-	// - A sync.Once
-	// - An error field to store initialization errors
+	db      *Database
+	once    sync.Once
+	initErr error
 }
 
 var dbManager = &DatabaseManager{}
 
 // GetDatabase returns the singleton database connection or an error.
-//
-// REQUIREMENTS:
-// - Initialize the database exactly once
-// - If connectionURL is empty, set initErr to an error and return it
-// - If connectionURL is valid, create a Database with:
-//   - URL: connectionURL
-//   - Connected: true
-// - Return the same error on subsequent calls if initialization failed
-//
-// HINT: Store the initialization error in a field and return it
 func GetDatabase(connectionURL string) (*Database, error) {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+
+	// This pattern extends the singleton to handle initialization that can fail.
+	// The key is to perform the initialization once, and if it fails, *always* return the same error on subsequent calls.
+
+	// Step 1: Use `dbManager.once.Do`.
+	// Step 2: Inside the `Do` function:
+	//   - Check if the `connectionURL` is valid.
+	//   - If it's invalid, create a new error and assign it to `dbManager.initErr`. Then `return`.
+	//   - If it's valid, create the `*Database` instance and assign it to `dbManager.db`.
+	// Step 3: After `Do` has run, return the results.
+	//   - `return dbManager.db, dbManager.initErr`
+	// - On the first call, `Do` runs and populates either `db` or `initErr`.
+	// - On all other calls, `Do` does nothing, and the function simply returns the already-populated fields.
 	return nil, nil
 }
 
@@ -108,22 +115,19 @@ func GetDatabase(connectionURL string) (*Database, error) {
 // ============================================================================
 
 var (
-	// TODO: Add global variables for logger singleton
-	// You'll need:
-	// - logger *Logger
-	// - loggerOnce sync.Once
+	logger     *Logger
+	loggerOnce sync.Once
 )
 
 // GetLogger returns the singleton logger instance.
-//
-// REQUIREMENTS:
-// - Initialize the logger exactly once with name "AppLogger"
-// - Create a new Logger: &Logger{Name: name, Output: []string{}}
-// - Return the same instance on all calls
-//
-// HINT: Use package-level variables
 func GetLogger() *Logger {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+
+	// This is a slightly different style of singleton that uses package-level variables directly instead of a manager struct. It's more direct for simple cases.
+
+	// Step 1: Use the package-level `loggerOnce.Do`.
+	// Step 2: Inside the `Do` function, initialize the package-level `logger` variable.
+	// Step 3: Return the `logger` variable.
 	return nil
 }
 
@@ -132,18 +136,17 @@ func GetLogger() *Logger {
 // ============================================================================
 
 var (
-	// TODO: Add global variables for cache singleton
+	cache     *Cache
+	cacheOnce sync.Once
 )
 
 // GetCache returns the singleton cache instance.
-//
-// REQUIREMENTS:
-// - Initialize the cache exactly once using NewCache()
-// - Return the same instance on all calls
-//
-// HINT: Similar to logger, but call NewCache() for initialization
 func GetCache() *Cache {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - This follows the same pattern as `GetLogger`.
+	// - Use the package-level `cacheOnce.Do`.
+	// - Inside the `Do` function, call `NewCache()` and assign the result to the package-level `cache` variable.
+	// - Return the `cache` variable.
 	return nil
 }
 
@@ -153,20 +156,19 @@ func GetCache() *Cache {
 
 // MetricsManager manages singleton metrics.
 type MetricsManager struct {
-	// TODO: Add fields for metrics singleton
+	metrics *Metrics
+	once    sync.Once
 }
 
 var metricsManager = &MetricsManager{}
 
 // GetMetrics returns the singleton metrics instance.
-//
-// REQUIREMENTS:
-// - Initialize metrics exactly once with &Metrics{RequestCount: 0, ErrorCount: 0}
-// - Return the same instance on all calls
-//
-// HINT: Same pattern as GetConfig
 func GetMetrics() *Metrics {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - This follows the same pattern as `GetConfig`.
+	// - Use the global `metricsManager.once.Do`.
+	// - Initialize `metricsManager.metrics`.
+	// - Return `metricsManager.metrics`.
 	return nil
 }
 
@@ -176,49 +178,42 @@ func GetMetrics() *Metrics {
 
 // Application with lazily-initialized components.
 type Application struct {
-	// TODO: Add fields for lazy initialization
-	// Each component needs:
-	// - Its own sync.Once
-	// - Storage for the component instance
-	//
-	// Components:
-	// - database (*Database)
-	// - logger (*Logger)
-	// - cache (*Cache)
+	dbOnce sync.Once
+	db     *Database
+
+	loggerOnce sync.Once
+	logger     *Logger
+
+	cacheOnce sync.Once
+	cache     *Cache
 }
 
 // GetDB returns the database, initializing it lazily.
-//
-// REQUIREMENTS:
-// - Initialize database on first call with &Database{URL: "localhost:5432", Connected: true}
-// - Return the same instance on subsequent calls
-// - Use app's database-specific sync.Once
-//
-// HINT: Each component has its own Once field
 func (app *Application) GetDB() *Database {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+
+	// This pattern is "lazy initialization". The database connection is not created when the `Application` struct is created, but only when it's first requested.
+	// This is useful for expensive resources that may not always be needed.
+
+	// Step 1: Use the `sync.Once` specific to the database field.
+	// - `app.dbOnce.Do(func() { ... })`
+
+	// Step 2: Inside the `Do` function, initialize `app.db`.
+	// Step 3: Return `app.db`.
 	return nil
 }
 
 // GetAppLogger returns the logger, initializing it lazily.
-//
-// REQUIREMENTS:
-// - Initialize logger on first call with &Logger{Name: "AppLogger", Output: []string{}}
-// - Return the same instance on subsequent calls
-// - Use app's logger-specific sync.Once
 func (app *Application) GetAppLogger() *Logger {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+	// - Follow the same lazy initialization pattern as `GetDB`, but use `app.loggerOnce` and initialize `app.logger`.
 	return nil
 }
 
 // GetAppCache returns the cache, initializing it lazily.
-//
-// REQUIREMENTS:
-// - Initialize cache on first call using NewCache()
-// - Return the same instance on subsequent calls
-// - Use app's cache-specific sync.Once
 func (app *Application) GetAppCache() *Cache {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+	// - Follow the same lazy initialization pattern, but use `app.cacheOnce` and initialize `app.cache` by calling `NewCache()`.
 	return nil
 }
 
@@ -228,32 +223,28 @@ func (app *Application) GetAppCache() *Cache {
 
 // InitOnce is a wrapper for idempotent initialization.
 type InitOnce struct {
-	// TODO: Add fields for tracking initialization
-	// You'll need:
-	// - sync.Once
-	// - A field to track if initialization completed
+	once        sync.Once
+	initialized uint32 // atomic flag
 }
 
 // Do runs f exactly once and marks initialization as complete.
-//
-// REQUIREMENTS:
-// - Run f exactly once using sync.Once
-// - After f completes (even if it panics), mark as initialized
-//
-// HINT: Use defer to ensure marking happens even on panic
 func (io *InitOnce) Do(f func()) {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+
+	// This extends `sync.Once` to also record that the initialization has finished.
+
+	// Step 1: Use the `Do` method of the embedded `sync.Once`.
+	// Step 2: Inside the `Do` function, you need to both run the user's function `f` and set your `initialized` flag.
+	// - To ensure the flag is set *after* `f` completes (even if `f` panics), use `defer`.
+	// - `defer atomic.StoreUint32(&io.initialized, 1)`
+	// - Then, call the function: `f()`.
 }
 
 // IsInitialized returns whether initialization has completed.
-//
-// REQUIREMENTS:
-// - Return true if Do() has been called and completed
-// - Return false otherwise
-//
-// HINT: Check the initialized field you added
 func (io *InitOnce) IsInitialized() bool {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+	// - Atomically read the `initialized` flag.
+	// - Use `atomic.LoadUint32(&io.initialized) == 1`.
 	return false
 }
 
@@ -262,25 +253,22 @@ func (io *InitOnce) IsInitialized() bool {
 // ============================================================================
 
 // ResettableOnce is like sync.Once but can be reset for testing.
-//
-// WARNING: This is ONLY for tests. Not thread-safe during reset!
 type ResettableOnce struct {
-	// TODO: Add fields
-	// You'll need:
-	// - sync.Once
+	once sync.Once
 }
 
 // Do runs f exactly once (until Reset is called).
 func (ro *ResettableOnce) Do(f func()) {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+	// - This just calls the `Do` method of the embedded `sync.Once`.
 }
 
 // Reset resets the once so Do() will run again.
-//
-// WARNING: Not thread-safe! Only call in tests when no goroutines are running.
 func (ro *ResettableOnce) Reset() {
-	// TODO: Implement this method
-	// HINT: Create a new sync.Once
+	// TODO: Implement this method.
+	// - A `sync.Once` cannot be truly "reset". Its internal state is not exposed.
+	// - The trick is to replace the `sync.Once` value itself with a new, zero-value `sync.Once`.
+	// - `ro.once = sync.Once{}`
 }
 
 // ============================================================================
@@ -289,21 +277,20 @@ func (ro *ResettableOnce) Reset() {
 
 // FactorySingleton manages a singleton created by a factory function.
 type FactorySingleton struct {
-	// TODO: Add fields
-	// You'll need:
-	// - instance interface{} (to store any type)
-	// - once sync.Once
+	instance interface{}
+	once     sync.Once
 }
 
 // GetOrCreate returns the singleton, creating it with factory if needed.
-//
-// REQUIREMENTS:
-// - On first call, run factory() and store the result
-// - On subsequent calls, return the stored instance
-// - Use sync.Once to ensure factory runs exactly once
-//
-// HINT: Store the result of factory() in the instance field
 func (fs *FactorySingleton) GetOrCreate(factory func() interface{}) interface{} {
-	// TODO: Implement this method
+	// TODO: Implement this method.
+
+	// This pattern is a more generic version of the singleton. Instead of hard-coding the initialization logic,
+	// it accepts a "factory" function that knows how to create the instance.
+
+	// Step 1: Use `fs.once.Do`.
+	// Step 2: Inside the `Do` function, call the `factory` function and store its result in `fs.instance`.
+	// - `fs.instance = factory()`
+	// Step 3: Return `fs.instance`.
 	return nil
 }

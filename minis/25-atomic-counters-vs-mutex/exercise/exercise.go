@@ -12,68 +12,45 @@ import "sync/atomic"
 // ============================================================================
 
 // NewAtomicCounter creates a new atomic counter initialized to 0.
-//
-// REQUIREMENTS:
-// - Return a pointer to AtomicCounter with value = 0
-//
-// EXAMPLE:
-//   counter := NewAtomicCounter()
-//   counter.Increment()
-//   fmt.Println(counter.Value())  // 1
 func NewAtomicCounter() *AtomicCounter {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - Return a new instance of `AtomicCounter`.
+	// - The zero value is fine, as int64 defaults to 0.
+	return &AtomicCounter{}
 }
 
 // Increment atomically increments the counter by 1.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to increment value
-//
-// HINT: atomic.AddInt64(&c.value, 1)
 func (c *AtomicCounter) Increment() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.AddInt64` to safely add 1 to the value.
+	// - `atomic.AddInt64` takes a pointer to the integer and the delta.
+	// - It's a single, uninterruptible hardware instruction, making it much faster than a mutex for simple arithmetic.
 }
 
 // Decrement atomically decrements the counter by 1.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to decrement value
-//
-// HINT: Use a negative delta
 func (c *AtomicCounter) Decrement() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.AddInt64` with a negative delta.
 }
 
 // Add atomically adds delta to the counter.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to add delta
-//
-// HINT: atomic.AddInt64(&c.value, delta)
 func (c *AtomicCounter) Add(delta int64) {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.AddInt64` with the given delta.
 }
 
 // Value atomically reads the counter value.
-//
-// REQUIREMENTS:
-// - Use atomic.LoadInt64 to read value
-//
-// HINT: return atomic.LoadInt64(&c.value)
 func (c *AtomicCounter) Value() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - A simple `return c.value` would be a "dirty read" and is not safe.
+	// - Use `atomic.LoadInt64` to safely read the value without being affected by another goroutine's write operation.
 	return 0
 }
 
 // Reset atomically sets the counter to 0 and returns the old value.
-//
-// REQUIREMENTS:
-// - Use atomic.SwapInt64 to set value to 0 and return old value
-//
-// HINT: return atomic.SwapInt64(&c.value, 0)
 func (c *AtomicCounter) Reset() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.SwapInt64` to set the value to 0 and get the previous value in a single atomic operation.
 	return 0
 }
 
@@ -82,56 +59,39 @@ func (c *AtomicCounter) Reset() int64 {
 // ============================================================================
 
 // NewAtomicFlag creates a new atomic flag initialized to false.
-//
-// REQUIREMENTS:
-// - Return a pointer to AtomicFlag with value = 0 (false)
-//
-// EXAMPLE:
-//   flag := NewAtomicFlag()
-//   flag.Set()
-//   fmt.Println(flag.IsSet())  // true
 func NewAtomicFlag() *AtomicFlag {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - Return a new `AtomicFlag`.
+	// - The zero value (0) will represent `false`.
+	return &AtomicFlag{}
 }
 
 // Set atomically sets the flag to true.
-//
-// REQUIREMENTS:
-// - Use atomic.StoreInt64 to set value to 1
-//
-// HINT: atomic.StoreInt64(&f.value, 1)
 func (f *AtomicFlag) Set() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.StoreInt64` to unconditionally set the value to 1 (representing `true`).
 }
 
 // Clear atomically sets the flag to false.
-//
-// REQUIREMENTS:
-// - Use atomic.StoreInt64 to set value to 0
 func (f *AtomicFlag) Clear() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.StoreInt64` to set the value to 0 (representing `false`).
 }
 
 // IsSet atomically reads the flag value.
-//
-// REQUIREMENTS:
-// - Use atomic.LoadInt64 to read value
-// - Return true if value == 1, false otherwise
 func (f *AtomicFlag) IsSet() bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.LoadInt64` to safely read the value.
+	// - Return `true` if the loaded value is 1.
 	return false
 }
 
 // TestAndSet atomically sets the flag to true and returns the old value.
-//
-// REQUIREMENTS:
-// - Use atomic.SwapInt64 to set value to 1 and return old value
-// - Return true if old value was 1, false if it was 0
-//
-// HINT: old := atomic.SwapInt64(&f.value, 1); return old == 1
 func (f *AtomicFlag) TestAndSet() bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - This is a common atomic operation, often called "get and set".
+	// - Use `atomic.SwapInt64` to set the value to 1 and get the old value in a single atomic step.
+	// - Return `true` if the old value was 1.
 	return false
 }
 
@@ -140,39 +100,34 @@ func (f *AtomicFlag) TestAndSet() bool {
 // ============================================================================
 
 // NewRateLimiter creates a new rate limiter.
-//
-// REQUIREMENTS:
-// - Set maxTokens to capacity
-// - Set refillRate to tokensPerSecond
-// - Set tokens to capacity (start full)
-// - Set lastRefill to current Unix timestamp
-// - Return pointer to RateLimiter
-//
-// EXAMPLE:
-//   limiter := NewRateLimiter(10, 5)  // 10 max tokens, refill 5/sec
-//   limiter.Allow()  // true (consumes 1 token)
 func NewRateLimiter(capacity, tokensPerSecond int64) *RateLimiter {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Initialize and return a `RateLimiter`.
+	// - `tokens` and `maxTokens` should be set to `capacity`.
+	// - `refillRate` should be `tokensPerSecond`.
+	// - `lastRefill` should be the current Unix time (`time.Now().Unix()`).
 	return nil
 }
 
 // Allow attempts to consume one token.
-//
-// REQUIREMENTS:
-// - Refill tokens based on elapsed time since lastRefill
-// - Try to consume one token atomically
-// - Return true if successful, false if no tokens available
-//
-// ALGORITHM:
-// 1. Get current time (Unix seconds)
-// 2. Load lastRefill atomically
-// 3. If time has passed, try to update lastRefill with CAS
-// 4. If successful, calculate new tokens and store
-// 5. Try to consume a token using CAS loop
-//
-// HINT: Use atomic.LoadInt64, atomic.CompareAndSwapInt64
 func (rl *RateLimiter) Allow() bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// This is a lock-free implementation of the token bucket algorithm. It's more complex than a mutex-based one but can have higher performance under heavy contention.
+
+	// Step 1: Refill tokens if necessary.
+	// - `now := time.Now().Unix()`
+	// - `last := atomic.LoadInt64(&rl.lastRefill)`
+	// - If `now > last`, it's time to refill.
+	// - To prevent multiple goroutines from refilling at the same time, use `atomic.CompareAndSwapInt64(&rl.lastRefill, last, now)`. Only the goroutine that succeeds in this CAS will perform the refill.
+	// - The winning goroutine should calculate the number of new tokens (`elapsed * rl.refillRate`) and add them to `rl.tokens` using another CAS loop to handle concurrent updates. Be careful not to exceed `rl.maxTokens`.
+
+	// Step 2: Try to consume a token.
+	// - Use a `for` loop and CAS to decrement `rl.tokens`.
+	// - `tokens := atomic.LoadInt64(&rl.tokens)`
+	// - If `tokens <= 0`, return `false`.
+	// - `if atomic.CompareAndSwapInt64(&rl.tokens, tokens, tokens-1)`, the operation succeeded, so return `true`.
+	// - If the CAS fails, the loop will retry, loading the new value of `tokens`.
 	return false
 }
 
@@ -181,40 +136,35 @@ func (rl *RateLimiter) Allow() bool {
 // ============================================================================
 
 // NewAtomicMax creates a new atomic max tracker.
-//
-// REQUIREMENTS:
-// - Initialize max to minimum possible int64 value
-// - Return pointer to AtomicMax
-//
-// HINT: Use math.MinInt64 or -9223372036854775808
 func NewAtomicMax() *AtomicMax {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - To correctly track the maximum, the initial value should be the lowest possible value for an `int64`.
+	// - Use `math.MinInt64` from the `math` package.
 	return nil
 }
 
 // Update atomically updates the maximum if value is greater.
-//
-// REQUIREMENTS:
-// - Use CAS loop to update max only if value > current max
-// - Don't update if value <= current max
-//
-// ALGORITHM:
-// 1. Load current max
-// 2. If value <= max, return (no update needed)
-// 3. Try to CAS max from old to value
-// 4. If CAS fails, retry (another goroutine updated max)
-//
-// HINT: Use atomic.LoadInt64 and atomic.CompareAndSwapInt64 in a loop
 func (am *AtomicMax) Update(value int64) {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// This function uses a "Compare-And-Swap" (CAS) loop, which is a common pattern in lock-free programming.
+
+	// Step 1: Start an infinite `for` loop.
+	// Step 2: Inside the loop, atomically load the current maximum value.
+	// - `current := atomic.LoadInt64(&am.max)`
+	// Step 3: Compare the new `value` with the `current` max.
+	// - If `value <= current`, then there's nothing to update. You can `return` from the function.
+	// Step 4: If the new `value` is greater, try to update the max.
+	// - `if atomic.CompareAndSwapInt64(&am.max, current, value)`
+	//   - This operation says: "If the value at `&am.max` is still `current`, then update it to `value`." It does this in a single, atomic step.
+	//   - If it returns `true`, you successfully updated the max. You can `return` from the function.
+	//   - If it returns `false`, it means another goroutine changed `am.max` between your `Load` and your `CompareAndSwap`. The loop will then repeat, loading the new current value and trying again.
 }
 
 // Max atomically reads the current maximum.
-//
-// REQUIREMENTS:
-// - Use atomic.LoadInt64 to read max
 func (am *AtomicMax) Max() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.LoadInt64` for a safe read.
 	return 0
 }
 
@@ -223,38 +173,32 @@ func (am *AtomicMax) Max() int64 {
 // ============================================================================
 
 // NewSpinLock creates a new spinlock.
-//
-// REQUIREMENTS:
-// - Initialize state to 0 (unlocked)
-// - Return pointer to SpinLock
 func NewSpinLock() *SpinLock {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - The zero value of `SpinLock` is a valid unlocked state (state = 0).
+	return &SpinLock{}
 }
 
 // Lock acquires the spinlock (busy-waits if locked).
-//
-// REQUIREMENTS:
-// - Use atomic.SwapInt64 to try to set state to 1
-// - If old value was 0, lock acquired
-// - If old value was 1, spin (loop and retry)
-//
-// ALGORITHM:
-// 1. Loop: Swap state with 1
-// 2. If old value was 0, break (acquired)
-// 3. If old value was 1, continue spinning
-//
-// HINT: for atomic.SwapInt64(&sl.state, 1) != 0 { }
 func (sl *SpinLock) Lock() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// A spinlock repeatedly tries to acquire a lock in a tight loop without sleeping.
+	// This is efficient if the lock is held for a very short time, but wastes CPU if the lock is held for a long time.
+
+	// Step 1: Use a `for` loop that attempts to acquire the lock.
+	// - `atomic.SwapInt64(&sl.state, 1)` attempts to set the state to 1 (locked) and returns the *old* state.
+	// - If the old state was 0 (unlocked), then you have successfully acquired the lock. The loop condition `... != 0` will be false, and the loop will terminate.
+	// - If the old state was 1 (locked), it means someone else holds the lock. The swap still sets the state to 1, and the loop condition `1 != 0` is true, so the loop continues to "spin".
+	// - A common implementation is `for atomic.SwapInt64(&sl.state, 1) != 0 {}`.
+	// - In real-world code, you might add `runtime.Gosched()` inside the loop to yield the processor, preventing the spinner from starving other goroutines.
 }
 
 // Unlock releases the spinlock.
-//
-// REQUIREMENTS:
-// - Use atomic.StoreInt64 to set state to 0
 func (sl *SpinLock) Unlock() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - To unlock, simply set the state back to 0.
+	// - Use `atomic.StoreInt64(&sl.state, 0)`.
 }
 
 // ============================================================================
@@ -262,38 +206,26 @@ func (sl *SpinLock) Unlock() {
 // ============================================================================
 
 // NewAtomicState creates a new atomic state machine.
-//
-// REQUIREMENTS:
-// - Initialize current to StateIdle
-// - Return pointer to AtomicState
 func NewAtomicState() *AtomicState {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - The state machine should start in `StateIdle`.
+	return &AtomicState{current: StateIdle}
 }
 
 // CurrentState atomically reads the current state.
-//
-// REQUIREMENTS:
-// - Use atomic.LoadInt64 to read current
 func (as *AtomicState) CurrentState() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.LoadInt64` to safely read the `current` state.
 	return 0
 }
 
 // Transition atomically transitions from expectedCurrent to newState.
-//
-// REQUIREMENTS:
-// - Use atomic.CompareAndSwapInt64 to transition
-// - Return true if transition succeeded, false otherwise
-//
-// EXAMPLE:
-//   state := NewAtomicState()  // StateIdle
-//   ok := state.Transition(StateIdle, StateRunning)  // true
-//   ok = state.Transition(StateIdle, StateRunning)   // false (not in StateIdle)
-//
-// HINT: return atomic.CompareAndSwapInt64(&as.current, expectedCurrent, newState)
 func (as *AtomicState) Transition(expectedCurrent, newState int64) bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - This is the core of the state machine's safety.
+	// - Use `atomic.CompareAndSwapInt64`.
+	// - It will only set the state to `newState` if the `current` state is equal to `expectedCurrent`.
+	// - It returns `true` if the swap was successful, and `false` otherwise. This allows the caller to know if their attempted state transition was valid.
 	return false
 }
 
@@ -302,41 +234,33 @@ func (as *AtomicState) Transition(expectedCurrent, newState int64) bool {
 // ============================================================================
 
 // NewReferenceCounter creates a new reference counter.
-//
-// REQUIREMENTS:
-// - Initialize count to 0
-// - Return pointer to ReferenceCounter
 func NewReferenceCounter() *ReferenceCounter {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - Initialize the counter with a `count` of 0.
+	return &ReferenceCounter{}
 }
 
 // Acquire increments the reference count.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to increment count by 1
 func (rc *ReferenceCounter) Acquire() {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Atomically increment the `count`.
+	// - Use `atomic.AddInt64`.
 }
 
 // Release decrements the reference count and returns true if count reached 0.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to decrement count by 1
-// - Return true if new count is 0, false otherwise
-//
-// HINT: newCount := atomic.AddInt64(&rc.count, -1); return newCount == 0
 func (rc *ReferenceCounter) Release() bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Atomically decrement the `count`.
+	// - `atomic.AddInt64` returns the *new* value after the addition.
+	// - You can check this new value to see if the count has reached zero.
+	// - Return `true` if the new count is 0, indicating that the resource can now be freed.
 	return false
 }
 
 // Count atomically reads the current count.
-//
-// REQUIREMENTS:
-// - Use atomic.LoadInt64 to read count
 func (rc *ReferenceCounter) Count() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `atomic.LoadInt64` for a safe read.
 	return 0
 }
 
@@ -345,38 +269,33 @@ func (rc *ReferenceCounter) Count() int64 {
 // ============================================================================
 
 // NewConfigManager creates a new config manager.
-//
-// REQUIREMENTS:
-// - Initialize with default config (Timeout=30, MaxRetries=3, BatchSize=100)
-// - Use atomic.Value.Store to store the config
-// - Return pointer to ConfigManager
-//
-// HINT: cm := &ConfigManager{}; cm.config.Store(&Config{...}); return cm
 func NewConfigManager() *ConfigManager {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// `atomic.Value` is a special type for atomically storing and loading values of any type.
+	// It's especially useful for things like configuration that are read often and updated infrequently.
+
+	// Step 1: Create a `ConfigManager`.
+	// Step 2: Create an initial `Config` struct.
+	// Step 3: Store a pointer to this initial config in the `atomic.Value` field.
+	// - `cm.config.Store(&Config{...})`
+	// - You must store a pointer; `atomic.Value` cannot store `nil` directly after the first `Store`.
 	return nil
 }
 
 // Update atomically updates the configuration.
-//
-// REQUIREMENTS:
-// - Use atomic.Value.Store to store the new config pointer
-//
-// HINT: cm.config.Store(newConfig)
 func (cm *ConfigManager) Update(newConfig *Config) {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `cm.config.Store(newConfig)` to atomically swap the old config pointer with the new one.
+	// - All subsequent calls to `Get()` will receive this new pointer.
 }
 
 // Get atomically reads the current configuration.
-//
-// REQUIREMENTS:
-// - Use atomic.Value.Load to load the config
-// - Type assert to *Config
-// - Return the config pointer
-//
-// HINT: return cm.config.Load().(*Config)
 func (cm *ConfigManager) Get() *Config {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Use `cm.config.Load()` to get the currently stored value.
+	// - The value returned by `Load()` is of type `interface{}`, so you must type-assert it back to a `*Config`.
+	// - `return cm.config.Load().(*Config)`
 	return nil
 }
 
@@ -385,36 +304,26 @@ func (cm *ConfigManager) Get() *Config {
 // ============================================================================
 
 // NewLoadBalancer creates a new load balancer.
-//
-// REQUIREMENTS:
-// - Initialize counter to 0
-// - Set workers to numWorkers
-// - Return pointer to LoadBalancer
 func NewLoadBalancer(numWorkers int) *LoadBalancer {
-	// TODO: Implement this
+	// TODO: Implement this function.
+	// - Initialize the `LoadBalancer` struct.
+	// - The `counter` should start at 0.
+	// - `workers` should be set to `numWorkers`.
 	return nil
 }
 
 // NextWorker returns the ID of the next worker using round-robin.
-//
-// REQUIREMENTS:
-// - Use atomic.AddInt64 to increment counter
-// - Return (counter - 1) % workers as the worker ID
-//
-// ALGORITHM:
-// 1. Atomically increment counter and get new value
-// 2. Return (value - 1) % numWorkers
-//
-// EXAMPLE:
-//   lb := NewLoadBalancer(3)  // 3 workers
-//   lb.NextWorker()  // 0
-//   lb.NextWorker()  // 1
-//   lb.NextWorker()  // 2
-//   lb.NextWorker()  // 0 (wraps around)
-//
-// HINT: val := atomic.AddInt64(&lb.counter, 1); return (val - 1) % lb.workers
 func (lb *LoadBalancer) NextWorker() int64 {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// This implements a thread-safe round-robin scheduler.
+
+	// Step 1: Atomically increment the counter and get the new value.
+	// - `val := atomic.AddInt64(&lb.counter, 1)`
+
+	// Step 2: Use the modulo operator to map the counter value to a worker ID.
+	// - `return (val - 1) % lb.workers`
+	// - We use `val - 1` because the first value returned by `AddInt64` will be 1, and we want our worker IDs to be 0-indexed.
 	return 0
 }
 
@@ -423,58 +332,51 @@ func (lb *LoadBalancer) NextWorker() int64 {
 // ============================================================================
 
 // NewAtomicBitmap creates a new atomic bitmap.
-//
-// REQUIREMENTS:
-// - Initialize all bits to 0
-// - Return pointer to AtomicBitmap
 func NewAtomicBitmap() *AtomicBitmap {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement this function.
+	// - The zero value of the struct is a valid, empty bitmap.
+	return &AtomicBitmap{}
 }
 
 // SetBit atomically sets a bit to 1.
-//
-// REQUIREMENTS:
-// - Calculate which int64 contains the bit (bitIndex / 64)
-// - Calculate bit position within that int64 (bitIndex % 64)
-// - Use CAS loop to set the bit
-//
-// ALGORITHM:
-// 1. word := bitIndex / 64
-// 2. bit := bitIndex % 64
-// 3. Loop:
-//    a. Load current value of bits[word]
-//    b. newVal := oldVal | (1 << bit)
-//    c. Try CAS, break if successful
-//
-// HINT: Use atomic.LoadInt64 and atomic.CompareAndSwapInt64
 func (ab *AtomicBitmap) SetBit(bitIndex int) {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// A bitmap uses individual bits within a block of integers to store boolean flags.
+	// This is a memory-efficient way to store a large set of flags.
+
+	// Step 1: Validate the index and calculate the word and bit position.
+	// - `word := bitIndex / 64` (Which `int64` in our array holds the bit)
+	// - `bit := uint(bitIndex % 64)` (Which bit within that `int64`)
+
+	// Step 2: Use a CAS loop to set the bit.
+	// - `for { ... }`
+	// - `old := atomic.LoadInt64(&ab.bits[word])`
+	// - `new := old | (1 << bit)` (Use bitwise OR to set the bit)
+	// - `if atomic.CompareAndSwapInt64(&ab.bits[word], old, new) { return }`
 }
 
 // ClearBit atomically sets a bit to 0.
-//
-// REQUIREMENTS:
-// - Similar to SetBit, but clear the bit instead
-//
-// HINT: newVal := oldVal & ^(1 << bit)
 func (ab *AtomicBitmap) ClearBit(bitIndex int) {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// Step 1: Calculate `word` and `bit` as in `SetBit`.
+	// Step 2: Use a CAS loop.
+	// - `new := old & ^(1 << bit)` (Use bitwise AND NOT to clear the bit)
+	// - The rest of the loop is the same as `SetBit`.
 }
 
 // TestBit atomically reads a bit value.
-//
-// REQUIREMENTS:
-// - Calculate which int64 contains the bit
-// - Calculate bit position within that int64
-// - Use atomic.LoadInt64 to read the word
-// - Return true if bit is set, false otherwise
-//
-// HINT: word := bitIndex / 64; bit := bitIndex % 64
-//       val := atomic.LoadInt64(&ab.bits[word])
-//       return (val & (1 << bit)) != 0
 func (ab *AtomicBitmap) TestBit(bitIndex int) bool {
-	// TODO: Implement this
+	// TODO: Implement this function.
+
+	// This is a read-only operation.
+
+	// Step 1: Calculate `word` and `bit` as in `SetBit`.
+	// Step 2: Atomically load the word.
+	// - `val := atomic.LoadInt64(&ab.bits[word])`
+	// Step 3: Check if the specific bit is set.
+	// - `return (val & (1 << bit)) != 0`
 	return false
 }
 

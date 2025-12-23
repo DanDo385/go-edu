@@ -28,11 +28,16 @@ func SumIntsNaive(values []int) int {
 }
 
 // SumIntsOptimized should do the same thing but avoid the escape.
-// TODO: Implement this function without creating a new slice.
 func SumIntsOptimized(values []int) int {
-	// TODO: Implement me!
-	// Hint: Do you really need to copy the slice?
-	return 0
+	// TODO: Implement this function without creating an unnecessary copy of the slice.
+	// The `SumIntsNaive` function allocates a new slice (`result`) on the heap because the compiler can't be sure if it's needed after the function returns.
+	// However, we are only calculating a sum. There is no need to copy the input slice at all.
+	// By iterating directly over the `values` slice, you avoid the allocation entirely.
+	sum := 0
+	for _, v := range values {
+		sum += v
+	}
+	return sum
 }
 
 // ============================================================================
@@ -60,11 +65,16 @@ func CalculateAreaNaive(width, height float64) float64 {
 }
 
 // CalculateAreaOptimized should be simple enough to inline.
-// TODO: Implement a simple version that can be inlined.
-// HINT: Just multiply width * height directly.
 func CalculateAreaOptimized(width, height float64) float64 {
-	// TODO: Implement me!
-	return 0
+	// TODO: Implement a simplified version of `CalculateAreaNaive` that the compiler can inline.
+
+	// Inlining is a compiler optimization where the body of a function is inserted directly into the caller's code, avoiding the overhead of a function call.
+	// The Go compiler will not inline functions it considers "too complex" (based on the number of AST nodes).
+	// The `CalculateAreaNaive` function has unnecessary `if/else` branching that makes it too complex.
+
+	// By simplifying the logic to a single expression, you make it a candidate for inlining.
+	// You can check if a function was inlined by running `go build -gcflags='-m'`.
+	return width * height
 }
 
 // ============================================================================
@@ -87,11 +97,15 @@ func JoinStringsNaive(parts []string, separator string) string {
 }
 
 // JoinStringsOptimized should use a more efficient approach.
-// TODO: Implement using strings.Builder or bytes.Buffer.
-// HINT: strings.Builder is designed for this use case.
 func JoinStringsOptimized(parts []string, separator string) string {
-	// TODO: Implement me!
-	// Hint: Use strings.Builder
+	// TODO: Implement this function using `strings.Builder` to avoid numerous small allocations.
+
+	// Step 1: Handle the edge case of zero parts.
+	// Step 2: Create a `strings.Builder`.
+	// Step 3: (Advanced Optimization) Calculate the total length of the final string and use `builder.Grow()` to pre-allocate the buffer. This will result in only one memory allocation.
+	// Step 4: Write the first part to the builder.
+	// Step 5: Loop through the rest of the parts, writing the separator and then the part.
+	// Step 6: Return `builder.String()`.
 	return ""
 }
 
@@ -113,11 +127,15 @@ func (r *Rectangle) AreaPointerReceiver() float64 {
 }
 
 // AreaValueReceiver should use a value receiver for better performance.
-// TODO: Implement this method with a value receiver.
-// HINT: For small structs (<=32 bytes), value receivers are often faster.
 func (r Rectangle) AreaValueReceiver() float64 {
-	// TODO: Implement me!
-	return 0
+	// TODO: Implement this method.
+
+	// For small structs (generally a few machine words, e.g., under 64 bytes), passing by value can be more efficient than passing by pointer.
+	// - A value receiver copies the struct onto the function's stack frame. For a small struct, this is a very fast operation.
+	// - A pointer receiver passes a pointer. Accessing the struct's fields then requires a pointer dereference, which can be slightly slower and can prevent certain compiler optimizations like inlining.
+	//
+	// In this case, `Rectangle` is only 16 bytes (two float64s). It's a perfect candidate for a value receiver.
+	return r.Width * r.Height
 }
 
 // ============================================================================
@@ -140,11 +158,20 @@ func ProcessItemsNaive(items []string) [][]byte {
 }
 
 // ProcessItemsOptimized should reuse a single buffer.
-// TODO: Implement this function reusing a single buffer.
-// HINT: Reset the buffer between iterations.
 func ProcessItemsOptimized(items []string) [][]byte {
-	// TODO: Implement me!
-	// Hint: Create one buffer outside the loop and reset it each iteration
+	// TODO: Implement this function by creating a single buffer and reusing it for each item.
+
+	// The naive version allocates a new `bytes.Buffer` for every single item, leading to a large number of allocations.
+
+	// Step 1: Create one `bytes.Buffer` *before* the loop.
+	// Step 2: Pre-allocate the `results` slice.
+	// Step 3: Inside the loop:
+	//   - Call `buf.Reset()` to clear the buffer from the previous iteration.
+	//   - Write the new data to the buffer.
+	//   - **CRITICAL**: `buf.Bytes()` returns a slice that points to the buffer's internal memory. This memory will be overwritten in the next iteration. You MUST make a copy of the bytes before appending them to your results.
+	//     - `data := make([]byte, buf.Len())`
+	//     - `copy(data, buf.Bytes())`
+	//     - `results = append(results, data)`
 	return nil
 }
 
@@ -164,11 +191,15 @@ func FormatIntNaive(prefix string, value int) string {
 }
 
 // FormatIntOptimized should format without using interface{}.
-// TODO: Implement without fmt.Sprintf.
-// HINT: Use strings.Builder and manual int-to-string conversion.
 func FormatIntOptimized(prefix string, value int) string {
-	// TODO: Implement me!
-	// Hint: Use strings.Builder and strconv.Itoa or manual conversion
+	// TODO: Implement this function without using `fmt.Sprintf` to avoid heap allocation.
+
+	// `fmt.Sprintf("%s%d", ...)` is convenient, but it's designed to work with any type. To do this, it packs its arguments into an `[]interface{}`, which is a slice of empty interfaces.
+	// When a value type like `int` is put into an interface, it gets "boxed", which means it's allocated on the heap. This is what causes the escape.
+
+	// Step 1: Use a `strings.Builder` for efficient string construction.
+	// Step 2: Use `strconv.Itoa(value)` to convert the integer to a string. `Itoa` is highly optimized for this specific task and does not cause the value to escape to the heap.
+	// Step 3: Write the prefix and the converted integer to the builder.
 	return ""
 }
 
@@ -189,11 +220,17 @@ func FilterPositiveNaive(numbers []int) []int {
 }
 
 // FilterPositiveOptimized should pre-allocate to avoid reallocations.
-// TODO: Implement with pre-allocation.
-// HINT: In worst case, all numbers are positive, so pre-allocate len(numbers).
 func FilterPositiveOptimized(numbers []int) []int {
-	// TODO: Implement me!
-	// Hint: make([]int, 0, len(numbers))
+	// TODO: Implement this function by pre-allocating the result slice.
+
+	// The naive version will re-allocate its `result` slice multiple times as it grows.
+	// We can avoid all re-allocations by allocating for the worst-case scenario.
+
+	// Step 1: Create the result slice with a capacity equal to the length of the input slice.
+	// - `result := make([]int, 0, len(numbers))`
+	// - In the worst case, all numbers are positive, and the final slice will have `len(numbers)` elements. This guarantees that we will never need to re-allocate the underlying array.
+
+	// Step 2: Loop through the numbers and append the positive ones to the `result` slice.
 	return nil
 }
 
@@ -218,11 +255,19 @@ func GetConfigNaive() *Config {
 }
 
 // GetConfigOptimized should return config without escaping.
-// TODO: Implement this to avoid heap allocation.
-// HINT: Return by value, not by pointer.
 func GetConfigOptimized() Config {
-	// TODO: Implement me!
-	return Config{}
+	// TODO: Implement this function to avoid having the `Config` struct escape to the heap.
+
+	// In `GetConfigNaive`, a pointer to the `Config` struct is returned (`*Config`).
+	// The Go compiler sees that a pointer to a locally defined variable is being returned, so it cannot keep that variable on the function's stack (which is destroyed when the function returns).
+	// It "escapes" the variable to the heap, which involves a memory allocation.
+
+	// By changing the return type to `Config` (a value, not a pointer), you are telling the compiler to return a *copy* of the struct.
+	// For a small struct like this, making a copy is very cheap and can be done entirely on the stack, avoiding a heap allocation and subsequent garbage collection.
+	return Config{
+		Host: "localhost",
+		Port: 8080,
+	}
 }
 
 // ============================================================================

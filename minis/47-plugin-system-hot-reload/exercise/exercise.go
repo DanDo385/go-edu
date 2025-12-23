@@ -9,85 +9,63 @@ import (
 
 // LoadAndExecute loads a plugin from the given path, initializes it,
 // executes it with the provided input, and returns the result.
-//
-// Steps:
-// 1. Open the plugin file using plugin.Open()
-// 2. Look up the "Plugin" symbol
-// 3. Type assert the symbol to shared.Plugin
-// 4. Call Init() on the plugin
-// 5. Call Process() with the input
-// 6. Return the result
-//
-// Parameters:
-//   - pluginPath: Path to the .so file
-//   - input: Data to pass to the plugin's Process() method
-//
-// Returns:
-//   - output: Result from plugin.Process()
-//   - error: Non-nil if any step fails
-//
-// Example:
-//   result, err := LoadAndExecute("plugins/greeter.so", "Alice")
-//   if err != nil {
-//       log.Fatal(err)
-//   }
-//   fmt.Println(result) // "Hello, Alice! Great to see you!"
 func LoadAndExecute(pluginPath string, input interface{}) (interface{}, error) {
-	// TODO: Implement plugin loading and execution
-	// Hint 1: Use plugin.Open(pluginPath) to load the .so file
-	// Hint 2: Use p.Lookup("Plugin") to find the exported symbol
-	// Hint 3: Type assert: plug, ok := sym.(shared.Plugin)
-	// Hint 4: Call plug.Init() before plug.Process()
+	// TODO: Implement the full plugin lifecycle.
+
+	// Step 1: Open the plugin file. This dynamically loads the shared object (`.so`) file.
+	// - `p, err := plugin.Open(pluginPath)`
+	// - Handle the error (e.g., file not found).
+
+	// Step 2: Look up the exported symbol named "Plugin".
+	// - `sym, err := p.Lookup("Plugin")`
+	// - This symbol is expected to be a variable in the plugin's code that holds the plugin implementation.
+	// - Handle the error (e.g., symbol not found).
+
+	// Step 3: Type-assert the symbol to the `shared.Plugin` interface.
+	// - `plug, ok := sym.(shared.Plugin)`
+	// - This is a crucial step to verify that the plugin correctly implements the required interface.
+	// - If `!ok`, return an error because the plugin has an invalid type.
+
+	// Step 4: Initialize the plugin.
+	// - `if err := plug.Init(); err != nil { ... }`
+	// - This allows the plugin to perform any setup it needs before execution.
+
+	// Step 5: Execute the plugin's main logic.
+	// - `return plug.Process(input)`
 	return nil, nil
 }
 
 // DiscoverPlugins scans the given directory for .so files
 // and returns a list of their absolute paths.
-//
-// This is useful for automatically finding all plugins in a directory.
-//
-// Parameters:
-//   - dir: Directory to scan for .so files
-//
-// Returns:
-//   - []string: List of absolute paths to .so files
-//   - error: Non-nil if directory cannot be read
-//
-// Example:
-//   plugins, err := DiscoverPlugins("./plugins")
-//   // Returns: ["./plugins/greeter.so", "./plugins/math.so"]
 func DiscoverPlugins(dir string) ([]string, error) {
-	// TODO: Implement plugin discovery
-	// Hint 1: Use filepath.Glob() or filepath.Walk()
-	// Hint 2: Filter for files ending in ".so"
-	// Hint 3: Return absolute paths (use filepath.Abs if needed)
+	// TODO: Implement plugin discovery.
+
+	// Step 1: Create a pattern to match all `.so` files in the directory.
+	// - Use `filepath.Join(dir, "*.so")` to create a platform-independent path pattern.
+
+	// Step 2: Use `filepath.Glob` to find all files matching the pattern.
+	// - `matches, err := filepath.Glob(pattern)`
+	// - Handle the error.
+
+	// Step 3: Return the list of matches.
 	return nil, nil
 }
 
 // ReloadPlugin simulates reloading a plugin by loading it fresh.
-//
-// In a real implementation, you would:
-// 1. Track loaded plugins in a map
-// 2. Clean up the old version
-// 3. Load the new version
-// 4. Swap the old for the new
-//
-// For this exercise, simply load the plugin and return it.
-//
-// Parameters:
-//   - pluginPath: Path to the .so file
-//
-// Returns:
-//   - shared.Plugin: The loaded and initialized plugin
-//   - error: Non-nil if loading or initialization fails
-//
-// Example:
-//   plugin, err := ReloadPlugin("plugins/greeter.so")
-//   fmt.Printf("Loaded %s v%s\n", plugin.Name(), plugin.Version())
 func ReloadPlugin(pluginPath string) (shared.Plugin, error) {
-	// TODO: Implement plugin reload
-	// Hint 1: Open the plugin with plugin.Open()
-	// Hint 2: Lookup and assert to shared.Plugin
-	// Hint 3: Call Init() before returning
+	// TODO: Implement this function.
+
+	// Note: Go plugins cannot be truly "unloaded" from memory. Calling `plugin.Open` on the same path
+	// will typically return the same loaded instance. For a real hot-reload system, you would
+	// need to build the new version of the plugin to a different file name (e.g., with a version number or timestamp)
+	// and then load the new file.
+
+	// For this exercise, the implementation is very similar to the first part of `LoadAndExecute`.
+
+	// Step 1: Open the plugin.
+	// Step 2: Look up the "Plugin" symbol.
+	// Step 3: Type-assert the symbol to `shared.Plugin`.
+	// Step 4: Initialize the plugin by calling `Init()`.
+	// Step 5: Return the initialized plugin instance.
 	return nil, nil
 }

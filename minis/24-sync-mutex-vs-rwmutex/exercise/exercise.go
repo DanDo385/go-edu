@@ -8,118 +8,127 @@ import (
 )
 
 // Exercise 1: Thread-Safe Counter
-//
-// Implement a thread-safe counter with increment and decrement operations.
-//
-// Requirements:
-//   - Support concurrent increments and decrements
-//   - Provide a method to get the current value
-//   - Provide a method to reset the counter
-//
-// Example:
-//   counter := NewCounter()
-//   counter.Increment()
-//   counter.Increment()
-//   counter.Decrement()
-//   value := counter.Value() // Returns 1
 type Counter struct {
-	// TODO: Add fields (hint: you need a mutex and a value)
+	mu    sync.Mutex
+	value int
 }
 
 func NewCounter() *Counter {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - Return a new instance of the `Counter` struct.
+	// - The zero value of a struct is usable here, as `sync.Mutex` is ready to use and `int` defaults to 0.
 	return &Counter{}
 }
 
 func (c *Counter) Increment() {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This method modifies the shared `value`. It must be protected by a mutex.
+
+	// Step 1: Acquire the lock.
+	// - `c.mu.Lock()`
+	// - This will block until the lock is available. Only one goroutine can hold the lock at a time.
+
+	// Step 2: Ensure the lock is released.
+	// - `defer c.mu.Unlock()`
+	// - `defer` is crucial. It guarantees that `Unlock()` will be called when the function returns, even if a panic occurs. Forgetting to unlock is a common cause of deadlocks.
+
+	// Step 3: Modify the value.
+	// - `c.value++`
 }
 
 func (c *Counter) Decrement() {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - The logic is identical to `Increment`, but you decrement the value.
+	// - Remember to lock, defer unlock, and then modify the value.
 }
 
 func (c *Counter) Value() int {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This method reads the shared `value`. Reading must also be protected to prevent "dirty reads" (reading a value while another goroutine is in the middle of modifying it).
+
+	// Step 1: Acquire the lock.
+	// Step 2: Defer the unlock.
+	// Step 3: Return the value.
 	return 0
 }
 
 func (c *Counter) Reset() {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is another modification, so it requires the same lock/unlock pattern.
+	// - Set `c.value` to 0.
 }
 
 // Exercise 2: Thread-Safe Cache with RWMutex
-//
-// Implement a thread-safe key-value cache using RWMutex.
-//
-// Requirements:
-//   - Support concurrent reads (multiple goroutines can read simultaneously)
-//   - Exclusive writes (only one goroutine can write at a time)
-//   - Get(key) returns value and boolean indicating if key exists
-//   - Set(key, value) stores the key-value pair
-//   - Delete(key) removes the key
-//   - Len() returns the number of items in cache
-//
-// Example:
-//   cache := NewCache[string, int]()
-//   cache.Set("age", 25)
-//   value, ok := cache.Get("age") // value=25, ok=true
-//   cache.Delete("age")
-//   value, ok = cache.Get("age")  // value=0, ok=false
 type Cache[K comparable, V any] struct {
-	// TODO: Add fields (hint: RWMutex and map)
+	mu   sync.RWMutex
+	data map[K]V
 }
 
 func NewCache[K comparable, V any]() *Cache[K, V] {
-	// TODO: Implement
-	return &Cache[K, V]{}
+	// TODO: Implement this function.
+	// - Initialize the `Cache` struct.
+	// - The `data` map must be initialized with `make()` before it can be used. A `nil` map will cause a panic on write.
+	return &Cache[K, V]{
+		data: make(map[K]V),
+	}
 }
 
 func (c *Cache[K, V]) Get(key K) (V, bool) {
-	// TODO: Implement using RLock/RUnlock
+	// TODO: Implement this function.
+
+	// This is a read-only operation. It's a perfect use case for a read lock.
+
+	// Step 1: Acquire a read lock.
+	// - `c.mu.RLock()`
+	// - Multiple goroutines can hold a read lock simultaneously, as long as no goroutine is holding a write lock. This allows for high-performance concurrent reads.
+
+	// Step 2: Defer the read unlock.
+	// - `defer c.mu.RUnlock()`
+
+	// Step 3: Access the map and return the value.
+	// - The `value, ok := c.data[key]` idiom is used to safely check for the existence of a key.
 	var zero V
 	return zero, false
 }
 
 func (c *Cache[K, V]) Set(key K, value V) {
-	// TODO: Implement using Lock/Unlock
+	// TODO: Implement this function.
+
+	// This is a write operation. It requires an exclusive lock.
+
+	// Step 1: Acquire a write lock.
+	// - `c.mu.Lock()`
+	// - This will block until all existing read and write locks are released. While this lock is held, no other goroutine can acquire either a read or a write lock.
+
+	// Step 2: Defer the write unlock.
+	// - `defer c.mu.Unlock()`
+
+	// Step 3: Modify the map.
+	// - `c.data[key] = value`
 }
 
 func (c *Cache[K, V]) Delete(key K) {
-	// TODO: Implement using Lock/Unlock
+	// TODO: Implement this function.
+	// - This is also a write operation and requires an exclusive lock (`Lock`/`Unlock`).
 }
 
 func (c *Cache[K, V]) Len() int {
-	// TODO: Implement using RLock/RUnlock
+	// TODO: Implement this function.
+	// - This is a read-only operation. Use a read lock (`RLock`/`RUnlock`).
 	return 0
 }
 
 func (c *Cache[K, V]) Clear() {
-	// TODO: Implement using Lock/Unlock
+	// TODO: Implement this function.
+	// - This is a write operation. It requires an exclusive lock to re-initialize the map.
 }
 
 // Exercise 3: Cache with Expiration
-//
-// Extend the cache to support automatic expiration of entries.
-//
-// Requirements:
-//   - Set(key, value, ttl) stores entry with time-to-live
-//   - Get(key) returns value only if not expired
-//   - Expired entries should be automatically removed
-//   - StartCleanup(interval) runs background cleanup goroutine
-//   - StopCleanup() stops the cleanup goroutine
-//
-// Example:
-//   cache := NewExpiringCache[string, string]()
-//   cache.StartCleanup(1 * time.Second)
-//   defer cache.StopCleanup()
-//
-//   cache.Set("session", "abc123", 2*time.Second)
-//   value, ok := cache.Get("session") // ok=true
-//   time.Sleep(3 * time.Second)
-//   value, ok = cache.Get("session") // ok=false (expired)
 type ExpiringCache[K comparable, V any] struct {
-	// TODO: Add fields
+	mu      sync.RWMutex
+	data    map[K]*cacheEntry[V]
+	stopCh  chan struct{}
+	stopped bool
 }
 
 type cacheEntry[V any] struct {
@@ -128,167 +137,276 @@ type cacheEntry[V any] struct {
 }
 
 func NewExpiringCache[K comparable, V any]() *ExpiringCache[K, V] {
-	// TODO: Implement
-	return &ExpiringCache[K, V]{}
+	// TODO: Implement this function.
+	// - Initialize the `ExpiringCache` struct.
+	// - The `data` map should be initialized.
+	// - `stopCh` will be used to signal the cleanup goroutine to stop.
+	return &ExpiringCache[K, V]{
+		data: make(map[K]*cacheEntry[V]),
+	}
 }
 
 func (c *ExpiringCache[K, V]) Set(key K, value V, ttl time.Duration) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is a write operation, so it requires a full `Lock`.
+	// - Create a `cacheEntry` containing the value and the expiration time (`time.Now().Add(ttl)`).
+	// - Store a *pointer* to this entry in the map.
 }
 
 func (c *ExpiringCache[K, V]) Get(key K) (V, bool) {
-	// TODO: Implement
-	// Check if entry exists and is not expired
+	// TODO: Implement this function.
+
+	// This is a "lazy" expiration check. We only check if an item is expired when someone tries to access it.
+
+	// Step 1: Acquire a read lock to safely access the map.
+	// - `c.mu.RLock()`
+
+	// Step 2: Look up the entry.
+	// - `entry, ok := c.data[key]`
+
+	// Step 3: Release the read lock.
+	// - `c.mu.RUnlock()`
+	// - Why unlock here? Because if the entry is expired, we'll need to acquire a *write* lock to delete it. You cannot upgrade a read lock to a write lock, so you must release the read lock first.
+
+	// Step 4: If the entry doesn't exist (`!ok`), return.
+	// Step 5: If the entry is expired (`time.Now().After(entry.expiration)`):
+	//   - Acquire a full write lock: `c.mu.Lock()`.
+	//   - Delete the key from the map: `delete(c.data, key)`.
+	//   - Release the write lock: `c.mu.Unlock()`.
+	//   - Return the zero value and `false`.
+	// Step 6: If the entry is not expired, return its value and `true`.
+
 	var zero V
 	return zero, false
 }
 
 func (c *ExpiringCache[K, V]) StartCleanup(interval time.Duration) {
-	// TODO: Implement
-	// Start a goroutine that periodically removes expired entries
+	// TODO: Implement this function.
+
+	// This starts a background process for "active" expiration.
+
+	// Step 1: Launch a goroutine.
+	// Step 2: Inside the goroutine, create a `time.Ticker` with the specified `interval`.
+	// Step 3: Use a `for` loop with a `select` statement.
+	// - `case <-ticker.C:` -> The ticker fired. Call the `c.cleanup()` method to remove expired items.
+	// - `case <-c.stopCh:` -> The stop signal was received. `return` from the goroutine.
 }
 
 func (c *ExpiringCache[K, V]) StopCleanup() {
-	// TODO: Implement
-	// Stop the cleanup goroutine
+	// TODO: Implement this function.
+	// - Close the `stopCh` channel to signal the cleanup goroutine to stop.
 }
 
 func (c *ExpiringCache[K, V]) cleanup() {
-	// TODO: Implement
-	// Remove all expired entries
+	// TODO: Implement this function.
+
+	// This method iterates through the cache and removes all expired items.
+
+	// Step 1: Acquire a full write lock, since you'll be modifying the map.
+	// Step 2: Defer the unlock.
+	// Step 3: Loop through the `c.data` map.
+	// - `for key, entry := range c.data`
+	// - If `time.Now().After(entry.expiration)`, delete the key from the map.
 }
 
 // Exercise 4: Sharded Map
-//
-// Implement a sharded map to reduce lock contention.
-//
-// Requirements:
-//   - Partition data across multiple shards (use 16 shards)
-//   - Each shard has its own lock (reduces contention)
-//   - Hash key to determine which shard to use
-//   - Support Get, Set, Delete operations
-//
-// Example:
-//   sm := NewShardedMap[string, int]()
-//   sm.Set("count", 42)
-//   value, ok := sm.Get("count") // value=42, ok=true
 type ShardedMap[K comparable, V any] struct {
-	// TODO: Add fields
+	shards [numShards]*shard[K, V]
 }
 
 type shard[K comparable, V any] struct {
-	// TODO: Add fields (mutex and map)
+	mu   sync.RWMutex
+	data map[K]V
 }
 
 const numShards = 16
 
 func NewShardedMap[K comparable, V any]() *ShardedMap[K, V] {
-	// TODO: Implement
-	// Create 16 shards, each with its own mutex and map
-	return &ShardedMap[K, V]{}
+	// TODO: Implement this function.
+	// - Initialize the `ShardedMap`.
+	// - The `shards` field is an array of pointers to `shard`.
+	// - You must loop `numShards` times and initialize each shard in the array.
+	// - Each `shard` should have its own `map` initialized.
+	sm := &ShardedMap[K, V]{}
+	for i := 0; i < numShards; i++ {
+		sm.shards[i] = &shard[K, V]{
+			data: make(map[K]V),
+		}
+	}
+	return sm
 }
 
 func (sm *ShardedMap[K, V]) getShard(key K) *shard[K, V] {
-	// TODO: Implement
-	// Hash the key and return the appropriate shard
+	// TODO: Implement this function.
+
+	// The goal is to turn a key into an index from 0 to `numShards - 1`.
+
+	// Step 1: Use a hashing function. Go's `hash/fnv` is a simple choice.
+	// - `h := fnv.New32a()`
+
+	// Step 2: Convert the key into bytes.
+	// - This can be tricky for a generic key `K`. A simple approach is to use `fmt.Sprintf("%v", key)` to get a string representation, and then convert that to bytes.
+	// - `h.Write([]byte(fmt.Sprintf("%v", key)))`
+
+	// Step 3: Get the hash value and map it to a shard index.
+	// - `shardIndex := h.Sum32() % numShards`
+	// - The modulo operator (`%`) ensures the index is within the bounds of your `shards` array.
+
+	// Step 4: Return the shard at that index.
+	// - `return sm.shards[shardIndex]`
 	return nil
 }
 
 func (sm *ShardedMap[K, V]) Get(key K) (V, bool) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - First, find the correct shard for the key by calling `sm.getShard(key)`.
+	// - Then, acquire a read lock *on that specific shard*.
+	// - Look up the key in the shard's map and return the result.
+	// - Don't forget to release the shard's read lock.
 	var zero V
 	return zero, false
 }
 
 func (sm *ShardedMap[K, V]) Set(key K, value V) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - Find the correct shard for the key.
+	// - Acquire a write lock *on that shard*.
+	// - Set the value in the shard's map.
+	// - Release the shard's write lock.
 }
 
 func (sm *ShardedMap[K, V]) Delete(key K) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - Find the correct shard for the key.
+	// - Acquire a write lock *on that shard*.
+	// - Delete the key from the shard's map.
+	// - Release the shard's write lock.
 }
 
 // Exercise 5: Metrics Collector
-//
-// Implement a thread-safe metrics collector that tracks counters and gauges.
-//
-// Requirements:
-//   - IncrementCounter(name) increments a named counter
-//   - SetGauge(name, value) sets a gauge to a specific value
-//   - GetCounter(name) returns current counter value
-//   - GetGauge(name) returns current gauge value
-//   - Snapshot() returns a copy of all metrics
-//
-// Example:
-//   metrics := NewMetrics()
-//   metrics.IncrementCounter("requests")
-//   metrics.IncrementCounter("requests")
-//   metrics.SetGauge("active_connections", 42)
-//   count := metrics.GetCounter("requests") // Returns 2
 type Metrics struct {
-	// TODO: Add fields
+	mu      sync.RWMutex
+	metrics map[string]int64
 }
 
 func NewMetrics() *Metrics {
-	// TODO: Implement
-	return &Metrics{}
+	// TODO: Implement this function.
+	// - Initialize the `Metrics` struct with an empty map.
+	return &Metrics{
+		metrics: make(map[string]int64),
+	}
 }
 
 func (m *Metrics) IncrementCounter(name string) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is a write operation.
+	// - Acquire a write lock (`m.mu.Lock()`).
+	// - Defer the unlock.
+	// - Increment the value for the given `name` in the map.
 }
 
 func (m *Metrics) SetGauge(name string, value int64) {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is also a write operation. Use a write lock.
+	// - Set the value for the given `name` in the map.
 }
 
 func (m *Metrics) GetCounter(name string) int64 {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is a read operation. Use a read lock (`m.mu.RLock()`).
+	// - Defer the read unlock.
+	// - Return the value from the map.
 	return 0
 }
 
 func (m *Metrics) GetGauge(name string) int64 {
-	// TODO: Implement
+	// TODO: Implement this function.
+	// - This is also a read operation. Use a read lock.
 	return 0
 }
 
 func (m *Metrics) Snapshot() map[string]int64 {
-	// TODO: Implement
-	// Return a copy of all metrics (both counters and gauges)
+	// TODO: Implement this function.
+
+	// This method provides a point-in-time copy of the metrics. This is a very important pattern.
+	// It allows other parts of the system (e.g., an HTTP endpoint that exposes metrics) to work with the data without holding a lock on the `Metrics` struct, which could block new metric updates.
+
+	// Step 1: Acquire a read lock.
+	// Step 2: Defer the read unlock.
+	// Step 3: Create a new map to hold the snapshot.
+	// - `snapshot := make(map[string]int64, len(m.metrics))` (pre-allocating the capacity is a small optimization).
+	// Step 4: Copy the data from `m.metrics` to `snapshot`.
+	// - `for name, value := range m.metrics { snapshot[name] = value }`
+	// Step 5: Return the snapshot.
 	return nil
 }
 
 // Exercise 6: Rate Limiter
-//
-// Implement a token bucket rate limiter.
-//
-// Requirements:
-//   - Allow up to 'rate' operations per second
-//   - Allow bursts up to 'burst' size
-//   - Allow() returns true if operation is allowed, false otherwise
-//   - Tokens refill automatically over time
-//
-// Example:
-//   limiter := NewRateLimiter(10, 20) // 10/sec, burst of 20
-//   if limiter.Allow() {
-//       // Perform operation
-//   }
 type RateLimiter struct {
-	// TODO: Add fields
+	mu         sync.Mutex
+	rate       float64
+	burst      int
+	tokens     float64
+	lastRefill time.Time
 }
 
 func NewRateLimiter(rate float64, burst int) *RateLimiter {
-	// TODO: Implement
-	return &RateLimiter{}
+	// TODO: Implement this function.
+
+	// This is an alternative implementation of a token bucket rate limiter that uses a mutex and time calculations instead of a channel.
+
+	// Step 1: Initialize the `RateLimiter` struct.
+	// - `rate`: tokens per second.
+	// - `burst`: the maximum number of tokens the bucket can hold.
+	// - `tokens`: start with a full bucket, so set to `float64(burst)`.
+	// - `lastRefill`: set to `time.Now()`.
+
+	// Step 2: Start the background refill goroutine.
+	// - Launch a goroutine that calls a `refill` method periodically.
+
+	return nil
 }
 
 func (rl *RateLimiter) Allow() bool {
-	// TODO: Implement
-	// Check if a token is available and consume it
+	// TODO: Implement this function.
+
+	// This method checks if an operation is allowed.
+
+	// Step 1: Acquire a lock.
+	// - `rl.mu.Lock()`
+	// - A full mutex is needed because we are potentially modifying the `tokens` value.
+
+	// Step 2: Defer the unlock.
+
+	// Step 3: Check if there is at least one token.
+	// - `if rl.tokens >= 1`
+	// - If yes, decrement the token count (`rl.tokens--`) and return `true`.
+	// - If no, return `false`.
 	return false
 }
 
 func (rl *RateLimiter) refill() {
-	// TODO: Implement
-	// Periodically add tokens back to the bucket
+	// TODO: Implement this function.
+
+	// This function runs in a background goroutine to add tokens back to the bucket.
+
+	// Step 1: Create a ticker.
+	// - A ticker that fires multiple times per second (e.g., every 100ms) is a good choice to allow for smooth refilling.
+	// - `ticker := time.NewTicker(...)`
+
+	// Step 2: Use a `for range ticker.C` loop.
+	// - This will execute on each tick.
+
+	// Step 3: Inside the loop, calculate how many tokens to add.
+	// - Acquire a lock.
+	// - `now := time.Now()`
+	// - `elapsed := now.Sub(rl.lastRefill).Seconds()`
+	// - `tokensToAdd := elapsed * rl.rate`
+	// - `rl.tokens += tokensToAdd`
+	// - `rl.lastRefill = now`
+
+	// Step 4: Cap the number of tokens at the burst size.
+	// - `if rl.tokens > float64(rl.burst) { rl.tokens = float64(rl.burst) }`
+
+	// Step 5: Release the lock.
 }

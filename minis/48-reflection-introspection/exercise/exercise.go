@@ -23,50 +23,37 @@ package exercise
 // ============================================================================
 
 // GetTypeName returns the name of the type of the given value.
-//
-// REQUIREMENTS:
-// - Use reflect.TypeOf to get the type
-// - Return the type's Name() (e.g., "User", "int", "string")
-//
-// EXAMPLES:
-//   GetTypeName(User{}) → "User"
-//   GetTypeName(42) → "int"
-//   GetTypeName("hello") → "string"
-//
-// HINT: t := reflect.TypeOf(v); return t.Name()
 func GetTypeName(v interface{}) string {
-	// TODO: Implement this function
-	return ""
+	// TODO: Implement this function.
+	// - Use `reflect.TypeOf(v)` to get the `reflect.Type` of the value.
+	// - The `Name()` method of a `reflect.Type` returns the type's name within its package.
+	return reflect.TypeOf(v).Name()
 }
 
 // GetKind returns the kind of the type (the underlying category).
-//
-// REQUIREMENTS:
-// - Use reflect.TypeOf to get the type
-// - Return the Kind as a string (use .String() on the Kind)
-//
-// EXAMPLES:
-//   GetKind(User{}) → "struct"
-//   GetKind(42) → "int"
-//   GetKind(&User{}) → "ptr"
-//
-// HINT: t := reflect.TypeOf(v); return t.Kind().String()
 func GetKind(v interface{}) string {
-	// TODO: Implement this function
-	return ""
+	// TODO: Implement this function.
+	// - `Kind` is different from `Name`. For a struct `type User struct{}`, the Name is "User" but the Kind is "struct".
+	// - Use `reflect.TypeOf(v).Kind()` to get the `reflect.Kind`.
+	// - Call the `.String()` method on the `Kind` to get its string representation.
+	return reflect.TypeOf(v).Kind().String()
 }
 
 // CountFields returns the number of fields in a struct.
-//
-// REQUIREMENTS:
-// - Check if the value is a struct (Kind() == reflect.Struct)
-// - If not a struct, return 0
-// - If a struct, return the number of fields
-//
-// HINT: Use NumField() on the Type
 func CountFields(v interface{}) int {
-	// TODO: Implement this function
-	return 0
+	// TODO: Implement this function.
+	// - Get the `reflect.Type` of `v`.
+	// - If the type is a pointer to a struct, you need to get the element it points to: `t = t.Elem()`.
+	// - Check if the `Kind` is `reflect.Struct`. If not, return 0.
+	// - If it is a struct, use the `NumField()` method to get the number of fields.
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return 0
+	}
+	return t.NumField()
 }
 
 // ============================================================================
@@ -74,42 +61,43 @@ func CountFields(v interface{}) int {
 // ============================================================================
 
 // GetJSONTag returns the json tag for a named field in a struct.
-//
-// REQUIREMENTS:
-// - Get the type of the value
-// - Find the field by name using FieldByName
-// - If the field doesn't exist, return ""
-// - If it exists, return the "json" tag value
-//
-// EXAMPLES:
-//   GetJSONTag(User{}, "Name") → "name"
-//   GetJSONTag(User{}, "Email") → "email"
-//   GetJSONTag(User{}, "NoSuchField") → ""
-//
-// HINT: field, ok := t.FieldByName(fieldName)
-//       if ok { return field.Tag.Get("json") }
 func GetJSONTag(v interface{}, fieldName string) string {
-	// TODO: Implement this function
-	return ""
+	// TODO: Implement this function.
+	// - Get the `reflect.Type`.
+	// - Handle pointers with `t.Elem()`.
+	// - Get the specific field with `t.FieldByName(fieldName)`. This returns a `StructField` and a boolean.
+	// - If the field is found, use the `Tag.Get("json")` method on the `StructField` to look up the value associated with the "json" key.
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return ""
+	}
+	field, ok := t.FieldByName(fieldName)
+	if !ok {
+		return ""
+	}
+	return field.Tag.Get("json")
 }
 
 // GetAllTags returns all struct tags for a named field.
-//
-// REQUIREMENTS:
-// - Get the type of the value
-// - Find the field by name
-// - If the field doesn't exist, return ""
-// - If it exists, return the complete tag string (all tags, not just one)
-//
-// EXAMPLES:
-//   GetAllTags(User{}, "Name") → `json:"name" validate:"required"`
-//   GetAllTags(Product{}, "Name") → `db:"product_name" json:"name"`
-//
-// HINT: Use field.Tag (not field.Tag.Get(...))
-//       Convert to string with string(field.Tag)
 func GetAllTags(v interface{}, fieldName string) string {
-	// TODO: Implement this function
-	return ""
+	// TODO: Implement this function.
+	// - This is similar to `GetJSONTag`, but instead of getting a specific key, you'll return the whole tag string.
+	// - After finding the `StructField`, access its `Tag` property and convert it to a `string`.
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		return ""
+	}
+	field, ok := t.FieldByName(fieldName)
+	if !ok {
+		return ""
+	}
+	return string(field.Tag)
 }
 
 // ============================================================================
@@ -117,45 +105,54 @@ func GetAllTags(v interface{}, fieldName string) string {
 // ============================================================================
 
 // GetFieldValue returns the value of a named field in a struct.
-//
-// REQUIREMENTS:
-// - Use reflect.ValueOf to get the value
-// - Get the field by name using FieldByName
-// - Return the field value as interface{} using .Interface()
-// - If the field doesn't exist or value is not a struct, return nil
-//
-// EXAMPLES:
-//   user := User{Name: "Alice", Email: "alice@example.com", Age: 30}
-//   GetFieldValue(user, "Name") → "Alice"
-//   GetFieldValue(user, "Age") → 30
-//
-// HINT: v := reflect.ValueOf(val); field := v.FieldByName(fieldName)
-//       Check field.IsValid() before calling .Interface()
 func GetFieldValue(val interface{}, fieldName string) interface{} {
-	// TODO: Implement this function
-	return nil
+	// TODO: Implement this function.
+	// - Use `reflect.ValueOf(val)` to get the `reflect.Value`.
+	// - Handle pointers with `v.Elem()`.
+	// - Get the field with `v.FieldByName(fieldName)`.
+	// - **Important**: Before accessing the value, check if the field is valid (i.e., it was found) using `field.IsValid()`.
+	// - If it's valid, return its value by calling `.Interface()`. This converts the `reflect.Value` back into a standard `interface{}`.
+	v := reflect.ValueOf(val)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return nil
+	}
+	field := v.FieldByName(fieldName)
+	if !field.IsValid() {
+		return nil
+	}
+	return field.Interface()
 }
 
 // GetFieldValues returns a map of field names to their values for a struct.
-//
-// REQUIREMENTS:
-// - Return a map[string]interface{} with field names as keys
-// - Only include exported (public) fields
-// - If the value is not a struct, return an empty map
-//
-// EXAMPLES:
-//   user := User{Name: "Bob", Email: "bob@example.com", Age: 25}
-//   GetFieldValues(user) → map[string]interface{}{
-//     "Name": "Bob",
-//     "Email": "bob@example.com",
-//     "Age": 25,
-//   }
-//
-// HINT: Use NumField() and Field(i) to iterate
-//       Check field.IsExported() (from the Type)
 func GetFieldValues(val interface{}) map[string]interface{} {
-	// TODO: Implement this function
-	return nil
+	// TODO: Implement this function.
+	// - Get both the `reflect.Value` and `reflect.Type` of the input.
+	// - Handle pointers using `.Elem()`.
+	// - Loop from `i = 0` to `v.NumField() - 1`.
+	// - In the loop, get the `reflect.StructField` (for the name and to check if it's exported) from the type: `t.Field(i)`.
+	// - Also get the `reflect.Value` for the field: `v.Field(i)`.
+	// - If the field `IsExported()`, add its name and value (`.Interface()`) to the results map.
+	result := make(map[string]interface{})
+	v := reflect.ValueOf(val)
+	t := reflect.TypeOf(val)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+		t = t.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return result
+	}
+	for i := 0; i < v.NumField(); i++ {
+		fieldType := t.Field(i)
+		fieldValue := v.Field(i)
+		if fieldType.IsExported() {
+			result[fieldType.Name] = fieldValue.Interface()
+		}
+	}
+	return result
 }
 
 // ============================================================================
@@ -163,31 +160,28 @@ func GetFieldValues(val interface{}) map[string]interface{} {
 // ============================================================================
 
 // SetFieldValue sets the value of a named field in a struct.
-//
-// REQUIREMENTS:
-// - The input val must be a POINTER to a struct
-// - Use .Elem() to get the struct being pointed to
-// - Find the field by name
-// - Set the field value using Set(reflect.ValueOf(newValue))
-// - Return nil on success, error on failure
-// - Return an error if:
-//   - val is not a pointer
-//   - val doesn't point to a struct
-//   - field doesn't exist
-//   - field is not settable
-//
-// EXAMPLES:
-//   user := &User{Name: "Alice"}
-//   SetFieldValue(user, "Name", "Bob") → nil (and user.Name is now "Bob")
-//   SetFieldValue(User{}, "Name", "Bob") → error (not a pointer)
-//
-// HINT: v := reflect.ValueOf(val)
-//       Check v.Kind() == reflect.Ptr
-//       elem := v.Elem()
-//       field := elem.FieldByName(fieldName)
-//       Check field.CanSet()
 func SetFieldValue(val interface{}, fieldName string, newValue interface{}) error {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+
+	// Modifying values with reflection is more complex and requires care.
+
+	// Step 1: Get the `reflect.Value` of `val`.
+	// Step 2: Check that the value is a pointer. You can only modify things that are addressable.
+	// - `if v.Kind() != reflect.Ptr { return error }`
+	// Step 3: Get the element the pointer points to.
+	// - `elem := v.Elem()`
+	// Step 4: Find the field on the element.
+	// - `field := elem.FieldByName(fieldName)`
+	// - Check if the field is valid.
+	// Step 5: Check if the field can be set.
+	// - `if !field.CanSet() { return error }`
+	// - A field can only be set if it is exported (starts with an uppercase letter).
+	// Step 6: Get the `reflect.Value` of the `newValue`.
+	// - `newVal := reflect.ValueOf(newValue)`
+	// Step 7: Check that the types match.
+	// - `if field.Type() != newVal.Type() { return error }`
+	// Step 8: Set the value.
+	// - `field.Set(newVal)`
 	return nil
 }
 
@@ -196,43 +190,36 @@ func SetFieldValue(val interface{}, fieldName string, newValue interface{}) erro
 // ============================================================================
 
 // CallMethod calls a method by name with the given arguments.
-//
-// REQUIREMENTS:
-// - Use MethodByName to get the method
-// - Convert arguments to []reflect.Value
-// - Call the method
-// - Return the results as []interface{}
-// - If the method doesn't exist, return nil
-//
-// EXAMPLES:
-//   calc := Calculator{}
-//   CallMethod(calc, "Add", 5, 3) → []interface{}{8}
-//   CallMethod(calc, "Multiply", 4, 7) → []interface{}{28}
-//
-// HINT: method := v.MethodByName(methodName)
-//       Check method.IsValid()
-//       Build args as []reflect.Value using reflect.ValueOf for each arg
-//       results := method.Call(args)
-//       Convert results back to []interface{}
 func CallMethod(obj interface{}, methodName string, args ...interface{}) []interface{} {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+
+	// Step 1: Get the `reflect.Value` of the object.
+	// Step 2: Get the method by its name.
+	// - `method := v.MethodByName(methodName)`
+	// - Check if `method.IsValid()`. If not, the method doesn't exist, so return `nil`.
+
+	// Step 3: Prepare the arguments for the call.
+	// - The `Call` method expects a `[]reflect.Value`.
+	// - Create a slice of `reflect.Value` with the same length as `args`.
+	// - Loop through your `args` and convert each one to a `reflect.Value` using `reflect.ValueOf(arg)`.
+
+	// Step 4: Call the method.
+	// - `results := method.Call(reflectArgs)`
+	// - This returns a `[]reflect.Value`.
+
+	// Step 5: Convert the results back to `[]interface{}`.
+	// - Create a new slice of `interface{}`.
+	// - Loop through the `results` and convert each `reflect.Value` back using `.Interface()`.
+
 	return nil
 }
 
 // HasMethod checks if a value has a method with the given name.
-//
-// REQUIREMENTS:
-// - Use MethodByName to look up the method
-// - Return true if the method exists, false otherwise
-//
-// EXAMPLES:
-//   HasMethod(Calculator{}, "Add") → true
-//   HasMethod(Calculator{}, "Divide") → false
-//
-// HINT: method := v.MethodByName(methodName)
-//       return method.IsValid()
 func HasMethod(obj interface{}, methodName string) bool {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Get the `reflect.Value` of the object.
+	// - Get the method by name using `.MethodByName(methodName)`.
+	// - The `IsValid()` method on the result will be `true` if the method exists and `false` otherwise.
 	return false
 }
 
@@ -241,36 +228,19 @@ func HasMethod(obj interface{}, methodName string) bool {
 // ============================================================================
 
 // SameType checks if two values have the same type.
-//
-// REQUIREMENTS:
-// - Return true if both values have the exact same type
-// - Return false otherwise
-//
-// EXAMPLES:
-//   SameType(42, 10) → true (both int)
-//   SameType(42, "hello") → false (int vs string)
-//   SameType(User{}, User{Name: "Alice"}) → true (both User)
-//
-// HINT: Use reflect.TypeOf for both values and compare with ==
 func SameType(a, b interface{}) bool {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Use `reflect.TypeOf()` on both `a` and `b`.
+	// - The resulting `reflect.Type` values can be compared directly with `==`.
 	return false
 }
 
 // IsPointer checks if a value is a pointer.
-//
-// REQUIREMENTS:
-// - Return true if the value's kind is reflect.Ptr
-// - Return false otherwise
-//
-// EXAMPLES:
-//   x := 42
-//   IsPointer(x) → false
-//   IsPointer(&x) → true
-//
-// HINT: Use Kind() and compare with reflect.Ptr
 func IsPointer(v interface{}) bool {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Get the `reflect.Type` of `v`.
+	// - Get the `Kind` of the type.
+	// - Compare the `Kind` to the constant `reflect.Ptr`.
 	return false
 }
 
@@ -279,41 +249,21 @@ func IsPointer(v interface{}) bool {
 // ============================================================================
 
 // SliceLength returns the length of a slice using reflection.
-//
-// REQUIREMENTS:
-// - Check if the value is a slice (Kind() == reflect.Slice)
-// - Return the length if it's a slice
-// - Return -1 if it's not a slice
-//
-// EXAMPLES:
-//   SliceLength([]int{1, 2, 3}) → 3
-//   SliceLength("not a slice") → -1
-//
-// HINT: v := reflect.ValueOf(slice)
-//       Check v.Kind() == reflect.Slice
-//       return v.Len()
 func SliceLength(slice interface{}) int {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Get the `reflect.Value` of the input.
+	// - Check if its `Kind` is `reflect.Slice`. If not, return -1.
+	// - If it is a slice, use the `.Len()` method on the `reflect.Value` to get its length.
 	return -1
 }
 
 // MapKeys returns all keys from a map as []interface{}.
-//
-// REQUIREMENTS:
-// - Check if the value is a map (Kind() == reflect.Map)
-// - Return all keys as []interface{}
-// - Return nil if not a map
-//
-// EXAMPLES:
-//   m := map[string]int{"a": 1, "b": 2}
-//   MapKeys(m) → []interface{}{"a", "b"} (order may vary)
-//
-// HINT: v := reflect.ValueOf(m)
-//       Check v.Kind() == reflect.Map
-//       keys := v.MapKeys()
-//       Convert each key.Interface() to []interface{}
 func MapKeys(m interface{}) []interface{} {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Get the `reflect.Value` of the input.
+	// - Check if its `Kind` is `reflect.Map`. If not, return `nil`.
+	// - If it is a map, use the `.MapKeys()` method. This returns a `[]reflect.Value`.
+	// - You need to convert this `[]reflect.Value` into an `[]interface{}` by looping through it and calling `.Interface()` on each key.
 	return nil
 }
 
@@ -322,20 +272,12 @@ func MapKeys(m interface{}) []interface{} {
 // ============================================================================
 
 // NewInstance creates a new instance of the same type as the given value.
-//
-// REQUIREMENTS:
-// - Use reflect.New to create a pointer to a new zero value
-// - Return the pointer as interface{}
-//
-// EXAMPLES:
-//   u := User{}
-//   newU := NewInstance(u).(*User)  // newU is a *User with zero values
-//
-// HINT: t := reflect.TypeOf(v)
-//       ptr := reflect.New(t)
-//       return ptr.Interface()
 func NewInstance(v interface{}) interface{} {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - `reflect.New(t)` creates a new zero value of type `t` and returns a `reflect.Value` representing a pointer to it.
+	// - Get the type of `v` using `reflect.TypeOf(v)`.
+	// - Call `reflect.New()` with that type.
+	// - Call `.Interface()` on the result to get the pointer back as an `interface{}`.
 	return nil
 }
 
@@ -344,20 +286,14 @@ func NewInstance(v interface{}) interface{} {
 // ============================================================================
 
 // GetFieldNames returns the names of all fields in a struct.
-//
-// REQUIREMENTS:
-// - Return a slice of field names (strings)
-// - Only include exported (public) fields
-// - Return nil if the value is not a struct
-//
-// EXAMPLES:
-//   GetFieldNames(User{}) → []string{"Name", "Email", "Age"}
-//   GetFieldNames(42) → nil
-//
-// HINT: Iterate with NumField() and Field(i).Name
-//       Check Field(i).IsExported()
 func GetFieldNames(v interface{}) []string {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// - Get the `reflect.Type` and handle pointers.
+	// - Check if it's a struct.
+	// - Loop from `i = 0` to `t.NumField() - 1`.
+	// - In the loop, get the `StructField` with `t.Field(i)`.
+	// - The `StructField` type has a `Name` property and an `IsExported()` method.
+	// - If the field is exported, add its name to your result slice.
 	return nil
 }
 
@@ -366,24 +302,20 @@ func GetFieldNames(v interface{}) []string {
 // ============================================================================
 
 // DeepCopy creates a deep copy of a struct using reflection.
-//
-// REQUIREMENTS:
-// - Create a new instance of the same type
-// - Copy all field values from the original to the new instance
-// - Return a pointer to the new instance
-// - Only handle simple types (int, string, bool, float64)
-// - Return nil if not a struct
-//
-// EXAMPLES:
-//   original := User{Name: "Alice", Age: 30}
-//   copy := DeepCopy(original).(*User)
-//   copy.Name → "Alice"
-//   &copy != &original (different instances)
-//
-// HINT: Create new instance with reflect.New
-//       Iterate fields and copy values using Field(i)
-//       Use Set to copy each field value
 func DeepCopy(v interface{}) interface{} {
-	// TODO: Implement this function
+	// TODO: Implement this function.
+	// This function should create a new struct of the same type and copy all the field values.
+
+	// Step 1: Get the `reflect.Value` and `reflect.Type` of the input, handling pointers.
+	// Step 2: Check if it's a struct.
+	// Step 3: Create a new instance of the struct type.
+	// - `newVal := reflect.New(typ)` gives you a pointer to the new struct.
+	// - `newElem := newVal.Elem()` gives you the struct itself, which you can set fields on.
+	// Step 4: Loop through the fields of the original value (`val`).
+	// - `for i := 0; i < val.NumField(); i++ { ... }`
+	// Step 5: In the loop, get the source field (`val.Field(i)`) and the destination field (`newElem.Field(i)`).
+	// Step 6: Check if the destination field `.CanSet()`.
+	// Step 7: If it can be set, set its value from the source field: `dstField.Set(srcField)`.
+	// Step 8: Return the new pointer: `return newVal.Interface()`.
 	return nil
 }

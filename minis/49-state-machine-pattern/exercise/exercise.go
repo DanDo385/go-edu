@@ -51,92 +51,105 @@ type StateMachine struct {
 	data        interface{} // User-provided context data
 }
 
-// TODO: Implement New
 // New creates a new state machine with an initial state and user data
-// The data parameter will be passed to all Guard and Action functions
 func New(initial State, data interface{}) *StateMachine {
-	// EXERCISE: Initialize and return a new StateMachine
-	// - Set current to initial
-	// - Initialize all maps
-	// - Initialize history as empty slice
-	// - Set data
-	panic("TODO: implement New")
+	// EXERCISE: Initialize and return a new StateMachine.
+	// - Set the `current` state to `initial`.
+	// - Initialize the `transitions`, `onEnter`, and `onExit` maps so they are ready to be used.
+	// - The `history` slice should be an empty slice.
+	// - Store the user-provided `data`.
+	return &StateMachine{
+		current:     initial,
+		transitions: make(map[State]map[Event][]*Transition),
+		onEnter:     make(map[State][]Action),
+		onExit:      make(map[State][]Action),
+		history:     []HistoryEntry{},
+		data:        data,
+	}
 }
 
-// TODO: Implement AddTransition
 // AddTransition adds a valid transition to the state machine
 func (sm *StateMachine) AddTransition(t Transition) {
-	// EXERCISE: Add a transition to the state machine
-	// - Lock the mutex (write lock)
-	// - Initialize the nested map if needed
-	// - Store the transition
-	panic("TODO: implement AddTransition")
+	// EXERCISE: Add a transition to the state machine's configuration.
+	// - Use a write lock (`sm.mu.Lock()`) to safely modify the `transitions` map.
+	// - Check if the map for the `t.From` state has been initialized. If not, create it.
+	// - Append the new transition `t` to the slice for the given state and event.
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	if sm.transitions[t.From] == nil {
+		sm.transitions[t.From] = make(map[Event][]*Transition)
+	}
+
+	sm.transitions[t.From][t.Event] = append(sm.transitions[t.From][t.Event], &t)
 }
 
-// TODO: Implement OnEnter
 // OnEnter registers an action to execute when entering a state
 func (sm *StateMachine) OnEnter(state State, action Action) {
-	// EXERCISE: Register an entry action
-	// - Lock the mutex (write lock)
-	// - Append action to onEnter[state]
-	panic("TODO: implement OnEnter")
+	// EXERCISE: Register an action to be called when a state is entered.
+	// - Use a write lock.
+	// - Append the `action` to the slice of actions for the given `state` in the `onEnter` map.
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	sm.onEnter[state] = append(sm.onEnter[state], action)
 }
 
-// TODO: Implement OnExit
 // OnExit registers an action to execute when exiting a state
 func (sm *StateMachine) OnExit(state State, action Action) {
-	// EXERCISE: Register an exit action
-	// - Lock the mutex (write lock)
-	// - Append action to onExit[state]
-	panic("TODO: implement OnExit")
+	// EXERCISE: Register an action to be called when a state is exited.
+	// - Use a write lock.
+	// - Append the `action` to the slice of actions for the given `state` in the `onExit` map.
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	sm.onExit[state] = append(sm.onExit[state], action)
 }
 
-// TODO: Implement Transition
 // Transition attempts to transition from current state using the given event
-// Returns error if:
-// - No transition exists for current state and event
-// - Guard condition fails
-// - Any action fails
 func (sm *StateMachine) Transition(ctx context.Context, event Event) error {
-	// EXERCISE: Implement the complete transition logic
-	// 1. Lock the mutex (write lock)
-	// 2. Find the transition for current state and event
-	// 3. If guard exists, check it (return error if fails)
-	// 4. Execute exit actions for current state
-	// 5. Execute transition action (if exists)
-	// 6. Update current state
-	// 7. Execute entry actions for new state
-	// 8. Record in history
-	//
-	// IMPORTANT: If any action fails, consider rollback strategy
+	// EXERCISE: Implement the complete transition logic.
+	// This is the heart of the state machine.
+
+	// Step 1: Acquire a write lock, as this method modifies the machine's state.
+	// Step 2: Find all possible transitions for the current state and the given event.
+	// Step 3: Iterate through the possible transitions to find the first one that is allowed.
+	//   - A transition is allowed if it has no `Guard` function, or if its `Guard` function returns `true`.
+	// Step 4: If no allowed transition is found, return an error.
+	// Step 5: If an allowed transition is found:
+	//   a. Execute all `OnExit` actions for the *current* state. If any action returns an error, stop and return that error.
+	//   b. Execute the `Action` associated with the transition itself (if it exists). Handle any error.
+	//   c. Change the state: `sm.current = transition.To`.
+	//   d. Execute all `OnEnter` actions for the *new* state. If any action fails, you might need to consider a rollback strategy (for this exercise, just returning the error is fine).
+	//   e. Record the successful transition in the `sm.history`.
+	// Step 6: If all actions were successful, return `nil`.
 	panic("TODO: implement Transition")
 }
 
-// TODO: Implement Current
 // Current returns the current state of the state machine
 func (sm *StateMachine) Current() State {
-	// EXERCISE: Return current state (with read lock)
-	panic("TODO: implement Current")
+	// EXERCISE: Return the current state.
+	// - Use a read lock (`sm.mu.RLock()`) for thread-safe access.
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+	return sm.current
 }
 
-// TODO: Implement Can
 // Can checks if a transition is possible from the current state
-// It checks both transition existence and guard condition
 func (sm *StateMachine) Can(event Event) bool {
-	// EXERCISE: Check if transition is possible
-	// - Lock with read lock
-	// - Check if transition exists
-	// - Check guard condition (if exists)
+	// EXERCISE: Check if a transition is possible.
+	// - Use a read lock.
+	// - Find the transitions for the current state and event.
+	// - Return `true` if there is at least one transition for which the `Guard` function passes (or there is no guard).
 	panic("TODO: implement Can")
 }
 
-// TODO: Implement History
 // History returns a copy of all state transitions
 func (sm *StateMachine) History() []HistoryEntry {
-	// EXERCISE: Return a copy of history (with read lock)
-	// - Lock with read lock
-	// - Create a copy of history slice
-	// - Return the copy (to prevent external modification)
+	// EXERCISE: Return a copy of the history.
+	// - Use a read lock.
+	// - It's important to return a *copy* of the slice, not the slice itself, to prevent the caller from modifying the internal history.
+	//   `result := make([]HistoryEntry, len(sm.history)); copy(result, sm.history); return result`
 	panic("TODO: implement History")
 }
 
@@ -175,23 +188,50 @@ type Order struct {
 	DeliveredAt    time.Time
 }
 
-// TODO: Implement NewOrderStateMachine
 // NewOrderStateMachine creates a state machine for order processing
 func NewOrderStateMachine(order *Order) *StateMachine {
-	// EXERCISE: Create and configure an order state machine
-	// 1. Create new state machine with OrderPending initial state
-	// 2. Add transitions:
-	//    - Pending -> Paid (event: pay, guard: amount > 0 && payment method exists)
-	//    - Paid -> Shipped (event: ship, action: set tracking number)
-	//    - Shipped -> Delivered (event: deliver, action: set delivered time)
-	//    - Pending -> Cancelled (event: cancel)
-	// 3. Add entry/exit actions:
-	//    - OnEnter Paid: log payment confirmation
-	//    - OnEnter Shipped: log shipping notification
-	//    - OnEnter Delivered: log delivery confirmation
-	//
-	// HINT: Use type assertions to access order in guards/actions
-	// Example: order := data.(*Order)
+	// EXERCISE: Create and configure a state machine for a specific use case: an e-commerce order.
+
+	// Step 1: Create a new state machine instance.
+	// - The initial state is `OrderPending`.
+	// - The user-provided `data` is the `order` itself.
+	//   `sm := New(State(OrderPending), order)`
+
+	// Step 2: Add all the valid transitions for the order lifecycle.
+	// - Use `sm.AddTransition()` for each one.
+	// - Example for Pending -> Paid:
+	/*
+		sm.AddTransition(Transition{
+			From:  State(OrderPending),
+			Event: Event(EventPay),
+			To:    State(OrderPaid),
+			Guard: func(ctx context.Context, data interface{}) bool {
+				// Access the order via type assertion
+				order := data.(*Order)
+				// The payment can only succeed if the amount is valid.
+				return order.Amount > 0 && order.PaymentMethod != ""
+			},
+			Action: func(ctx context.Context, data interface{}) error {
+				// Simulate processing the payment.
+				fmt.Printf("Processing payment for order %s\n", data.(*Order).ID)
+				return nil
+			},
+		})
+	*/
+	// - Implement the other transitions: Paid -> Shipped, Shipped -> Delivered, Pending -> Cancelled.
+
+	// Step 3: Add entry/exit actions for specific states.
+	// - Use `sm.OnEnter()` to define actions that happen as soon as a state is entered.
+	// - Example for OnEnter Paid:
+	/*
+		sm.OnEnter(State(OrderPaid), func(ctx context.Context, data interface{}) error {
+			fmt.Printf("Sending payment confirmation email for order %s\n", data.(*Order).ID)
+			return nil
+		})
+	*/
+	// - Implement other entry actions for Shipped and Delivered.
+
+	// Step 4: Return the configured state machine.
 	panic("TODO: implement NewOrderStateMachine")
 }
 
@@ -227,22 +267,25 @@ type User struct {
 	SessionID  string
 }
 
-// TODO: Implement NewAuthStateMachine
 // NewAuthStateMachine creates a state machine for user authentication
 func NewAuthStateMachine(user *User) *StateMachine {
-	// EXERCISE: Create and configure an authentication state machine
-	// 1. Create new state machine with AuthLoggedOut initial state
-	// 2. Add transitions:
-	//    - LoggedOut -> MFAPending (event: login, guard: MFA enabled)
-	//    - LoggedOut -> LoggedIn (event: login, guard: MFA NOT enabled)
-	//    - MFAPending -> LoggedIn (event: mfa_success, guard: valid MFA code)
-	//    - LoggedIn -> LoggedOut (event: logout)
-	// 3. Add actions:
-	//    - OnEnter LoggedIn: generate session ID, log successful login
-	//    - OnEnter MFAPending: log MFA challenge sent
-	//    - OnExit LoggedIn: clear session, log logout
-	//
-	// HINT: For simplified MFA validation, check if code == secret
+	// EXERCISE: Create and configure an authentication state machine.
+
+	// This demonstrates how multiple transitions can exist for the same event from the same state,
+	// with `Guard` functions determining which path is taken.
+
+	// Step 1: Create a new state machine with the initial state `AuthLoggedOut`.
+	// Step 2: Add transitions for the `login` event.
+	//   - One transition from `LoggedOut` to `MFAPending` for the `login` event, with a `Guard` that checks if `user.MFAEnabled` is true.
+	//   - A second transition from `LoggedOut` to `LoggedIn` for the same `login` event, with a `Guard` that checks if `user.MFAEnabled` is false.
+	// Step 3: Add the transition for MFA success.
+	//   - `MFAPending` -> `LoggedIn` on the `mfa_success` event. Include a `Guard` that checks if the provided `user.MFACode` is valid.
+	// Step 4: Add the logout transition.
+	//   - `LoggedIn` -> `LoggedOut` on the `logout` event.
+	// Step 5: Add entry/exit actions.
+	//   - `OnEnter(AuthLoggedIn, ...)`: a function that generates and sets the `user.SessionID`.
+	//   - `OnExit(AuthLoggedIn, ...)`: a function that clears the `user.SessionID`.
+	// Step 6: Return the configured state machine.
 	panic("TODO: implement NewAuthStateMachine")
 }
 

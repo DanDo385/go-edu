@@ -63,181 +63,76 @@ type Transaction struct {
 // ============================================================================
 
 // FIFOMempool implements a first-in-first-out transaction pool.
-// Transactions are processed in arrival order (fair but inefficient).
-//
-// TODO: Add fields for:
-// - Mutex for thread safety (sync.RWMutex preferred for read-heavy workloads)
-// - Slice to store transactions in arrival order (maintains insertion order)
-// - Map for O(1) lookup by hash (avoids duplicate insertions)
-// - Capacity limit (prevents unbounded growth)
-//
-// Memory layout example (capacity=1000):
-// - txs: []Transaction with cap=1000 → 24 bytes (slice header)
-// - txMap: map[string]*Transaction → 48 bytes * 1000 entries = 48 KB
-// - mu: sync.RWMutex → 16 bytes
-// - Total overhead: ~50 KB + transaction data
-//
-// type FIFOMempool struct {
-//     mu       sync.RWMutex               // Protects txs and txMap
-//     txs      []*Transaction             // Ordered list (insertion order)
-//     txMap    map[string]*Transaction    // Hash → Transaction (fast lookup)
-//     capacity int                        // Maximum number of transactions
-// }
+type FIFOMempool struct {
+	mu       sync.RWMutex
+	txs      []*Transaction
+	txMap    map[string]*Transaction
+	capacity int
+}
 
 // NewFIFOMempool creates a new FIFO mempool with the given capacity.
-// TODO: Initialize FIFOMempool
-//
-// Memory allocation strategy:
-// - Pre-allocate slice with capacity to avoid repeated reallocations
-// - Initialize map with expected size hint (if Go supported it)
-// - Return pointer to avoid copying the large struct
-//
-// func NewFIFOMempool(capacity int) *FIFOMempool {
-//     return &FIFOMempool{
-//         txs:      make([]*Transaction, 0, capacity),  // Pre-allocate slice
-//         txMap:    make(map[string]*Transaction),      // Empty map
-//         capacity: capacity,
-//     }
-// }
 func NewFIFOMempool(capacity int) *FIFOMempool {
-	// TODO: Implement
-	return nil
+	// TODO: Implement this function.
+	// - Initialize the `FIFOMempool` struct.
+	// - `txs` slice should be created with a capacity of `capacity` to reduce re-allocations.
+	// - `txMap` should be initialized as an empty map.
+	return &FIFOMempool{
+		txs:      make([]*Transaction, 0, capacity),
+		txMap:    make(map[string]*Transaction),
+		capacity: capacity,
+	}
 }
 
 // Add adds a transaction to the mempool.
-// Returns error if transaction already exists or mempool is full.
-//
-// TODO: Implement thread-safe add operation
-//
-// Algorithm:
-// 1. Acquire write lock (mu.Lock())
-// 2. Check if hash already exists in txMap → return error
-// 3. Check if len(txs) >= capacity → return error
-// 4. Append to txs slice
-// 5. Add to txMap for O(1) lookup
-// 6. Release lock (mu.Unlock())
-//
-// Why use both slice and map?
-// - Slice: Maintains insertion order for FIFO processing (O(n) for search)
-// - Map: Fast duplicate detection (O(1) lookup by hash)
-// - Trade-off: Extra memory for better time complexity
-//
-// func (m *FIFOMempool) Add(tx *Transaction) error {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     // Check for duplicates
-//     if _, exists := m.txMap[tx.Hash]; exists {
-//         return errors.New("transaction already exists")
-//     }
-//
-//     // Check capacity
-//     if len(m.txs) >= m.capacity {
-//         return errors.New("mempool full")
-//     }
-//
-//     // Add to both slice and map
-//     m.txs = append(m.txs, tx)
-//     m.txMap[tx.Hash] = tx
-//
-//     return nil
-// }
 func (m *FIFOMempool) Add(tx *Transaction) error {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Check if transaction already exists
-	// 3. Check if mempool is at capacity
-	// 4. Add to slice and map
+	// TODO: Implement this thread-safe add operation.
+
+	// Step 1: Acquire a write lock since you're modifying the data structures.
+	// - `m.mu.Lock()`
+	// - `defer m.mu.Unlock()`
+
+	// Step 2: Check if the transaction already exists using the `txMap`.
+	// - This provides an O(1) lookup.
+	// - If it exists, return an error.
+
+	// Step 3: Check if the mempool is at capacity.
+	// - `if len(m.txs) >= m.capacity`
+	// - If full, return an error.
+
+	// Step 4: Add the new transaction to both the slice and the map.
+	// - `m.txs = append(m.txs, tx)`
+	// - `m.txMap[tx.Hash] = tx`
 	return nil
 }
 
 // Remove removes a transaction from the mempool by hash.
-// Returns the removed transaction or error if not found.
-//
-// TODO: Implement thread-safe remove operation
-//
-// Algorithm:
-// 1. Acquire write lock
-// 2. Look up transaction in map → return error if not found
-// 3. Find transaction in slice (linear search, O(n))
-// 4. Remove from slice using append trick: txs = append(txs[:i], txs[i+1:]...)
-// 5. Delete from map
-// 6. Return removed transaction
-//
-// Slice removal performance:
-// - Worst case: O(n) for find + O(n) for shift = O(n)
-// - Memory: No reallocation, just shifts elements left
-// - Alternative: Use linked list for O(1) removal, but more complex
-//
-// func (m *FIFOMempool) Remove(hash string) (*Transaction, error) {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     // Check if exists
-//     tx, exists := m.txMap[hash]
-//     if !exists {
-//         return nil, errors.New("transaction not found")
-//     }
-//
-//     // Find and remove from slice
-//     for i, t := range m.txs {
-//         if t.Hash == hash {
-//             m.txs = append(m.txs[:i], m.txs[i+1:]...)
-//             break
-//         }
-//     }
-//
-//     // Remove from map
-//     delete(m.txMap, hash)
-//     return tx, nil
-// }
 func (m *FIFOMempool) Remove(hash string) (*Transaction, error) {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Find transaction in map
-	// 3. Remove from slice (maintain order)
-	// 4. Remove from map
+	// TODO: Implement this thread-safe remove operation.
+
+	// Step 1: Acquire a write lock.
+	// Step 2: Check if the transaction exists in the `txMap`. If not, return an error.
+	// Step 3: Find the transaction in the `txs` slice. This will be an O(n) linear scan.
+	// Step 4: Once found at index `i`, remove it from the slice.
+	// - The `append(m.txs[:i], m.txs[i+1:]...)` trick is efficient for this.
+	// Step 5: Delete the transaction from the `txMap`.
+	// Step 6: Return the removed transaction.
 	return nil, nil
 }
 
 // GetNext returns the next transaction to process (oldest) without removing it.
-// Returns nil if mempool is empty.
-//
-// TODO: Implement thread-safe read operation
-//
-// Why use RLock instead of Lock?
-// - Multiple goroutines can read simultaneously (read lock is shared)
-// - Writers are blocked while readers are active
-// - Better performance for read-heavy workloads
-//
-// func (m *FIFOMempool) GetNext() *Transaction {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//
-//     if len(m.txs) == 0 {
-//         return nil
-//     }
-//
-//     return m.txs[0]  // First transaction (oldest)
-// }
 func (m *FIFOMempool) GetNext() *Transaction {
-	// TODO: Implement
-	// 1. Read lock the mutex
-	// 2. Return first transaction in slice
+	// TODO: Implement this thread-safe read operation.
+	// - Use a read lock (`m.mu.RLock()`) because you are not modifying data.
+	// - If the `txs` slice is empty, return `nil`.
+	// - Otherwise, return the first element (`m.txs[0]`).
 	return nil
 }
 
 // Size returns the current number of transactions in the mempool.
-//
-// TODO: Implement thread-safe size check
-//
-// func (m *FIFOMempool) Size() int {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//     return len(m.txs)
-// }
 func (m *FIFOMempool) Size() int {
-	// TODO: Implement with read lock
+	// TODO: Implement this thread-safe size check.
+	// - Use a read lock.
+	// - Return the length of the `txs` slice.
 	return 0
 }
 
@@ -245,206 +140,96 @@ func (m *FIFOMempool) Size() int {
 // Exercise 2: Priority Mempool (Fee-Based Ordering)
 // ============================================================================
 
-// PriorityMempool implements a priority-based transaction pool.
-// Transactions are ordered by fee (highest first), using a heap data structure.
-//
-// TODO: Add fields for:
-// - Mutex for thread safety
-// - Heap to store transactions by priority (container/heap)
-// - Map for O(1) lookup by hash
-// - Capacity limit
-//
-// Why use a heap?
-// - Heap: O(log n) insert/remove, O(1) peek at max
-// - Sorted slice: O(n) insert, O(1) peek, O(n) remove
-// - Unsorted slice: O(1) insert, O(n) peek/remove
-// - Trade-off: Heap is best for priority queue operations
-//
-// Heap memory layout:
-// - Heap is backed by a slice: []*Transaction
-// - Parent at index i, children at 2i+1 and 2i+2
-// - Max-heap property: parent.Fee >= children.Fee
-//
-// type PriorityMempool struct {
-//     mu       sync.RWMutex
-//     heap     *TxHeap                    // Priority queue (max-heap by fee)
-//     txMap    map[string]int             // Hash → heap index (for O(1) removal)
-//     capacity int
-// }
-//
-// TxHeap implements heap.Interface for transactions.
-// type TxHeap []*Transaction
-//
-// func (h TxHeap) Len() int { return len(h) }
-// func (h TxHeap) Less(i, j int) bool {
-//     // Max-heap: higher fee = higher priority
-//     if h[i].Fee != h[j].Fee {
-//         return h[i].Fee > h[j].Fee
-//     }
-//     // Tiebreaker: earlier timestamp
-//     return h[i].Timestamp.Before(h[j].Timestamp)
-// }
-// func (h TxHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-// func (h *TxHeap) Push(x interface{}) { *h = append(*h, x.(*Transaction)) }
-// func (h *TxHeap) Pop() interface{} {
-//     old := *h
-//     n := len(old)
-//     tx := old[n-1]
-//     *h = old[0 : n-1]
-//     return tx
-// }
+// PriorityMempool implements a priority-based transaction pool using a heap.
+type PriorityMempool struct {
+	mu       sync.RWMutex
+	heap     *TxHeap
+	txMap    map[string]int
+	capacity int
+}
 
-// NewPriorityMempool creates a new priority mempool with the given capacity.
-//
-// TODO: Initialize PriorityMempool
-// Hint: Use container/heap package and heap.Init()
-//
-// func NewPriorityMempool(capacity int) *PriorityMempool {
-//     h := &TxHeap{}
-//     heap.Init(h)
-//     return &PriorityMempool{
-//         heap:     h,
-//         txMap:    make(map[string]int),
-//         capacity: capacity,
-//     }
-// }
+// TxHeap implements heap.Interface for a priority queue of transactions.
+type TxHeap []*Transaction
+
+func (h TxHeap) Len() int { return len(h) }
+
+func (h TxHeap) Less(i, j int) bool {
+	// This defines the priority. We want a "max-heap" based on the fee.
+	// `Less` should return true if `i` has higher priority than `j`.
+	if h[i].Fee != h[j].Fee {
+		return h[i].Fee > h[j].Fee
+	}
+	// If fees are equal, the earlier transaction has higher priority.
+	return h[i].Timestamp.Before(h[j].Timestamp)
+}
+
+func (h TxHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
+}
+
+func (h *TxHeap) Push(x interface{}) {
+	*h = append(*h, x.(*Transaction))
+}
+
+func (h *TxHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	tx := old[n-1]
+	*h = old[0 : n-1]
+	return tx
+}
+
+// NewPriorityMempool creates a new priority mempool.
 func NewPriorityMempool(capacity int) *PriorityMempool {
-	// TODO: Initialize PriorityMempool
-	// Hint: Use container/heap package
+	// TODO: Implement this function.
+	// - Create a new `TxHeap`.
+	// - Initialize it as a heap using `heap.Init(h)`.
+	// - Return a new `PriorityMempool` with the heap, an initialized map, and the capacity.
 	return nil
 }
 
 // Add adds a transaction to the mempool.
-// If mempool is full, evicts lowest priority transaction if new tx has higher priority.
-//
-// TODO: Implement priority-based add with eviction
-//
-// Algorithm:
-// 1. Lock mutex
-// 2. Check if already exists → return error
-// 3. If at capacity:
-//    a. Peek at lowest priority tx (last element in heap)
-//    b. If new tx fee <= lowest fee → return error (too low priority)
-//    c. Otherwise, evict lowest priority: heap.Remove(heap, len(heap)-1)
-// 4. Add to heap: heap.Push(heap, tx)
-// 5. Update map with heap index
-//
-// Why evict lowest instead of rejecting?
-// - Allows higher-fee transactions to replace lower-fee ones
-// - Maximizes potential miner revenue
-// - Common in Bitcoin/Ethereum mempools
-//
-// func (m *PriorityMempool) Add(tx *Transaction) error {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     if _, exists := m.txMap[tx.Hash]; exists {
-//         return errors.New("transaction already exists")
-//     }
-//
-//     // If at capacity, check if we should evict
-//     if m.heap.Len() >= m.capacity {
-//         lowest := (*m.heap)[m.heap.Len()-1]
-//         if tx.Fee <= lowest.Fee {
-//             return errors.New("mempool full, transaction priority too low")
-//         }
-//         // Evict lowest priority
-//         evicted := heap.Remove(m.heap, m.heap.Len()-1).(*Transaction)
-//         delete(m.txMap, evicted.Hash)
-//     }
-//
-//     // Add to heap
-//     heap.Push(m.heap, tx)
-//     m.txMap[tx.Hash] = m.heap.Len() - 1
-//
-//     return nil
-// }
 func (m *PriorityMempool) Add(tx *Transaction) error {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Check if transaction already exists
-	// 3. If at capacity, check if new tx has higher priority than lowest
-	// 4. Add to heap and map
+	// TODO: Implement this thread-safe add operation with eviction logic.
+
+	// Step 1: Acquire a write lock.
+	// Step 2: Check for duplicates in `txMap`.
+	// Step 3: If the mempool is at capacity:
+	//   - Look at the lowest-priority item without removing it. In a max-heap, this is one of the leaves. For simplicity, you can peek at the last element if your heap implementation allows, though it's not guaranteed to be the absolute minimum. A better way is to check `(*m.heap)[0]` if it were a min-heap. For a max-heap, you might need to search the last `n/2` elements. A simpler approach for this exercise is to just check against the fee of the element at the end of the slice.
+	//   - If the new transaction's fee is not higher than the lowest fee in the pool, reject it.
+	//   - If it is higher, evict the lowest-priority item using `heap.Pop()`. Don't forget to remove it from `txMap`.
+	// Step 4: Add the new transaction to the heap using `heap.Push()`.
+	// Step 5: Update the `txMap` to store the index of the new item in the heap.
 	return nil
 }
 
 // Remove removes a transaction from the mempool by hash.
-//
-// TODO: Implement heap-based removal
-//
-// Heap removal is tricky:
-// - heap.Remove(h, i) removes element at index i
-// - After removal, heap property is restored (O(log n))
-// - But our map tracks indices, which become stale after removal
-// - Solution: Linear search to find current index (O(n))
-//
-// func (m *PriorityMempool) Remove(hash string) (*Transaction, error) {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     _, exists := m.txMap[hash]
-//     if !exists {
-//         return nil, errors.New("transaction not found")
-//     }
-//
-//     // Find current index (indices may have shifted)
-//     actualIdx := -1
-//     for i, tx := range *m.heap {
-//         if tx.Hash == hash {
-//             actualIdx = i
-//             break
-//         }
-//     }
-//
-//     if actualIdx == -1 {
-//         return nil, errors.New("transaction not found in heap")
-//     }
-//
-//     tx := heap.Remove(m.heap, actualIdx).(*Transaction)
-//     delete(m.txMap, hash)
-//
-//     return tx, nil
-// }
 func (m *PriorityMempool) Remove(hash string) (*Transaction, error) {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Find transaction in map
-	// 3. Remove from heap
-	// 4. Remove from map
+	// TODO: Implement this thread-safe remove operation.
+
+	// Removing an arbitrary element from a heap is more complex than a slice.
+	// Step 1: Acquire a write lock.
+	// Step 2: Look up the transaction's *index* in the `txMap`. If it doesn't exist, return an error.
+	// Step 3: Use `heap.Remove(m.heap, index)` to remove the element. This function will maintain the heap property.
+	// Step 4: Delete the hash from `txMap`.
+	// Step 5: The `heap.Remove` operation might have swapped elements, invalidating other indices in your `txMap`. You need to re-index the map or find a way to update it. For this exercise, a simple but slow solution is to rebuild the index map after a removal. A better solution involves updating the index of the swapped element.
 	return nil, nil
 }
 
 // GetNext returns the highest priority transaction without removing it.
-//
-// TODO: Implement priority-based peek
-//
-// func (m *PriorityMempool) GetNext() *Transaction {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//
-//     if m.heap.Len() == 0 {
-//         return nil
-//     }
-//
-//     return (*m.heap)[0]  // Root of heap (highest priority)
-// }
 func (m *PriorityMempool) GetNext() *Transaction {
-	// TODO: Implement
-	// Return root of heap (highest priority)
+	// TODO: Implement this thread-safe peek operation.
+	// - Use a read lock.
+	// - If the heap is empty, return `nil`.
+	// - The highest-priority item is always at the root of the heap, which is index 0 of the slice. Return `(*m.heap)[0]`.
 	return nil
 }
 
 // Size returns the current number of transactions in the mempool.
-//
-// TODO: Implement thread-safe size check
-//
-// func (m *PriorityMempool) Size() int {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//     return m.heap.Len()
-// }
 func (m *PriorityMempool) Size() int {
-	// TODO: Implement with read lock
+	// TODO: Implement this thread-safe size check.
+	// - Use a read lock.
+	// - Return `m.heap.Len()`.
 	return 0
 }
 
@@ -453,173 +238,63 @@ func (m *PriorityMempool) Size() int {
 // ============================================================================
 
 // NonceMempool implements a nonce-based transaction pool.
-// Transactions from the same account are ordered by nonce (sequence number).
-//
-// TODO: Add fields for:
-// - Mutex for thread safety
-// - Map of account address to AccountQueue
-//
-// Why nonce-based ordering?
-// - Prevents replay attacks (can't re-broadcast old transactions)
-// - Ensures transactions are processed in order per account
-// - Common in account-based blockchains (Ethereum)
-//
-// Nonce example:
-// - Alice sends 3 transactions: nonce 0, 1, 2
-// - Must be processed in order: 0 → 1 → 2
-// - If nonce 1 is missing, nonce 2 waits (pending)
-//
-// type NonceMempool struct {
-//     mu       sync.RWMutex
-//     accounts map[string]*AccountQueue  // Address → AccountQueue
-// }
+type NonceMempool struct {
+	mu       sync.RWMutex
+	accounts map[string]*AccountQueue
+}
 
 // AccountQueue stores transactions for a single account, ordered by nonce.
-//
-// TODO: Add fields for:
-// - Account address
-// - Pending nonce (next expected nonce)
-// - Map of nonce to transaction
-//
-// type AccountQueue struct {
-//     address      string
-//     pendingNonce uint64                   // Next nonce to process
-//     txs          map[uint64]*Transaction  // Nonce → Transaction
-// }
+type AccountQueue struct {
+	address      string
+	pendingNonce uint64
+	txs          map[uint64]*Transaction
+}
 
 // NewNonceMempool creates a new nonce-based mempool.
-//
-// TODO: Initialize NonceMempool
-//
-// func NewNonceMempool() *NonceMempool {
-//     return &NonceMempool{
-//         accounts: make(map[string]*AccountQueue),
-//     }
-// }
 func NewNonceMempool() *NonceMempool {
-	// TODO: Initialize NonceMempool
+	// TODO: Implement this function.
+	// - Initialize the `NonceMempool` with an empty map of accounts.
 	return nil
 }
 
 // Add adds a transaction to the mempool.
-// If a transaction with the same nonce exists, replaces it only if fee is higher.
-//
-// TODO: Implement nonce-based add with replacement
-//
-// Algorithm:
-// 1. Lock mutex
-// 2. Get or create AccountQueue for tx.From
-// 3. Check if transaction with same nonce exists
-// 4. If exists and new fee <= old fee → return error
-// 5. Add/replace transaction in queue
-//
-// Why allow replacement?
-// - User may want to speed up transaction by increasing fee
-// - Common pattern: "replace-by-fee" (RBF)
-//
-// func (m *NonceMempool) Add(tx *Transaction) error {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     // Get or create account queue
-//     queue, exists := m.accounts[tx.From]
-//     if !exists {
-//         queue = &AccountQueue{
-//             address:      tx.From,
-//             pendingNonce: 0,
-//             txs:          make(map[uint64]*Transaction),
-//         }
-//         m.accounts[tx.From] = queue
-//     }
-//
-//     // Check for replacement (higher fee)
-//     if existing, exists := queue.txs[tx.Nonce]; exists {
-//         if tx.Fee <= existing.Fee {
-//             return errors.New("transaction with same nonce has higher or equal fee")
-//         }
-//     }
-//
-//     queue.txs[tx.Nonce] = tx
-//     return nil
-// }
 func (m *NonceMempool) Add(tx *Transaction) error {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Get or create account queue for tx.From
-	// 3. Check if nonce already exists
-	// 4. If exists, only replace if higher fee
-	// 5. Add to account queue
+	// TODO: Implement this thread-safe add operation with replacement logic.
+
+	// Step 1: Acquire a write lock.
+	// Step 2: Get the `AccountQueue` for the transaction's sender (`tx.From`).
+	// Step 3: If the queue doesn't exist, create a new one and add it to the `m.accounts` map.
+	// Step 4: Check if a transaction with the same nonce already exists in the queue.
+	//   - `if existing, exists := queue.txs[tx.Nonce]; exists`
+	//   - If it exists, only replace it if the new transaction has a strictly higher fee (`tx.Fee > existing.Fee`). This is "Replace-by-Fee". If not, return an error.
+	// Step 5: Add the new transaction to the `queue.txs` map, keyed by its nonce.
 	return nil
 }
 
-// GetNextForAccount returns the next transaction for the given account
-// (with nonce equal to pending nonce), or nil if not available.
-//
-// TODO: Implement nonce-based next transaction lookup
-//
-// func (m *NonceMempool) GetNextForAccount(address string) *Transaction {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//
-//     queue, exists := m.accounts[address]
-//     if !exists {
-//         return nil
-//     }
-//
-//     return queue.txs[queue.pendingNonce]
-// }
+// GetNextForAccount returns the next transaction for the given account.
 func (m *NonceMempool) GetNextForAccount(address string) *Transaction {
-	// TODO: Implement
-	// 1. Read lock the mutex
-	// 2. Get account queue
-	// 3. Return transaction with pending nonce
+	// TODO: Implement this thread-safe read operation.
+	// - Use a read lock.
+	// - Get the `AccountQueue` for the given `address`.
+	// - If the queue exists, return the transaction from its `txs` map that corresponds to the `queue.pendingNonce`.
+	// - If the queue or the specific transaction doesn't exist, return `nil`.
 	return nil
 }
 
 // AdvanceNonce advances the pending nonce for the given account.
-// This should be called after processing a transaction.
-//
-// TODO: Implement nonce advancement
-//
-// Algorithm:
-// 1. Lock mutex
-// 2. Get account queue
-// 3. Remove transaction with current pending nonce
-// 4. Increment pending nonce
-//
-// func (m *NonceMempool) AdvanceNonce(address string) {
-//     m.mu.Lock()
-//     defer m.mu.Unlock()
-//
-//     if queue, exists := m.accounts[address]; exists {
-//         delete(queue.txs, queue.pendingNonce)
-//         queue.pendingNonce++
-//     }
-// }
 func (m *NonceMempool) AdvanceNonce(address string) {
-	// TODO: Implement
-	// 1. Lock the mutex
-	// 2. Get account queue
-	// 3. Remove transaction with current pending nonce
-	// 4. Increment pending nonce
+	// TODO: Implement this thread-safe method.
+	// - This should be called after a transaction for an account has been successfully processed and included in a block.
+	// - Use a write lock.
+	// - Get the `AccountQueue` for the address.
+	// - If it exists, delete the transaction corresponding to the `pendingNonce` and then increment `pendingNonce`.
 }
 
 // Size returns the total number of transactions across all accounts.
-//
-// TODO: Implement total transaction count
-//
-// func (m *NonceMempool) Size() int {
-//     m.mu.RLock()
-//     defer m.mu.RUnlock()
-//
-//     count := 0
-//     for _, queue := range m.accounts {
-//         count += len(queue.txs)
-//     }
-//     return count
-// }
 func (m *NonceMempool) Size() int {
-	// TODO: Implement with read lock
+	// TODO: Implement this thread-safe size check.
+	// - Use a read lock.
+	// - Iterate through all the `AccountQueue`s in the `m.accounts` map and sum the lengths of their `txs` maps.
 	return 0
 }
 

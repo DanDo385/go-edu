@@ -9,11 +9,11 @@ package exercise
 // - "fmt" for error formatting
 // - "os" for file I/O operations
 //
-// import (
-//     "encoding/json"
-//     "fmt"
-//     "os"
-// )
+import (
+    "encoding/json"
+    "fmt"
+    "os"
+)
 
 // ============================================================================
 // CLI TODO APPLICATION: Building a Persistent Task Manager
@@ -46,7 +46,10 @@ package exercise
 
 // Item represents a single TODO item.
 // TODO: Define the Item struct with proper JSON tags.
-//
+type Item struct {
+	
+}
+
 // Memory considerations:
 // - struct is a value type (copied when assigned)
 // - String fields internally contain pointer to data (8 bytes) + len/cap

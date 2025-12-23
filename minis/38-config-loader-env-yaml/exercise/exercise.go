@@ -40,92 +40,92 @@ type LoggingConfig struct {
 }
 
 // LoadConfig loads configuration from a YAML file.
-// It performs the following steps:
-// 1. Reads the YAML file
-// 2. Substitutes environment variables (${VAR} or ${VAR:-default})
-// 3. Parses the YAML into a Config struct
-// 4. Applies default values for missing fields
-// 5. Validates the configuration
-//
-// Example usage:
-//   config, err := LoadConfig("config.yaml")
-//   if err != nil {
-//       log.Fatal(err)
-//   }
 func LoadConfig(filename string) (*Config, error) {
-	// TODO: Implement
-	// Steps:
-	// 1. Read file with os.ReadFile
-	// 2. Call substituteEnvVars on the file contents
-	// 3. Unmarshal YAML into Config struct
-	// 4. Call ApplyDefaults
-	// 5. Call Validate
-	// 6. Return config or error
+	// TODO: Implement the full configuration loading pipeline.
+
+	// Step 1: Read the raw YAML file into a byte slice.
+	// - Use `os.ReadFile(filename)`.
+	// - Wrap any error with `fmt.Errorf` to add context.
+
+	// Step 2: Substitute environment variables in the raw YAML content.
+	// - Convert the byte slice to a string and pass it to your `substituteEnvVars` helper function.
+
+	// Step 3: Parse the substituted YAML into the `Config` struct.
+	// - `var config Config`
+	// - `err := yaml.Unmarshal([]byte(substitutedYAML), &config)`
+	// - The `yaml.v3` library will parse the YAML and populate the fields of your struct based on the `yaml:` tags.
+
+	// Step 4: Apply default values for any fields that were not present in the YAML file.
+	// - `config.ApplyDefaults()`
+
+	// Step 5: Validate the final configuration to ensure all required fields are present and have sane values.
+	// - `if err := config.Validate(); err != nil { ... }`
+
+	// Step 6: If all steps succeed, return the populated and validated `*Config`.
 	return nil, nil
 }
 
 // substituteEnvVars replaces ${VAR} and ${VAR:-default} patterns with environment variable values.
-//
-// Patterns:
-//   ${VAR}          - Replace with env var VAR, or leave as-is if not set
-//   ${VAR:-default} - Replace with env var VAR, or use "default" if not set
-//
-// Example:
-//   input:  "host: ${DB_HOST:-localhost}"
-//   output: "host: localhost" (if DB_HOST not set)
-//   output: "host: prod-db" (if DB_HOST=prod-db)
 func substituteEnvVars(input string) string {
-	// TODO: Implement
-	// Hints:
-	// 1. Use regexp.MustCompile with pattern: `\$\{([A-Z_][A-Z0-9_]*)(:-([^}]*))?\}`
-	// 2. Use ReplaceAllStringFunc to process each match
-	// 3. Extract variable name and optional default from match
-	// 4. Use os.Getenv to look up variable
-	// 5. Return env var value, or default, or original match
+	// TODO: Implement environment variable substitution.
+
+	// Step 1: Define the regular expression to find all occurrences of `${...}`.
+	// - The pattern `\$\{([A-Z_][A-Z0-9_]*)(:-([^}]*))?\}` works well.
+	//   - `\$\{ ... \}`: Matches the literal `${` and `}`.
+	//   - `([A-Z_][A-Z0-9_]*)`: The first capture group. Matches a valid environment variable name (starts with letter or underscore, followed by letters, numbers, or underscores).
+	//   - `(:-([^}]*))?`: An optional second capture group for the default value. It matches `:-` followed by any characters that are not `}`.
+
+	// Step 2: Use `re.ReplaceAllStringFunc` to process each match.
+	// - This function takes a callback that receives the matched string (e.g., "${DB_HOST:-localhost}").
+	// - Inside the callback, you need to parse the matched string to get the variable name and the default value. `re.FindStringSubmatch` is perfect for this.
+
+	// Step 3: Implement the logic inside the callback.
+	// - Get the variable name from the first capture group.
+	// - Get the default value from the (optional) third capture group.
+	// - Call `os.Getenv()` with the variable name.
+	// - If the environment variable exists and is not empty, return its value.
+	// - Otherwise, if a default value was provided, return the default value.
+	// - Otherwise, return the original matched string (e.g., "${DB_HOST}") so the user knows a variable was missing.
 	return input
 }
 
 // ApplyDefaults sets default values for any zero-value fields.
-// This is called after parsing but before validation.
-//
-// Defaults:
-//   Server.Host:         "0.0.0.0"
-//   Server.Port:         8080
-//   Server.ReadTimeout:  30s
-//   Server.WriteTimeout: 30s
-//   Database.Port:       5432
-//   Database.MaxConns:   10
-//   Logging.Level:       "info"
-//   Logging.Format:      "json"
-//   Logging.Output:      "stdout"
 func (c *Config) ApplyDefaults() {
-	// TODO: Implement
-	// Check each field and set default if zero value
-	// Use time.Second constants for durations
+	// TODO: Implement this method.
+
+	// For each field in the `Config` struct (and its nested structs), check if it has its "zero value".
+	// If it does, it means the value was not provided in the YAML file, so you should set it to a sensible default.
+
+	// Example for Server.Host:
+	// - `if c.Server.Host == "" { c.Server.Host = "0.0.0.0" }`
+
+	// Example for Server.Port:
+	// - `if c.Server.Port == 0 { c.Server.Port = 8080 }`
+
+	// Do this for all the fields listed in the exercise description.
 }
 
 // Validate checks that the configuration is valid and returns an error if not.
-// It checks:
-//   - Required fields are not empty
-//   - Port numbers are in valid range (1-65535)
-//   - MaxConns is positive
-//   - Log level is one of: debug, info, warn, error
-//
-// Returns a detailed error message listing all validation failures.
 func (c *Config) Validate() error {
-	// TODO: Implement
-	// Steps:
-	// 1. Create a slice to collect error messages
-	// 2. Check all validation rules
-	// 3. If errors exist, join them and return as error
-	// 4. Otherwise return nil
-	//
-	// Validation rules:
-	// - database.host must not be empty
-	// - database.database must not be empty
-	// - server.port must be 1-65535
-	// - database.port must be 1-65535
-	// - database.max_connections must be >= 1
-	// - logging.level must be one of: debug, info, warn, error
+	// TODO: Implement this method.
+
+	// Step 1: Create a slice to hold any validation error messages.
+	// - `var errors []string`
+
+	// Step 2: Perform all the validation checks listed in the exercise.
+	// - For required fields: `if c.Database.Host == "" { errors = append(errors, "database.host is required") }`
+	// - For port ranges: `if c.Server.Port < 1 || c.Server.Port > 65535 { ... }`
+	// - For enum-like fields (like `logging.level`), it's common to use a map for a clean lookup:
+	//   ```
+	//   validLogLevels := map[string]bool{"debug": true, "info": true, "warn": true, "error": true}
+	//   if !validLogLevels[c.Logging.Level] { ... }
+	//   ```
+
+	// Step 3: After all checks, see if you found any errors.
+	// - `if len(errors) > 0`:
+	//   - Join the errors together into a single, nicely formatted string (e.g., separated by newlines).
+	//   - Return a new error containing this string: `return fmt.Errorf("configuration validation failed: %s", strings.Join(errors, ", "))`
+
+	// Step 4: If there were no errors, return `nil`.
 	return nil
 }
