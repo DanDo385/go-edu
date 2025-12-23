@@ -47,7 +47,9 @@ import (
 // Item represents a single TODO item.
 // TODO: Define the Item struct with proper JSON tags.
 type Item struct {
-	
+	ID   int    `json:"id"`
+	Text string `json:"text"`
+	Done bool   `json:"done"`		
 }
 
 // Memory considerations:
@@ -88,13 +90,13 @@ type Item struct {
 // - Toggle(id int) (Item, bool): Mark item as done/undone, return (item, found)
 // - List(onlyPending bool) []Item: Return items (optionally filter completed)
 //
-// type Store interface {
-//     Load() error
-//     Save() error
-//     Add(text string) Item
-//     Toggle(id int) (Item, bool)
-//     List(onlyPending bool) []Item
-// }
+type Store interface {
+    Load() error
+    Save() error
+    Add(text string) Item
+    Toggle(id int) (Item, bool)
+    List(onlyPending bool) []Item
+}
 
 // ============================================================================
 // Exercise 3: Implement the FileStore Type
@@ -116,10 +118,10 @@ type Item struct {
 // - This is fast for small datasets (<10k items)
 // - For large datasets, consider streaming or database
 //
-// type fileStore struct {
-//     path  string  // File path for JSON storage
-//     items []Item  // In-memory cache of all items
-// }
+type fileStore struct {
+    path  string  // File path for JSON storage
+    items []Item  // In-memory cache of all items
+}
 
 // ============================================================================
 // Exercise 4: Constructor Function
@@ -138,12 +140,12 @@ type Item struct {
 // - Easy to swap implementations later
 // - Interface = behavior, not structure
 //
-// func NewFileStore(path string) Store {
-//     return &fileStore{
-//         path:  path,
-//         items: []Item{},  // Empty slice (not nil)
-//     }
-// }
+func NewFileStore(path string) Store {
+    return &fileStore{
+        path:  path,
+        items: []Item{},  // Empty slice (not nil)
+    }
+}
 
 // ============================================================================
 // Exercise 5: Load from JSON
@@ -168,20 +170,20 @@ type Item struct {
 // - Malformed JSON: Wrap error with context using fmt.Errorf("%w")
 // - Empty file: Unmarshal into empty slice (valid JSON: [])
 //
-// func (fs *fileStore) Load() error {
-//     // Read entire file into memory
-//     data, err := os.ReadFile(fs.path)
-//     if err != nil {
-//         return err  // Caller can check os.IsNotExist(err)
-//     }
-//
-//     // Parse JSON array into slice
-//     if err := json.Unmarshal(data, &fs.items); err != nil {
-//         return fmt.Errorf("parsing JSON: %w", err)
-//     }
-//
-//     return nil
-// }
+func (fs *fileStore) Load() error {
+    // Read entire file into memory
+    data, err := os.ReadFile(fs.path)
+    if err != nil {
+        return err  // Caller can check os.IsNotExist(err)
+    }
+
+    // Parse JSON array into slice
+    if err := json.Unmarshal(data, &fs.items); err != nil {
+        return fmt.Errorf("parsing JSON: %w", err)
+    }
+
+    return nil
+}
 
 // ============================================================================
 // Exercise 6: Save to JSON
