@@ -13,15 +13,15 @@ package exercise
 // - "sync" for WaitGroup coordination
 // - "unicode" for character classification
 //
-// import (
-//     "context"
-//     "fmt"
-//     "io"
-//     "net/http"
-//     "strings"
-//     "sync"
-//     "unicode"
-// )
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "strings"
+    "sync"
+    "unicode"
+)
 
 // ============================================================================
 // WORKER POOL PATTERN: Bounded Concurrency for URL Processing
