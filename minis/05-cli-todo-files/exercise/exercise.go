@@ -213,20 +213,20 @@ func (fs *fileStore) Load() error {
 // - Production: Write to temp file, then rename (atomic on POSIX)
 // - For this app: Acceptable risk
 //
-// func (fs *fileStore) Save() error {
-//     // Marshal with indentation for readability
-//     data, err := json.MarshalIndent(fs.items, "", "  ")
-//     if err != nil {
-//         return fmt.Errorf("marshaling JSON: %w", err)
-//     }
-//
-//     // Write to file
-//     if err := os.WriteFile(fs.path, data, 0644); err != nil {
-//         return fmt.Errorf("writing file: %w", err)
-//     }
-//
-//     return nil
-// }
+func (fs *fileStore) Save() error {
+    // Marshal with indentation for readability
+    data, err := json.MarshalIndent(fs.items, "", "  ")
+    if err != nil {
+        return fmt.Errorf("marshaling JSON: %w", err)
+    }
+
+    // Write to file
+    if err := os.WriteFile(fs.path, data, 0644); err != nil {
+        return fmt.Errorf("writing file: %w", err)
+    }
+
+    return nil
+}
 
 // ============================================================================
 // Exercise 7: Add New Items
@@ -258,26 +258,26 @@ func (fs *fileStore) Load() error {
 // - Database auto-increment: Let DB handle IDs
 // - Timestamp + random: Time-sortable unique IDs
 //
-// func (fs *fileStore) Add(text string) Item {
-//     // Find max ID
-//     maxID := 0
-//     for _, item := range fs.items {
-//         if item.ID > maxID {
-//             maxID = item.ID
-//         }
-//     }
+func (fs *fileStore) Add(text string) Item {
+// Find max ID
+    maxID := 0
+    for _, item := range fs.items {
+        if item.ID > maxID {
+            maxID = item.ID
+        }
+    }
 //
-//     // Create item with next ID
-//     newItem := Item{
-//         ID:   maxID + 1,
-//         Text: text,
-//         Done: false,
-//     }
+// Create item with next ID
+    newItem := Item{
+        ID:   maxID + 1,
+        Text: text,
+        Done: false,
+    }
 //
 //     // Append to slice
-//     fs.items = append(fs.items, newItem)
-//
-//     return newItem
+    fs.items = append(fs.items, newItem)
+
+    return newItem
 // }
 
 // ============================================================================
@@ -303,19 +303,20 @@ func (fs *fileStore) Load() error {
 // - For large lists (>10k items), use map[int]*Item for O(1) lookup
 // - Trade-off: More memory (map overhead) vs. faster lookups
 //
-// func (fs *fileStore) Toggle(id int) (Item, bool) {
-//     // Search for item by ID
-//     for i := range fs.items {
-//         if fs.items[i].ID == id {
-//             // Toggle done status
-//             fs.items[i].Done = !fs.items[i].Done
-//             return fs.items[i], true
-//         }
-//     }
-//
-//     // Not found
-//     return Item{}, false
-// }
+func (fs *fileStore) Toggle(id int) (Item, bool) {
+	// Linear search for the item
+	// For large lists, consider a map[int]*Item for O(1) lookup
+	for i := range fs.items {
+		if fs.items[i].ID == id {
+			// Toggle the done status
+			fs.items[i].Done = !fs.items[i].Done
+			return fs.items[i], true
+		}
+	}
+
+	// Not found: return zero value and false
+	return Item{}, false
+}
 
 // ============================================================================
 // Exercise 9: List Items
@@ -342,22 +343,22 @@ func (fs *fileStore) Load() error {
 // - Pros: Caller can safely modify
 // - Cons: Extra allocation and copying (32 * n bytes)
 //
-// func (fs *fileStore) List(onlyPending bool) []Item {
-//     // Return all if not filtering
-//     if !onlyPending {
-//         return fs.items
-//     }
-//
-//     // Filter pending items
-//     var filtered []Item
-//     for _, item := range fs.items {
-//         if !item.Done {
-//             filtered = append(filtered, item)
-//         }
-//     }
-//
-//     return filtered
-// }
+func (fs *fileStore) List(onlyPending bool) []Item {
+    // Return all if not filtering
+    if !onlyPending {
+        return fs.items
+    }
+
+    // Filter pending items
+    var filtered []Item
+    for _, item := range fs.items {
+        if !item.Done {
+            filtered = append(filtered, item)
+        }
+    }
+
+    return filtered
+}
 
 // ============================================================================
 // Testing Strategy
