@@ -98,7 +98,7 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
    defer cancel()  // Cleanup on return
 // 3. Start worker goroutines:
    var wg sync.WaitGroup
-   for i := 0; i < workers; i++ {
+   for i := 0; i < workers; i++ { // 
        wg.Add(1)
        go func() {
            defer wg.Done()
