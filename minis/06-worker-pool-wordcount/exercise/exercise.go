@@ -86,52 +86,54 @@ import (
 // - Final aggregation merges all maps into one
 //
 // Worker Pool Pattern:
-// 1. Create buffered channels:
-//    jobs := make(chan string, workers)       // URLs to fetch
-//    results := make(chan map[string]int, workers) // Word counts per URL
-//    errCh := make(chan error, 1)              // First error only
-//
+
+func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
+// 1. Create buffered channels:   
+   jobs := make(chan string, workers)       		// URLs to fetch
+   results := make(chan map[string]int, workers) 	// Word counts per URL
+   errCh := make(chan error, 1)              		// First error only
+
 // 2. Create cancellable context:
-//    ctx, cancel := context.WithCancel(ctx)
-//    defer cancel()  // Cleanup on return
-//
+   ctx, cancel := context.WithCancel(ctx)
+   defer cancel()  // Cleanup on return
 // 3. Start worker goroutines:
-//    var wg sync.WaitGroup
-//    for i := 0; i < workers; i++ {
-//        wg.Add(1)
-//        go func() {
-//            defer wg.Done()
-//            // Process jobs until channel closed or context cancelled
-//            for {
-//                select {
-//                case <-ctx.Done():
-//                    return  // Context cancelled, stop worker
-//                case url, ok := <-jobs:
-//                    if !ok {
-//                        return  // Jobs channel closed, no more work
-//                    }
-//                    // Fetch and count words
-//                    counts, err := fetchAndCount(ctx, url)
-//                    if err != nil {
-//                        // Send error (non-blocking) and cancel context
-//                        select {
-//                        case errCh <- fmt.Errorf("fetching %s: %w", url, err):
-//                            cancel()  // Stop all other workers
-//                        default:
-//                            // Error channel already has error, ignore
-//                        }
-//                        return
-//                    }
-//                    // Send results (with context check)
-//                    select {
-//                    case <-ctx.Done():
-//                        return
-//                    case results <- counts:
-//                    }
-//                }
-//            }
-//        }()
-//    }
+   var wg sync.WaitGroup
+   for i := 0; i < workers; i++ {
+       wg.Add(1)
+       go func() {
+           defer wg.Done()
+           // Process jobs until channel closed or context cancelled
+           for {
+               select {
+               case <-ctx.Done():
+                   return  // Context cancelled, stop worker
+               case url, ok := <-jobs:
+                   if !ok {
+                       return  // Jobs channel closed, no more work
+                   }
+                   // Fetch and count words
+                   counts, err := fetchAndCount(ctx, url)
+                   if err != nil {
+                       // Send error (non-blocking) and cancel context
+                       select {
+                       case errCh <- fmt.Errorf("fetching %s: %w", url, err):
+                           cancel()  // Stop all other workers
+                       default:
+                           // Error channel already has error, ignore
+                       }
+                       return
+                   }
+                   // Send results (with context check)
+                   select {
+                   case <-ctx.Done():
+                       return
+                   case results <- counts:
+                   }
+               }
+           }
+       }()
+   }
+}
 //
 // 4. Send jobs in separate goroutine:
 //    go func() {
