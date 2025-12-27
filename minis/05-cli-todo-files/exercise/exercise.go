@@ -278,7 +278,7 @@ func (fs *fileStore) Add(text string) Item {
     fs.items = append(fs.items, newItem)
 
     return newItem
-// }
+}
 
 // ============================================================================
 // Exercise 8: Toggle Item Completion
