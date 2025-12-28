@@ -49,8 +49,8 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 	//   Key points:
 	//   - g.Go() automatically calls WaitGroup.Add(1) and defer Done()
 	//   - Just return error - errgroup cancels context automatically
-	for i := 0; i < workers; i++ {
-		g.Go(func() error {
+	for i := 0; i < workers; i++ { // Loop over worker count
+		g.Go(func() error { // Launch worker goroutine
 			for { // Infinite loop
 				select { // Select on ctx.Done() and jobs channel
 				case <-ctx.Done(): // Stop if cancelled
@@ -61,13 +61,12 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 					if err != nil { // Error fetching and counting words
 						return err // Return error (errgroup handles cancellation)
 					}
-					results <- counts // Send counts to results channel (non-blocking)
+					results <- counts // Sends word counts to results channel (non-blocking)
 				}
 			}
 		}) // Add worker to errgroup
 	}
 	// TODO: Step 4 - Send jobs in separate goroutine
-
 	go func() { // Launch goroutine to send jobs
 		defer close(jobs)          // Close jobs channel when done
 		for _, url := range urls { // Range over urls
@@ -108,7 +107,7 @@ func fetchAndCount(ctx context.Context, url string) (map[string]int, error) { //
 		return nil, err // Return error
 	}
 	defer resp.Body.Close() // Close response body
-	//   3. Check error and status code (must be 200 OK)
+	//   3. Check if status code is not 200 OK
 	if resp.StatusCode != http.StatusOK { // Status code is not 200 OK
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode) // Return error
 	}
