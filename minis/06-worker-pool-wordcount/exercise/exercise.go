@@ -55,13 +55,22 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 				select { // Select on ctx.Done() and jobs channel
 				case <-ctx.Done(): // Stop if cancelled
 					return ctx.Err() // Return error if cancelled
-				case url := <-jobs: // Receive URL from jobs channel
+				case url, ok := <-jobs: // Receive URL from jobs channel
+					if !ok { // Channel closed, no more jobs
+						return nil // Exit normally
+					}
 					counts, err := fetchAndCount(ctx, url) // Fetch and count words
 					// fetchAndCount takes context and url, returns map[string]int and error
 					if err != nil { // Error fetching and counting words
-						return err // Return error (errgroup handles cancellation)
+						return fmt.Errorf("fetching %s: %w", url, err) // Return error (errgroup handles cancellation)
 					}
-					results <- counts // Sends word counts to results channel (non-blocking)
+					// Send results with cancellation check
+					select {
+					case <-ctx.Done(): // Check if cancelled while processing
+						return ctx.Err()
+					case results <- counts: // Sends word counts to results channel
+						// Successfully sent
+					}
 				}
 			}
 		}) // Add worker to errgroup
@@ -91,6 +100,10 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 			finalCounts[word] += count // Accumulate counts for each word
 		}
 	}
+	// TODO: Step 7 - Check for errors
+	if err := g.Wait(); err != nil { // Wait for all workers and check for errors
+		return nil, err // Return error if any occurred
+	}
 	return finalCounts, nil // Return final counts
 }
 
@@ -109,16 +122,14 @@ func fetchAndCount(ctx context.Context, url string) (map[string]int, error) { //
 	defer resp.Body.Close() // Close response body
 	//   3. Check if status code is not 200 OK
 	if resp.StatusCode != http.StatusOK { // Status code is not 200 OK
-		return nil, fmt.Errorf("HTTP %d", resp.StatusCode) // Return error
+		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode) // Return error
 	}
 	//   4. Read body: io.ReadAll(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	//   5. Don't forget: defer resp.Body.Close()
-	defer resp.Body.Close()
-	//   6. Convert to string and call tokenizeAndCount
+	//   5. Convert to string and call tokenizeAndCount
 	text := string(body)
 	counts := tokenizeAndCount(text)
 	//   7. Return counts and error
@@ -140,6 +151,10 @@ func tokenizeAndCount(text string) map[string]int {
 			}
 			return -1 // Return -1 to delete
 		}, word)
+		// Skip empty words (might be empty after removing all non-letters)
+		if word == "" { // Check if empty
+			continue // Skip to next word
+		}
 		counts[word]++ // Count word
 	}
 	//   4. Return counts
