@@ -6,7 +6,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/minis/01-hello-strings",
+            "program": "${workspaceFolder}/minis/01-hello-strings/cmd/hello-strings",
             "args": [],
             "showLog": true,
             "trace": "log",
@@ -18,7 +18,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/minis/01-hello-strings",
+            "program": "${workspaceFolder}/minis/01-hello-strings/cmd/hello-strings",
             "args": [
                 "-help"
             ],
@@ -32,7 +32,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/minis/01-hello-strings",
+            "program": "${workspaceFolder}/minis/01-hello-strings/exercise",
             "args": [
                 "-test.v"
             ],
@@ -46,7 +46,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/minis/01-hello-strings",
+            "program": "${workspaceFolder}/minis/01-hello-strings/exercise",
             "args": [
                 "-tags=solution",
                 "-test.v"
@@ -76,7 +76,7 @@
             "args": [
                 "-test.v",
                 "-test.run",
-                "^$\{selectedText}$"
+                "^${selectedText}$"
             ],
             "showLog": true,
             "buildFlags": "-gcflags='-N -l'",
@@ -87,7 +87,7 @@
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${workspaceFolder}/minis/01-hello-strings",
+            "program": "${workspaceFolder}/minis/01-hello-strings/exercise",
             "args": [
                 "-race",
                 "-test.v"
