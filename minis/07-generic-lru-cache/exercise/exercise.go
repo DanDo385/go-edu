@@ -9,11 +9,11 @@ package exercise
 // - "sync" for Mutex to protect concurrent access
 // - "time" for TTL (time-to-live) expiration support
 //
-// import (
-//     "container/list"
-//     "sync"
-//     "time"
-// )
+import (
+    "container/list"
+    "sync"
+    "time"
+)
 
 // ============================================================================
 // LRU CACHE WITH GENERICS: Efficient Caching with Eviction Policy
