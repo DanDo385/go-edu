@@ -8,12 +8,10 @@ package exercise
 // - "container/list" for doubly-linked list implementation
 // - "sync" for Mutex to protect concurrent access
 // - "time" for TTL (time-to-live) expiration support
-//
-import (
-    "container/list"
-    "sync"
-    "time"
-)
+
+// Doubly-linked list for maintaining recency order
+
+// Duration and Time types for TTL expiration
 
 // ============================================================================
 // LRU CACHE WITH GENERICS: Efficient Caching with Eviction Policy

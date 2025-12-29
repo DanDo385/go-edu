@@ -1,10 +1,13 @@
+// Package main declares this as an executable program (not a library)
+// When you run "go run" or "go build", Go looks for a main package with a main() function
 package main
 
 import (
-	"flag"   // Command-line argument parsing
-	"fmt"    // Formatted I/O
-	"time"   // Time operations
+	"flag" // Command-line argument parsing
+	"fmt"  // Formatted I/O
+	"time" // Time operations
 
+	// Import our exercise package containing the Cache type and New function
 	"github.com/example/go-10x-minis/minis/07-generic-lru-cache/exercise"
 )
 
