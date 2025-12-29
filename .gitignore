@@ -19,7 +19,11 @@ go.work.sum
 
 # IDEs
 .idea/
-.vscode/
+# Ignore .vscode settings except launch.json (which is part of curriculum)
+.vscode/*
+!.vscode/launch.json
+**/.vscode/*
+!**/.vscode/launch.json
 *.swp
 *.swo
 *~
