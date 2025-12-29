@@ -4,7 +4,7 @@
 /*
 Project 16: Context Cancellation and Timeouts - Solutions
 
-This file contains complete solutions to all exercises with detailed explanations.
+This file contains complete solutions with extensive debugging support.
 
 Key Go Concepts Demonstrated:
 1. Context cancellation and propagation
@@ -13,18 +13,12 @@ Key Go Concepts Demonstrated:
 4. Channel coordination with context
 5. Preventing resource leaks
 
-Why Go is well-suited for this:
-- context.Context is a first-class citizen in the standard library
-- All standard library functions that perform I/O accept context
-- Goroutines make concurrent timeout handling trivial
-- Channels + context provide clean cancellation patterns
-- No callback hell, no promise chains
-
-Compared to other languages:
-- Python: asyncio.timeout() added in 3.11, but less integrated
-- JavaScript: AbortController is similar but less standardized
-- Rust: tokio has timeout, but more complex type system
-- Java: CompletableFuture has timeout, but more verbose
+DEBUGGING GUIDE:
+- BREAKPOINT comments mark ideal breakpoint locations
+- DEBUG comments explain what to observe in debugger
+- Use Step Over (F10) to execute line by line
+- Use Step Into (F11) to enter function calls
+- Watch panel shows variable values in real-time
 */
 
 package exercise
@@ -104,46 +98,63 @@ func RetryWithTimeout(
 	maxRetries int,
 	timeout time.Duration,
 ) error {
+	// BREAKPOINT: Set breakpoint here to start debugging retry logic
+	// DEBUG: Watch variables: attempt, lastErr, maxRetries, timeout
 	var lastErr error
 
+	// BREAKPOINT: Set breakpoint in loop to observe each retry attempt
+	// DEBUG: Watch attempt counter incrementing from 0 to maxRetries-1
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		// Create child context with timeout for this attempt
-		// This ensures each attempt has its own timeout
+		// DEBUG: Observe attemptCtx being created with timeout
+		// DEBUG: Each attempt gets fresh context with same timeout duration
 		attemptCtx, cancel := context.WithTimeout(ctx, timeout)
 
-		// Try the operation
+		// BREAKPOINT: Set breakpoint before fn() call to step into operation
+		// DEBUG: Watch attemptCtx.Done() channel and deadline
 		err := fn(attemptCtx)
-		cancel() // Always cancel to release resources
 
+		// DEBUG: Always call cancel() to prevent context leak
+		// DEBUG: Without cancel(), timer goroutine stays in memory
+		cancel()
+
+		// BREAKPOINT: Set breakpoint here to check if operation succeeded
+		// DEBUG: Watch err variable - nil means success
 		if err == nil {
-			// Success!
+			// DEBUG: Early return on success, no more retries needed
 			return nil
 		}
 
-		// Store error for potential return
+		// DEBUG: Store error in case all attempts fail
+		// DEBUG: lastErr will be final error if loop completes
 		lastErr = err
 
-		// If this was the last attempt, don't backoff
+		// DEBUG: Check if this is the last attempt
+		// DEBUG: If yes, skip backoff and exit loop
 		if attempt == maxRetries-1 {
 			break
 		}
 
-		// Calculate exponential backoff: 100ms * 2^attempt
-		// Attempt 0: 100ms, Attempt 1: 200ms, Attempt 2: 400ms, etc.
+		// BREAKPOINT: Set breakpoint to observe exponential backoff calculation
+		// DEBUG: Watch backoff value: 100ms, 200ms, 400ms, 800ms, etc.
+		// DEBUG: Bit shift (1 << attempt) doubles the delay each time
 		backoff := time.Duration(100) * time.Millisecond * (1 << uint(attempt))
 
-		// Wait with context awareness
-		// If parent context is cancelled during backoff, stop immediately
+		// BREAKPOINT: Set breakpoint on select to observe backoff vs cancellation
+		// DEBUG: Watch both channels - which one fires first?
+		// DEBUG: time.After creates a channel that fires after backoff duration
 		select {
 		case <-time.After(backoff):
-			// Backoff complete, continue to next attempt
+			// DEBUG: Backoff complete, will retry
+			// DEBUG: Loop continues to next attempt
 		case <-ctx.Done():
-			// Parent context cancelled, stop retrying
+			// DEBUG: Parent context cancelled during backoff
+			// DEBUG: Return immediately, don't continue retrying
 			return ctx.Err()
 		}
 	}
 
-	// All attempts failed
+	// BREAKPOINT: Set breakpoint to see final error when all attempts failed
+	// DEBUG: Watch lastErr - this is the error from the last attempt
 	return lastErr
 }
 
@@ -200,72 +211,97 @@ type fetchResult struct {
 }
 
 func FetchAll(ctx context.Context, urls []string, timeout time.Duration) ([]string, error) {
-	// Create context with timeout for entire operation
+	// BREAKPOINT: Set breakpoint to observe context creation with timeout
+	// DEBUG: Watch timeout duration and resulting deadline
 	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel() // Ensure cleanup
+	defer cancel() // DEBUG: Ensure cleanup even if function panics
 
-	// Channel for results (buffered to prevent goroutines blocking)
+	// BREAKPOINT: Set breakpoint to observe buffered channel creation
+	// DEBUG: Watch resultCh capacity - matches len(urls) to prevent blocking
+	// DEBUG: Buffered channels allow goroutines to send without waiting
 	resultCh := make(chan fetchResult, len(urls))
 
-	// Start goroutine for each URL
+	// BREAKPOINT: Set breakpoint in loop to observe goroutine launches
+	// DEBUG: Watch i and url values being captured for each goroutine
 	for i, url := range urls {
+		// DEBUG: Each goroutine gets copy of index and url as parameters
+		// DEBUG: This prevents race conditions from loop variable capture
 		go func(index int, u string) {
-			// Fetch URL
+			// BREAKPOINT: Set breakpoint inside goroutine to observe fetch
+			// DEBUG: Watch ctx.Done() channel - may close during fetch
 			body, err := fetchURL(ctx, u)
 
-			// Send result with index to preserve order
+			// BREAKPOINT: Set breakpoint to observe result being sent
+			// DEBUG: Watch fetchResult struct fields being populated
+			// DEBUG: index preserves original URL order in results
 			resultCh <- fetchResult{
 				index: index,
 				body:  body,
 				err:   err,
 			}
 
-			// If error occurred, cancel context to stop other fetches
+			// DEBUG: If error, cancel context to stop other fetches early
+			// DEBUG: Fast-fail pattern: one failure cancels all
 			if err != nil {
 				cancel()
 			}
 		}(i, url)
 	}
 
-	// Collect results
+	// BREAKPOINT: Set breakpoint before result collection loop
+	// DEBUG: Watch results slice being populated
+	// DEBUG: Must receive from all goroutines to prevent leaks
 	results := make([]string, len(urls))
 	for i := 0; i < len(urls); i++ {
+		// BREAKPOINT: Set breakpoint on receive to watch results arrive
+		// DEBUG: Results may arrive out of order (concurrent execution)
+		// DEBUG: Watch result.index to see which URL completed
 		result := <-resultCh
 
+		// BREAKPOINT: Set breakpoint to observe error handling
+		// DEBUG: First error cancels context and returns immediately
 		if result.err != nil {
-			// Cancel all other fetches
 			cancel()
 			return nil, result.err
 		}
 
-		// Store result at correct index
+		// DEBUG: Store result at original index to maintain URL order
+		// DEBUG: Watch results[result.index] being assigned
 		results[result.index] = result.body
 	}
 
+	// BREAKPOINT: Set breakpoint to observe successful completion
+	// DEBUG: Watch complete results slice with all fetched bodies
 	return results, nil
 }
 
 // fetchURL fetches a URL with context support
 func fetchURL(ctx context.Context, url string) (string, error) {
-	// Create HTTP request with context
+	// BREAKPOINT: Set breakpoint to observe HTTP request creation
+	// DEBUG: Watch req being created with context attached
+	// DEBUG: Context cancellation will abort HTTP request
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return "", err
 	}
 
-	// Execute request
+	// BREAKPOINT: Set breakpoint before HTTP request execution
+	// DEBUG: Watch ctx.Done() channel - request stops if context cancelled
+	// DEBUG: Step into Do() to see request execution
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	// Check status code
+	// BREAKPOINT: Set breakpoint to observe HTTP status code
+	// DEBUG: Watch resp.StatusCode - should be 200 for success
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 
-	// Read body
+	// BREAKPOINT: Set breakpoint before reading response body
+	// DEBUG: Watch body bytes being read from network
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -330,40 +366,56 @@ Input 3: No jobs
 */
 
 func WorkerPool(ctx context.Context, numWorkers int, jobs <-chan Job) <-chan Result {
-	// Create results channel (buffered to prevent workers blocking)
+	// BREAKPOINT: Set breakpoint to observe worker pool initialization
+	// DEBUG: Watch numWorkers and results channel capacity
+	// DEBUG: Buffered channel prevents workers from blocking on send
 	results := make(chan Result, numWorkers)
 
-	// WaitGroup to track worker completion
+	// DEBUG: WaitGroup tracks how many workers are still running
+	// DEBUG: Watch wg.counter to see active worker count
 	var wg sync.WaitGroup
 
-	// Start workers
+	// BREAKPOINT: Set breakpoint in loop to observe worker creation
+	// DEBUG: Watch i incrementing as each worker starts
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
+		// DEBUG: Each worker gets its own goroutine with unique ID
 		go func(workerID int) {
 			defer wg.Done()
 
-			// Process jobs until channel is closed or context is cancelled
+			// BREAKPOINT: Set breakpoint in worker loop to observe job processing
+			// DEBUG: Watch workerID to identify which worker is executing
 			for {
+				// DEBUG: Select monitors both context cancellation and job arrival
+				// DEBUG: Whichever channel is ready first will be executed
 				select {
 				case <-ctx.Done():
-					// Context cancelled, stop immediately
+					// DEBUG: Context cancelled - immediate shutdown
+					// DEBUG: Worker exits without processing remaining jobs
 					return
 
 				case job, ok := <-jobs:
+					// BREAKPOINT: Set breakpoint to observe job receipt
+					// DEBUG: Watch ok flag - false means channel closed
 					if !ok {
-						// Jobs channel closed, no more work
+						// DEBUG: Jobs channel closed - graceful shutdown
+						// DEBUG: Worker exits after finishing current job
 						return
 					}
 
-					// Process job
+					// BREAKPOINT: Set breakpoint before job processing
+					// DEBUG: Watch job.ID and step into processJob()
 					result := processJob(ctx, job)
 
-					// Send result (check context in case it was cancelled)
+					// BREAKPOINT: Set breakpoint before sending result
+					// DEBUG: Inner select checks context during send operation
+					// DEBUG: This prevents blocking if context cancelled
 					select {
 					case results <- result:
-						// Sent successfully
+						// DEBUG: Result sent successfully
 					case <-ctx.Done():
-						// Context cancelled while sending
+						// DEBUG: Context cancelled while sending result
+						// DEBUG: Exit immediately without sending
 						return
 					}
 				}
@@ -371,9 +423,13 @@ func WorkerPool(ctx context.Context, numWorkers int, jobs <-chan Job) <-chan Res
 		}(i)
 	}
 
-	// Close results channel when all workers are done
+	// BREAKPOINT: Set breakpoint in cleanup goroutine
+	// DEBUG: This goroutine waits for all workers to finish
 	go func() {
+		// DEBUG: wg.Wait() blocks until all wg.Done() called
+		// DEBUG: Watch wg.counter decreasing to zero
 		wg.Wait()
+		// DEBUG: Close results channel to signal no more results coming
 		close(results)
 	}()
 
@@ -382,26 +438,34 @@ func WorkerPool(ctx context.Context, numWorkers int, jobs <-chan Job) <-chan Res
 
 // processJob simulates job processing
 func processJob(ctx context.Context, job Job) Result {
-	// Check if context is cancelled before processing
+	// BREAKPOINT: Set breakpoint to check context before work starts
+	// DEBUG: Watch ctx.Done() channel - may already be closed
 	select {
 	case <-ctx.Done():
+		// DEBUG: Context cancelled before work started
+		// DEBUG: Return error result immediately
 		return Result{
 			JobID: job.ID,
 			Error: ctx.Err(),
 		}
 	default:
+		// DEBUG: Context still active, proceed with work
 	}
 
-	// Simulate work (with context check)
+	// BREAKPOINT: Set breakpoint on select to watch simulated work
+	// DEBUG: Select races between work completion and context cancellation
+	// DEBUG: Watch which case executes - time.After or ctx.Done()
 	select {
 	case <-time.After(10 * time.Millisecond):
-		// Work completed
+		// DEBUG: Work completed successfully within timeout
+		// DEBUG: Watch result being created with job output
 		return Result{
 			JobID:  job.ID,
 			Output: fmt.Sprintf("Processed job %d", job.ID),
 		}
 	case <-ctx.Done():
-		// Cancelled during processing
+		// DEBUG: Context cancelled during work processing
+		// DEBUG: Return error result, abandon work
 		return Result{
 			JobID: job.ID,
 			Error: ctx.Err(),
@@ -465,9 +529,15 @@ func NewCache() *Cache {
 }
 
 func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
+	// BREAKPOINT: Set breakpoint to observe write lock acquisition
+	// DEBUG: Lock() blocks if another goroutine holds read or write lock
+	// DEBUG: Watch c.mu.state to see lock contention
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	// BREAKPOINT: Set breakpoint to watch cache entry creation
+	// DEBUG: Watch expiration being calculated: now + ttl
+	// DEBUG: Watch entry being stored in map
 	c.entries[key] = cacheEntry{
 		value:      value,
 		expiration: time.Now().Add(ttl),
@@ -475,46 +545,67 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 }
 
 func (c *Cache) Get(key string) (interface{}, bool) {
+	// BREAKPOINT: Set breakpoint to observe read lock acquisition
+	// DEBUG: RLock() allows multiple concurrent readers
+	// DEBUG: Blocks only if writer holds lock
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
+	// BREAKPOINT: Set breakpoint to watch map lookup
+	// DEBUG: Watch exists flag - false if key not in map
 	entry, exists := c.entries[key]
 	if !exists {
 		return nil, false
 	}
 
-	// Check if expired
+	// BREAKPOINT: Set breakpoint to check expiration
+	// DEBUG: Watch now and entry.expiration comparison
+	// DEBUG: Entry expired if now > expiration
 	if time.Now().After(entry.expiration) {
+		// DEBUG: Entry exists but expired - return false
 		return nil, false
 	}
 
+	// DEBUG: Entry exists and not expired - return value
 	return entry.value, true
 }
 
 func (c *Cache) Cleanup(ctx context.Context) {
-	// Cleanup every 100ms
+	// BREAKPOINT: Set breakpoint to observe ticker creation
+	// DEBUG: Ticker fires every 100ms for periodic cleanup
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
+	// BREAKPOINT: Set breakpoint in cleanup loop
+	// DEBUG: Loop runs periodically until context cancelled
 	for {
 		select {
 		case <-ticker.C:
-			// Remove expired entries
+			// DEBUG: Ticker fired - time to cleanup expired entries
+			// DEBUG: removeExpired() acquires write lock and scans map
 			c.removeExpired()
 
 		case <-ctx.Done():
-			// Context cancelled, stop cleanup
+			// DEBUG: Context cancelled - stop cleanup goroutine
+			// DEBUG: ticker.Stop() prevents goroutine leak
 			return
 		}
 	}
 }
 
 func (c *Cache) removeExpired() {
+	// BREAKPOINT: Set breakpoint to watch cleanup acquire write lock
+	// DEBUG: Lock() ensures exclusive access during cleanup
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	// BREAKPOINT: Set breakpoint to observe expiration scan
+	// DEBUG: Watch now timestamp
+	// DEBUG: Watch entries being deleted as we iterate
 	now := time.Now()
 	for key, entry := range c.entries {
+		// DEBUG: Compare entry expiration with current time
+		// DEBUG: Watch delete() removing expired entries
 		if now.After(entry.expiration) {
 			delete(c.entries, key)
 		}
@@ -572,27 +663,40 @@ type RateLimiter struct {
 }
 
 func NewRateLimiter(rate int) *RateLimiter {
+	// BREAKPOINT: Set breakpoint to observe token bucket creation
+	// DEBUG: Watch rate value and channel capacity (same value)
+	// DEBUG: Buffered channel acts as token bucket
 	rl := &RateLimiter{
 		tokens: make(chan struct{}, rate),
 	}
 
-	// Fill bucket initially
+	// BREAKPOINT: Set breakpoint in fill loop
+	// DEBUG: Watch tokens being added to channel (filling bucket)
+	// DEBUG: Loop runs 'rate' times to fill bucket initially
 	for i := 0; i < rate; i++ {
 		rl.tokens <- struct{}{}
 	}
 
-	// Refill tokens at specified rate
+	// BREAKPOINT: Set breakpoint before refill goroutine launch
+	// DEBUG: Refill goroutine adds tokens at constant rate
 	go func() {
+		// DEBUG: Ticker interval = 1 second / rate
+		// DEBUG: For rate=10, ticker fires every 100ms
 		ticker := time.NewTicker(time.Second / time.Duration(rate))
 		defer ticker.Stop()
 
+		// BREAKPOINT: Set breakpoint in refill loop
+		// DEBUG: Loop adds one token per ticker fire
 		for range ticker.C {
-			// Try to add token (non-blocking)
+			// DEBUG: Non-blocking send prevents overfilling bucket
+			// DEBUG: Watch select choosing case vs default
 			select {
 			case rl.tokens <- struct{}{}:
-				// Token added
+				// DEBUG: Token added to bucket
+				// DEBUG: Watch channel length increasing
 			default:
-				// Bucket full, skip
+				// DEBUG: Bucket full (at capacity), skip token
+				// DEBUG: This prevents overflow beyond rate limit
 			}
 		}
 	}()
@@ -601,85 +705,53 @@ func NewRateLimiter(rate int) *RateLimiter {
 }
 
 func (rl *RateLimiter) Wait(ctx context.Context) error {
-	// Wait for token or context cancellation
+	// BREAKPOINT: Set breakpoint on select to watch token consumption
+	// DEBUG: Select waits for either token available or context cancelled
+	// DEBUG: Watch rl.tokens channel - blocks if empty
 	select {
 	case <-rl.tokens:
-		// Got token, can proceed
+		// DEBUG: Token consumed from bucket
+		// DEBUG: Operation allowed to proceed
 		return nil
 	case <-ctx.Done():
-		// Context cancelled
+		// DEBUG: Context cancelled while waiting for token
+		// DEBUG: Return cancellation error, don't consume token
 		return ctx.Err()
 	}
 }
 
 /*
-Alternatives & Trade-offs:
+Common Implementation Patterns:
 
-1. time.Ticker-based limiter:
-   ticker := time.NewTicker(time.Second / rate)
-   for range ticker.C { ... }
-   Pros: Simpler implementation
-   Cons: Doesn't allow bursts; strict 1 op every interval
+1. Token Bucket (used here):
+   - Buffered channel as token container
+   - Goroutine refills at constant rate
+   - Allows bursts up to bucket capacity
+   - Context-aware with select statement
 
-2. Token bucket with time.Sleep:
-   if lastOp + interval > now { time.Sleep(interval) }
-   Pros: No goroutine for refilling
-   Cons: Can't use context to interrupt sleep
+2. Ticker-Based Limiting:
+   - Use time.Ticker for strict rate
+   - No burst allowance
+   - Simpler but less flexible
 
-3. Semaphore-based (golang.org/x/sync/semaphore):
-   sem := semaphore.NewWeighted(rate)
-   sem.Acquire(ctx, 1)
-   Pros: Battle-tested library
-   Cons: External dependency
+3. Semaphore Pattern:
+   - Can use golang.org/x/sync/semaphore
+   - Good for limiting concurrency
+   - External dependency required
 
-4. Sliding window counter:
-   Track ops in last second, reject if exceeds rate
-   Pros: More accurate over time
-   Cons: Higher memory usage
+Critical Implementation Details:
 
-Go vs X:
+- Always buffer token channel (capacity = rate)
+- Use select with default for non-blocking refill
+- Handle context cancellation in Wait()
+- Call defer cancel() to prevent leaks
+- Never store context in struct fields
 
-Go vs Python (asyncio.Semaphore):
-  async with semaphore:
-      await do_work()
-  Pros: Similar API
-  Cons: No built-in rate limiting (need external lib)
-  Go: Channels make rate limiting natural
+Debugging Tips:
 
-Go vs JavaScript (bottleneck package):
-  const limiter = new Bottleneck({ maxConcurrent: 10, minTime: 100 });
-  await limiter.schedule(() => doWork());
-  Pros: Good rate limiting library
-  Cons: Requires external package
-  Go: Easy to implement from scratch with channels
-
-Go vs Rust (governor crate):
-  let limiter = RateLimiter::direct(Quota::per_second(nonzero!(10u32)));
-  limiter.until_ready().await;
-  Pros: Type-safe, efficient
-  Cons: More complex type system
-  Go: Simpler implementation
-
-Common Mistakes to Avoid:
-
-1. Not buffering token channel:
-   tokens := make(chan struct{}) // WRONG: unbuffered
-   Causes: Refill goroutine blocks if no one is waiting
-
-2. Not handling context cancellation:
-   <-rl.tokens // WRONG: can't be interrupted
-   Causes: Hangs if context is cancelled
-
-3. Creating goroutine per Wait():
-   go func() { <-rl.tokens }() // WRONG: goroutine leak
-   Causes: Many goroutines if high concurrency
-
-4. Not deferring cancel():
-   ctx, cancel := context.WithTimeout(...)
-   // Forgot defer cancel()
-   Causes: Timer goroutine leak
-
-5. Storing context in struct:
-   type Limiter struct { ctx context.Context } // WRONG
-   Causes: All users share same context
+- Watch token channel length to see available capacity
+- Observe ticker firing rate (should match rate parameter)
+- Track context.Done() channel for cancellation events
+- Monitor goroutine count to detect leaks
+- Use -race flag to detect concurrent access issues
 */

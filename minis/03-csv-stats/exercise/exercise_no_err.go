@@ -3,38 +3,55 @@
 
 package exercise
 
+import (
+	"encoding/csv"
+	"io"
+	"strconv"
+)
+
 /*
 Core Logic Without Error Handling
 ==================================
 
-This file demonstrates the core algorithm without error handling complexity.
-It's designed to help you understand the fundamental logic flow.
+This file demonstrates the core CSV statistics algorithm without
+error handling complexity. It's designed to help you understand the
+fundamental logic flow.
 
 KEY CONCEPTS:
-- Focus on the algorithm, not error handling
-- Simplified implementations for learning
-- Use this to understand core logic before adding error handling
-
-DEBUGGING:
-- Set breakpoints at function entry points
-- Step through the pure logic without error handling distractions
-- Focus on understanding the algorithm
-- Watch Variables panel to see data transformations
-
-See /RUN_DEBUG.md for comprehensive debugging guide.
+- Parsing structured data (CSV records)
+- Aggregating values into statistics
+- Type conversions and arithmetic operations
+- Working with maps of structs (value types)
 */
 
-// TODO: Implement core logic functions here
-// These should mirror the logic in exercise.go but without error handling
-// Focus on the algorithm, assume all operations succeed
+// CoreSummarizeCSV demonstrates CSV statistics without error handling
+//
+// Algorithm steps:
+// 1. Create CSV reader for parsing records
+// 2. Skip header row (assume it's valid)
+// 3. Create statistics map to accumulate results
+// 4. For each data row:
+//    a. Extract category and amount fields
+//    b. Parse amount string to float value
+//    c. Update statistics for that category
+// 5. Calculate average for each category
+// 6. Return the accumulated statistics
+func CoreSummarizeCSV(r io.Reader) map[string]Stat {
+	// TODO: Step 1 - Create CSV reader
 
-// Example:
-// func CoreFunctionName(input string) string {
-//     // BREAKPOINT: Set breakpoint here to step through algorithm
-//     // DEBUG: Watch Variables panel to see transformations
-//
-//     // Core logic without error handling
-//     result := processInput(input)
-//
-//     return result
-// }
+	// TODO: Step 2 - Skip header row
+
+	// TODO: Step 3 - Create statistics map
+
+	// TODO: Step 4 - Loop through data rows
+
+	// TODO: Step 5 - Extract and parse category and amount
+
+	// TODO: Step 6 - Update statistics (read-modify-write pattern)
+
+	// TODO: Step 7 - Calculate averages for all categories
+
+	// TODO: Step 8 - Return statistics map
+
+	return nil
+}

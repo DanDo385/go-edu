@@ -1,6 +1,46 @@
 //go:build solution
 // +build solution
 
+/*
+Problem: Fetch multiple URLs concurrently and count word frequencies
+
+We need to implement:
+1. Worker pool pattern for bounded concurrency
+2. Concurrent HTTP fetching with proper error handling
+3. Word tokenization and frequency counting
+4. Graceful cancellation with context
+
+Constraints:
+- Fixed number of workers (bounded concurrency)
+- Must handle errors from any worker
+- Must cancel all work if one worker fails
+- Aggregate results from all workers
+
+Time/Space Complexity:
+- Time: O(n) where n = total words across all URLs (concurrent fetching)
+- Space: O(u) where u = number of unique words across all URLs
+
+Why Go is well-suited:
+- Goroutines: Lightweight concurrent execution
+- Channels: Safe communication between goroutines
+- Context: Built-in cancellation and timeout support
+- sync.WaitGroup: Simple goroutine coordination
+- errgroup: Simplified error handling for goroutines
+
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints in concurrent goroutines
+2. Watching channel operations and synchronization
+3. Understanding worker pool patterns
+4. Inspecting goroutine state and coordination
+5. Using the Debug Console for concurrent debugging
+6. Understanding context cancellation propagation
+*/
+
 package exercise
 
 import (
@@ -29,6 +69,14 @@ Imagine a factory assembly line:
 
 The factory has exactly N workers (bounded concurrency) to prevent
 overwhelming the system with too many simultaneous operations.
+
+DEBUGGING WORKFLOW:
+===================
+1. Set breakpoints in worker goroutines and main coordination code
+2. Use Goroutines panel to see all running goroutines
+3. Switch between goroutines to see their current state
+4. Watch channel operations (sends/receives)
+5. Observe context cancellation propagation
 */
 func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
 	// ============================================================================

@@ -28,10 +28,18 @@ Why Go is well-suited:
 - Interfaces enable testing without real files
 - Pointer receivers for mutable state (clear semantics)
 
-Compared to other languages:
-- Python: `argparse` + `json.dump()` similar, but dynamic typing
-- Node.js: Requires external CLI library; async file I/O more complex
-- Rust: More boilerplate for serialization; ownership rules are steeper
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints at critical CRUD operations
+2. Watching interface implementations and method calls
+3. Using F10 (Step Over) vs F11 (Step Into) effectively
+4. Inspecting JSON marshaling/unmarshaling
+5. Using the Debug Console to evaluate expressions
+6. Understanding pointer receivers and mutability
 */
 
 package exercise
@@ -245,7 +253,65 @@ func (fs *fileStore) List(onlyPending bool) []Item {
 }
 
 /*
+ADVANCED DEBUGGING TECHNIQUES:
+===============================
+
+1. CONDITIONAL BREAKPOINTS:
+   Right-click on any breakpoint and add conditions
+   Examples:
+   - In Add: maxID > 10 (break only when many items exist)
+   - In Toggle: id == 5 (break only for specific item ID)
+   - In List: len(result) > 5 (break when many items filtered)
+
+2. LOGPOINTS:
+   Right-click on line number → Add Logpoint
+   Examples:
+   - In Add: Log "Adding item {maxID + 1}: {text}"
+   - In Toggle: Log "Toggling item {id}: {fs.items[i].Done} -> {!fs.items[i].Done}"
+   - No need to modify code or add print statements!
+
+3. DEBUG CONSOLE EXPRESSIONS:
+   During debugging, try these in the Debug Console:
+   - Type: fs.items to see all todo items
+   - Type: len(fs.items) to see item count
+   - Type: fs.items[0] to see first item
+   - Type: maxID to see highest ID
+   - Type: newItem to see item being added
+
+4. WATCH EXPRESSIONS:
+   Add these to the Watch panel for real-time monitoring:
+   - len(fs.items) - number of items
+   - fs.items[i].Done - completion status
+   - maxID - highest ID in use
+   - newItem - item being added
+
+5. CALL STACK NAVIGATION:
+   In the Call Stack panel:
+   - Click into json.Marshal to see reflection
+   - Click into json.Unmarshal to see parsing
+   - Click different frames to see state at each level
+   - Use "Step Out" (Shift+F11) to return to caller
+
+6. MEMORY INSPECTION:
+   To see memory allocations:
+   - Watch how fs.items slice grows with append
+   - Notice Item struct layout in Variables panel
+   - Compare pointers with &fs.items vs fs.items
+
+7. STEP COMMANDS:
+   - F10 (Step Over): Execute line, don't enter functions
+   - F11 (Step Into): Enter function calls to see internals
+   - Shift+F11 (Step Out): Return to caller
+   - F5 (Continue): Run until next breakpoint
+
+8. DATA BREAKPOINTS:
+   Watch for when specific variables change:
+   - Right-click variable → Break When Value Changes
+   - Useful for tracking when fs.items is modified
+   - Useful for tracking when maxID updates
+
 Alternatives & Trade-offs:
+==========================
 
 1. Use map instead of slice:
    items map[int]Item
@@ -277,76 +343,48 @@ Alternatives & Trade-offs:
    Pros: Constant memory usage
    Cons: More complex; loses pretty-printing
 
-Go vs X:
+DEBUGGING EXERCISES:
+====================
 
-Go vs Python:
-  import json
-  class FileStore:
-      def __init__(self, path):
-          self.path = path
-          self.items = []
-      def load(self):
-          with open(self.path) as f:
-              self.items = json.load(f)
-      def save(self):
-          with open(self.path, 'w') as f:
-              json.dump(self.items, f, indent=2)
-  Pros: Less code; dynamic typing is flexible
-  Cons: No compile-time safety (typos in field names are runtime errors)
-        No interface/protocol checking
-  Go: Type safety catches errors early; clearer structure
+Exercise 1: Trace Add operation
+- Set breakpoints in Add method: entry, maxID loop, append, return
+- Watch: fs.items, maxID, newItem
+- Question: How is maxID calculated?
+- Question: What is the ID of the new item?
 
-Go vs Node.js:
-  const fs = require('fs').promises;
-  class FileStore {
-      async load() {
-          const data = await fs.readFile(this.path, 'utf8');
-          this.items = JSON.parse(data);
-      }
-      async save() {
-          await fs.writeFile(this.path, JSON.stringify(this.items, null, 2));
-      }
-  }
-  Pros: Similar brevity; async/await is clean
-  Cons: Async complexity (Promises, error handling)
-        Requires external CLI library (commander, yargs)
-  Go: Synchronous I/O is simpler; built-in flag package
+Exercise 2: Understand Toggle operation
+- Set breakpoints in Toggle: entry, loop, toggle, return
+- Watch: fs.items, id, i
+- Question: How does Toggle find the item?
+- Question: What happens if ID doesn't exist?
 
-Go vs Rust:
-  use serde::{Deserialize, Serialize};
-  #[derive(Serialize, Deserialize)]
-  struct Item { id: u32, text: String, done: bool }
-  impl FileStore {
-      fn load(&mut self) -> Result<(), Error> {
-          let data = std::fs::read_to_string(&self.path)?;
-          self.items = serde_json::from_str(&data)?;
-          Ok(())
-      }
-      fn save(&self) -> Result<(), Error> {
-          let data = serde_json::to_string_pretty(&self.items)?;
-          std::fs::write(&self.path, data)?;
-          Ok(())
-      }
-  }
-  Pros: Zero-cost abstractions; compile-time guarantees
-  Cons: Ownership/borrowing complexity (lifetimes, &mut self)
-        More boilerplate (derive macros, Result types)
-  Go: Simpler mental model; faster iteration
+Exercise 3: Watch JSON marshaling
+- Set breakpoints in Save: entry, MarshalIndent, WriteFile
+- Watch: fs.items, data
+- Question: What does the marshaled JSON look like?
+- Question: How is indentation applied?
 
-Go vs Java:
-  class FileStore {
-      private List<Item> items = new ArrayList<>();
-      public void load() throws IOException {
-          String json = Files.readString(Path.of(path));
-          items = objectMapper.readValue(json, new TypeReference<List<Item>>() {});
-      }
-      public void save() throws IOException {
-          String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
-          Files.writeString(Path.of(path), json);
-      }
-  }
-  Pros: Similar structure; Jackson is robust
-  Cons: Much more verbose (getters/setters, checked exceptions, generics)
-        Requires external library (Jackson/Gson)
-  Go: Cleaner syntax; built-in JSON support
+Exercise 4: Watch JSON unmarshaling
+- Set breakpoints in Load: entry, ReadFile, Unmarshal
+- Watch: data, fs.items
+- Question: What does data contain before Unmarshal?
+- Question: How are struct tags used in unmarshaling?
+
+Exercise 5: Interface implementation
+- Set breakpoint at NewFileStore return
+- Watch: return value type
+- Question: What type is returned (concrete vs interface)?
+- Question: How does Go know fileStore implements Store?
+
+Exercise 6: List filtering
+- Set breakpoints in List: entry, filter check, append, return
+- Watch: onlyPending, item.Done, result
+- Question: How many items are filtered out?
+- Question: Does the original fs.items change?
+
+Exercise 7: Pointer receiver mutation
+- Set breakpoints in Add and Load
+- Watch: fs pointer address, fs.items before/after
+- Question: Does the pointer address change?
+- Question: How do pointer receivers enable mutation?
 */

@@ -4,37 +4,60 @@
 package exercise
 
 /*
-Core Logic Without Error Handling
-==================================
+Core LRU Cache Algorithm - Simplified Version
+==============================================
 
-This file demonstrates the core algorithm without error handling complexity.
-It's designed to help you understand the fundamental logic flow.
+This file focuses on the core LRU algorithm without error handling or edge cases.
+Use this to understand the fundamental data structure operations.
 
-KEY CONCEPTS:
-- Focus on the algorithm, not error handling
-- Simplified implementations for learning
-- Use this to understand core logic before adding error handling
+ALGORITHM STEPS:
 
-DEBUGGING:
-- Set breakpoints at function entry points
-- Step through the pure logic without error handling distractions
-- Focus on understanding the algorithm
-- Watch Variables panel to see data transformations
+1. Cache Lookup (Get):
+   - Lookup key in map → O(1)
+   - Move accessed element to front → O(1)
+   - Return value
 
-See /RUN_DEBUG.md for comprehensive debugging guide.
+2. Cache Insert (Set):
+   - Create entry with key/value
+   - Push to front of list → O(1)
+   - Store in map → O(1)
+   - Evict back element if over capacity → O(1)
+
+3. LRU Eviction:
+   - Remove element from back of list → O(1)
+   - Remove from map using key → O(1)
+
+DEBUGGING GUIDE:
+- Set breakpoint at map lookup to trace cache hits/misses
+- Set breakpoint at eviction to see which items are removed
+- Watch the doubly-linked list structure to see recency order
 */
 
-// TODO: Implement core logic functions here
-// These should mirror the logic in exercise.go but without error handling
-// Focus on the algorithm, assume all operations succeed
+// TODO: Implement SimpleCacheGet
+// Core algorithm for cache lookup without TTL or error handling
+// Steps:
+// 1. Look up key in map
+// 2. If found, move element to front
+// 3. Return value
+// Signature: func SimpleCacheGet[K comparable, V any](cache *Cache[K, V], key K) V
 
-// Example:
-// func CoreFunctionName(input string) string {
-//     // BREAKPOINT: Set breakpoint here to step through algorithm
-//     // DEBUG: Watch Variables panel to see transformations
-//
-//     // Core logic without error handling
-//     result := processInput(input)
-//
-//     return result
-// }
+// TODO: Implement SimpleCacheSet
+// Core algorithm for cache insertion without TTL
+// Steps:
+// 1. Check if key exists
+// 2. If exists: move to front and update value
+// 3. If not exists:
+//    - Create new entry
+//    - Push to front
+//    - Add to map
+//    - If over capacity, remove back element
+// Signature: func SimpleCacheSet[K comparable, V any](cache *Cache[K, V], key K, val V)
+
+// TODO: Implement SimpleLRUEvict
+// Core algorithm for LRU eviction
+// Steps:
+// 1. Get back element from list (least recently used)
+// 2. Remove from list
+// 3. Extract key from entry
+// 4. Delete from map
+// Signature: func SimpleLRUEvict[K comparable, V any](cache *Cache[K, V])

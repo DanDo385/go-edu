@@ -27,12 +27,18 @@ Why Go is well-suited:
 - `sort.Slice`: Inline sorting with custom comparators
 - Error accumulation: Handle partial failures gracefully without exceptions
 
-Performance Characteristics:
-- Go's JSON parsing uses reflection, which is slower than Rust's compile-time codegen
-  but faster than Python's pure interpretation
-- Memory allocation is handled by Go's garbage collector, eliminating manual management
-  required in C while being more predictable than Python's reference counting
-- String operations are UTF-8 aware and bounds-checked, unlike C's pointer arithmetic
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints at critical JSON parsing points
+2. Watching custom unmarshaling transformations
+3. Using F10 (Step Over) vs F11 (Step Into) effectively
+4. Inspecting sort algorithm execution
+5. Using the Debug Console to evaluate expressions
+6. Understanding enum-like types and their memory representations
 */
 
 package exercise
@@ -54,11 +60,10 @@ import (
 // - This is much more efficient than storing strings ("debug", "info", etc.)
 // - Comparison operations (>=, <) are single CPU instructions versus string comparisons
 //
-// Speed Comparison:
-// - C: Would use enum, identical performance (single integer comparison)
-// - Rust: Would use enum with #[repr(u8)], potentially 1 byte vs Go's 4/8 bytes
-// - Python: Would use Enum or just strings, significantly slower (hash lookups)
-// - Solidity: Would use uint8 enum, identical approach but in EVM context
+// BREAKPOINT 1: Set breakpoint where Level values are compared (e.g., FilterLogs)
+// DEBUG: Watch how integer comparisons work for enums
+// DEBUG: In Debug Console, type: Debug < Info < Warn < Error
+// All should be true since they're defined with iota (0, 1, 2, 3)
 type Level int
 
 const (
@@ -81,11 +86,14 @@ const (
 // at runtime to map JSON field names to struct fields. This is zero-cost at runtime
 // after the initial reflection setup.
 //
-// Speed Comparison:
-// - C: Would use struct with char* for message, manual parsing required
-// - Rust: serde derives would generate specialized parsing code at compile time (faster)
-// - Python: Would use dict or dataclass, stored as PyObject* with overhead (~200+ bytes)
-// - Solidity: N/A (no native JSON support, would need external oracle for off-chain data)
+// BREAKPOINT 2: Set breakpoint after json.Unmarshal populates an Entry
+// DEBUG: In Variables panel, expand Entry to see all fields:
+//   - TS: time.Time with wall clock and monotonic components
+//   - Level: integer value (0-3)
+//   - Msg: string with pointer and length
+// DEBUG: In Debug Console, type: entry.TS
+// DEBUG: In Debug Console, type: entry.Level
+// DEBUG: In Debug Console, type: entry.Msg
 type Entry struct {
 	TS    time.Time `json:"ts"`    // RFC3339 timestamp, parsed by time package
 	Level Level     `json:"level"` // Uses our custom UnmarshalJSON below
@@ -111,12 +119,24 @@ type Entry struct {
 // We need *Level not Level because we're modifying the value. Go passes by value,
 // so we need a pointer to modify the original memory location in the Entry struct.
 //
-// Speed Comparison:
-// - C: Would use strcmp in switch, similar speed but manual error handling
-// - Rust: serde would generate this at compile time (no runtime reflection), faster
-// - Python: Would use dict lookup, slower due to hash computation and PyObject overhead
-// - Solidity: N/A, but similar concept when parsing bytes to enum in assembly
+// DEBUGGING WORKFLOW:
+// ===================
+// 1. Set breakpoint at function entry (line 126)
+// 2. Call json.Unmarshal on Entry with level field
+// 3. Step through string-to-enum mapping
+// 4. Watch pointer dereferencing
+//
+// BREAKPOINT 3: Set here at function entry
+// DEBUG: In Variables panel, expand 'l' to see:
+//   - Memory address of Level being modified
+//   - Current value (may be uninitialized)
+// DEBUG: In Variables panel, expand 'data' to see:
+//   - Raw JSON bytes including quotes
+// DEBUG: In Debug Console, type: string(data)
+// See the JSON representation (e.g., "info")
 func (l *Level) UnmarshalJSON(data []byte) error {
+	// BREAKPOINT 4: Set here BEFORE unmarshal to string
+	// Step Into (F11) to see json.Unmarshal strip quotes
 	// First, unmarshal to a string to handle JSON escaping and quote removal.
 	// The json package handles all edge cases: escaped quotes, unicode, etc.
 	// Memory: Allocates a new string on the heap (data is copied, not referenced)
@@ -393,40 +413,111 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 }
 
 /*
-Key Performance Insights:
+ADVANCED DEBUGGING TECHNIQUES:
+===============================
 
-1. JSON Parsing Overhead:
-   - Go's reflection-based parsing is ~2-3x slower than Rust's compile-time codegen
-   - But vastly more convenient than C's manual parsing (which is error-prone)
-   - Python's json.loads() is similar speed (implemented in C) but higher memory overhead
+1. CONDITIONAL BREAKPOINTS:
+   Right-click on any breakpoint and add conditions
+   Examples:
+   - In main loop: entry.Level == Error (break only for errors)
+   - In main loop: skippedCount > 0 (break when first line is skipped)
+   - In sort: i == 0 && j == len(entries)-1 (break at sort start)
 
-2. Memory Allocations:
-   - Scanner buffer: ~4KB, reused across lines (efficient)
-   - Slice growth: Amortized O(1) via doubling strategy
-   - JSON parsing: Intermediate allocations (garbage collected)
-   - Total memory: O(n) where n = number of kept entries
+2. LOGPOINTS:
+   Right-click on line number → Add Logpoint
+   Examples:
+   - In main loop: Log "Line {lineNum}: {entry.Level} - {entry.Msg}"
+   - In UnmarshalJSON: Log "Parsing level: {s} -> {*l}"
+   - No need to modify code or add print statements!
 
-3. Comparison Operations:
-   - Integer enum comparison (Level): Single CPU instruction (~1 cycle)
-   - String comparison would be O(length), much slower
-   - time.Time comparison is efficient (64-bit integer comparison internally)
+3. DEBUG CONSOLE EXPRESSIONS:
+   During debugging, try these in the Debug Console:
+   - Type: entries to see filtered log entries
+   - Type: len(entries) to see entry count
+   - Type: skippedCount to see how many lines were skipped
+   - Type: entry.Level >= minLevel to test filter condition
+   - Type: entry.TS.Format(time.RFC3339) to see formatted timestamp
 
-4. Sorting Performance:
-   - O(n log n) quicksort with good cache locality (in-place)
-   - Comparator function calls have tiny overhead (inlined by compiler)
-   - Much faster than Python's Timsort for primitive types
-   - Rust's slice.sort() is equivalent performance
+4. WATCH EXPRESSIONS:
+   Add these to the Watch panel for real-time monitoring:
+   - len(entries) - number of entries kept
+   - skippedCount - number of lines skipped
+   - entry.Level - current entry level
+   - entry.Level >= minLevel - will this entry be kept?
 
-5. Error Handling Cost:
-   - Go's explicit error returns have zero overhead on happy path
-   - Python's exceptions have significant cost when raised (stack unwinding)
-   - Rust's Result enum is zero-cost abstraction (optimized to register return)
-   - C's error codes are equivalent to Go's approach
+5. CALL STACK NAVIGATION:
+   In the Call Stack panel:
+   - Click into json.Unmarshal to see reflection in action
+   - Click into UnmarshalJSON to see custom unmarshaling
+   - Click into sort.Slice to see sorting algorithm
+   - Use "Step Out" (Shift+F11) to return to caller
 
-Trade-offs Summary:
-- Go prioritizes developer productivity (reflection, garbage collection) over raw speed
-- Rust prioritizes zero-cost abstractions with compile-time guarantees
-- C prioritizes raw speed but requires manual memory management
-- Python prioritizes ease of use but sacrifices performance
-- For this log parsing task, Go provides the best balance of speed, safety, and ergonomics
+6. MEMORY INSPECTION:
+   To see memory allocations:
+   - Watch how entries slice grows with append
+   - Notice Entry struct layout in Variables panel
+   - Compare memory addresses of different Entry instances
+
+7. STEP COMMANDS:
+   - F10 (Step Over): Execute line, don't enter functions
+   - F11 (Step Into): Enter function calls to see internals
+   - Shift+F11 (Step Out): Return to caller
+   - F5 (Continue): Run until next breakpoint
+
+8. DATA BREAKPOINTS:
+   Watch for when specific variables change:
+   - Right-click variable → Break When Value Changes
+   - Useful for tracking when entries is modified
+   - Useful for tracking when skippedCount increments
+
+DEBUGGING EXERCISES:
+====================
+
+Exercise 1: Trace FilterLogs execution
+- Input: JSONL with 5 entries, various levels
+- Set breakpoints at function entry, main loop, filter check, sort
+- Watch: entries, skippedCount, entry.Level
+- Question: How many entries are kept vs skipped?
+- Question: Are entries sorted correctly by timestamp?
+
+Exercise 2: Understand custom unmarshaling
+- Input: JSONL with level "warn"
+- Set breakpoints in UnmarshalJSON: entry, string unmarshal, switch cases
+- Watch: data, s, *l
+- Question: What is the value of 's' after unmarshaling?
+- Question: What integer value is assigned to *l?
+
+Exercise 3: Watch enum comparison
+- Input: JSONL with minLevel = Warn
+- Set breakpoint at level filter check
+- Watch: entry.Level, minLevel
+- Question: For level "info", what is entry.Level value?
+- Question: Does entry.Level >= minLevel evaluate to true or false?
+
+Exercise 4: Empty input edge case
+- Input: Empty JSONL file
+- Set breakpoints at function entry, main loop, sort, return
+- Question: Does the main loop execute?
+- Question: What does the function return?
+
+Exercise 5: Malformed JSON handling
+- Input: JSONL with 2 valid entries, 1 malformed
+- Set breakpoints at json.Unmarshal, error check, skippedCount increment
+- Watch: line, err, skippedCount
+- Question: When does json.Unmarshal fail?
+- Question: What is the final value of skippedCount?
+
+Exercise 6: Sorting verification
+- Input: JSONL with entries in reverse chronological order
+- Set breakpoints before sort, inside sort comparator, after sort
+- Watch: entries before and after sort
+- Question: How does sort.Slice reorder the entries?
+- Question: What is entries[0].TS before vs after sort?
+
+Exercise 7: Partial success pattern
+- Input: JSONL with some malformed lines
+- Set breakpoints at return statements
+- Watch: entries, err
+- Question: Does function return both entries AND error?
+- Question: How does caller know some lines were skipped?
 */

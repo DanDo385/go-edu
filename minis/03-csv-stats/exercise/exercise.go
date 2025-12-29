@@ -6,37 +6,24 @@ package exercise
 // TODO: Import required packages
 // You'll need:
 // - "encoding/csv" for CSV parsing
-// - "fmt" for error formatting
 // - "io" for the Reader interface
 // - "strconv" for string to float conversion
 //
+// Uncomment these imports when you implement the functions:
+/*
 import (
-    "encoding/csv"
-    "fmt"
-    "io"
-    "strconv"
+	"encoding/csv"
+	"io"
+	"strconv"
 )
+*/
 
 // Stat holds aggregated statistics for a category
-// This is a STRUCT TYPE (value type, not reference type)
-//
-// TODO: Define the Stat struct
 type Stat struct {
-    Count int     // Number of transactions in this category
-    Sum   float64 // Total amount for this category
-    Avg    float64 // Average amount (Sum / Count)
+	Count int     // Number of transactions in this category
+	Sum   float64 // Total amount for this category
+	Avg   float64 // Average amount (Sum / Count)
 }
-//
-// Key Go concepts for structs:
-// - Structs are VALUE types (copied when assigned or passed)
-// - Fields are accessed with dot notation: s.Count, s.Sum, s.Avg
-// - Zero value: Stat{Count: 0, Sum: 0.0, Avg: 0.0}
-// - When you write freq[category] = s, you COPY the struct into the map
-// - To modify a struct in a map, you must:
-//   1. Read it out: s := freq[category]
-//   2. Modify the copy: s.Count++
-//   3. Write it back: freq[category] = s
-//   (You CANNOT do freq[category].Count++ directly!)
 
 // SummarizeCSV reads a CSV file from r and returns category statistics
 //
@@ -49,142 +36,49 @@ type Stat struct {
 // - map[string]Stat: Statistics for each category
 // - error: Any validation or parsing errors
 //
-// TODO: Implement SummarizeCSV function
+// Example: CSV with "groceries,12.50" and "groceries,7.50" returns
+//   {"groceries": {Count: 2, Sum: 20.0, Avg: 10.0}}
+// TODO: Implement this function
+//
+// Algorithm:
+// 1. Create a CSV reader from the input reader
+// 2. Read and validate the header row (expect: id, category, amount)
+// 3. Create a statistics map to store results
+// 4. Loop through each data row:
+//    a. Parse the amount string to float
+//    b. Get or create the category's Stat entry
+//    c. Increment count and add to sum
+// 5. Calculate average for each category (Sum / Count)
+// 6. Return the statistics map and any errors encountered
+//
+// CS Concepts:
+// - Data Aggregation: Grouping data by key and computing aggregate functions (count, sum)
+// - Parsing: Converting string representations to typed values (CSV to struct)
+// - Struct Modification: Value types require read-modify-write pattern when stored in maps
+// - Type Conversion: Implicit conversions (int to float) for arithmetic operations
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
-//
-// Steps to implement:
-//
-// 1. Create a CSV reader
-//    - Use: csvReader := csv.NewReader(r)
-//    - csv.Reader is a STRUCT (value type) but contains pointers internally
-//    - The Reader maintains internal state (position in file, buffer, etc.)
-	csvReader := csv.NewReader(r)
-// 2. Read and validate the header row
-//    - Use: headers, err := csvReader.Read()
-//    - Read() returns []string (slice of column values) and error
-//    - Check if err == io.EOF (empty file - should be an error!)
-//    - Check if err != nil (other read errors)
-//    - Validate headers match exactly: ["id", "category", "amount"]
-//    - Use len(headers) to check count
-//    - Use headers[0], headers[1], headers[2] to check values
-	headers, err := csvReader.Read()
-	if err != nil {
-		if err == io.EOF {
-			return nil, fmt.Errorf("empty csv file (no header)")
-		}
-		return nil, fmt.Errorf("reading header: %w", err)
-	}
+	// TODO: Step 1 - Create CSV reader
 
-	if len(headers) != 3 || headers[0] != "id" || headers[1] != "category" || headers[2] != "amount" {
-		return nil, fmt.Errorf("invalid header: expected [id,category,amount], got %v", headers)
-	}
-// 3. Create the statistics map
-//    - Use: stats := make(map[string]Stat)
-//    - Map will store category → Stat
-//    - Map is a REFERENCE type (stores pointer to hash table)
-	stats := make(map[string]Stat)
-// 4. Track row number for error messages
-//    - Use: rowNum := 2 (start at 2: row 1 is header)
-//    - Increment after processing each row: rowNum++
-	rowNum := 2
+	// TODO: Step 2 - Read and validate header row
 
-// 5. Loop through data rows
-//    - Use: for { record, err := csvReader.Read(); ... }
-//    - Check if err == io.EOF (end of file - break from loop)
-//    - Check if err != nil (other errors - return error with row number)
-//    - Validate len(record) == 3 (id, category, amount)
-	for {
-		record, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("row %d: %w", rowNum, err)
-		}
-	
+	// TODO: Step 3 - Create statistics map
 
-	if len(record) != 3 {
-		return nil, fmt.Errorf("row %d: expected 3 fields, got %d", rowNum, len(record))
-	}
-// 6. Extract and validate fields
-//    - category := record[1] (second column, index 1)
-//    - amountStr := record[2] (third column, index 2)
-//    - Check if category == "" (empty category should error)
-//    - Parse amount: amount, err := strconv.ParseFloat(amountStr, 64)
-//      * ParseFloat returns (float64, error)
-//      * First arg is string to parse
-//      * Second arg is bit size (64 for float64)
-//      * If parsing fails, return error with row number and invalid value
-//    - CRITICAL: You cannot modify struct fields directly in a map!
-//    - WRONG: stats[category].Count++ // Compile error!
-//    - RIGHT:
-//      * Read: s := stats[category]
-//      * Modify copy: s.Count++, s.Sum += amount
-//      * Write back: stats[category] = s
-//    - Why? Maps store VALUES, not pointers
-//    - Reading stats[category] returns a COPY of the Stat struct
-//    - You must write the modified copy back to the map
-//    - If category doesn't exist, stats[category] returns zero-value Stat{0, 0.0, 0.0}
-	category := record[1]
-	amountStr := record[2]
-	
-	if category == "" {
-		return nil, fmt.Errorf("row %d: empty category", rowNum)
-	}
+	// TODO: Step 4 - Initialize row counter
 
-	amount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil {
-		return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
-	}
+	// TODO: Step 5 - Loop through data rows
 
-	s := stats[category]
-	s.Count++
-	s.Sum += amount
-	stats[category] = s
+	// TODO: Step 6 - Extract category and amount
 
-	rowNum++
+	// TODO: Step 7 - Parse amount as float
+
+	// TODO: Step 8 - Read stat, update, and write back to map
+
+	// TODO: Step 9 - Calculate averages for all categories
+
+	// TODO: Step 10 - Return results
+
+	return nil, nil
 }
-	
-
-// 8. Calculate averages
-//    - After reading all rows, loop through map again
-//    - For each category: for category, s := range stats { ... }
-//    - Calculate: s.Avg = s.Sum / float64(s.Count)
-//      * Must convert s.Count to float64 for division
-//      * Integer division truncates: 5 / 2 = 2 (wrong!)
-//      * Float division: 5.0 / 2.0 = 2.5 (correct!)
-//    - Write back: stats[category] = s
-	for category, s := range stats {
-		if s.Count > 0 {
-			s.Avg = s.Sum / float64(s.Count)
-			stats[category] = s
-		}
-	}
-// 9. Return results
-//    - Use: return stats, nil
-//    - stats is a map (reference type) - passes pointer to caller
-//    - Caller can modify the map's contents
-	return stats, nil
-}
-// Key Go concepts:
-// - Structs are value types (copied when assigned)
-// - Maps store values, not pointers (can't modify struct fields in place)
-// - Must read-modify-write pattern for map entries
-// - CSV Reader maintains internal state
-// - Error messages should include context (row number, field value)
-// - strconv.ParseFloat for string to float conversion
-// - Type conversion: int to float64 for division
-//
-// Common mistakes:
-// - Trying stats[key].Field++ (doesn't compile)
-// - Forgetting to check err == io.EOF separately
-// - Not including row numbers in error messages
-// - Integer division instead of float division
-
-// TODO: Implement the SummarizeCSV function below
-// func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
-//     return nil, nil
-// }
 
 // After implementing:
 // - Run: go test ./...

@@ -1,245 +1,280 @@
 //go:build solution
 // +build solution
 
+/*
+Problem: Understanding Go's interface system and duck typing
+
+Requirements:
+1. Implement interfaces implicitly (no "implements" keyword)
+2. Use type assertions to extract concrete types
+3. Handle nil interface gotchas (type vs value)
+4. Compose interfaces through embedding
+5. Implement polymorphism with interface dispatch
+
+Data Structure:
+- Interface value: Type pointer + Data pointer (16 bytes on 64-bit)
+- Type assertion: Runtime check of concrete type
+- Type switch: Multi-way type-based branching
+
+Algorithm: Dynamic Dispatch
+- Interface stores concrete type metadata
+- Method calls routed through virtual table
+- Type assertions inspect type metadata
+
+Why interfaces enable polymorphism:
+- Decouple behavior from implementation
+- Write code once, works with many types
+- No inheritance needed
+- Runtime flexibility with compile-time safety
+*/
+
 package exercise
 
 import "fmt"
 
-// ============================================================================
-// SOLUTION 1: Implementing Interfaces
-// ============================================================================
-
 // String implements the Stringer interface for Person.
-//
-// MICRO-COMMENT: This method makes Person satisfy the Stringer interface.
-// No explicit declaration needed - just implement the method with the right signature.
+// BREAKPOINT: Set breakpoint here to trace interface implementation
+// DEBUG: Watch 'p' to see Person value
+// DEBUG: Watch return value formatting
 func (p Person) String() string {
-	// MICRO-COMMENT: Format the string as specified
-	// %s is for string, %d is for integer
+	// BREAKPOINT: Set breakpoint here before formatting
+	// DEBUG: Watch 'p.Name' and 'p.Age' fields
+	// DEBUG: Watch fmt.Sprintf create formatted string
 	return fmt.Sprintf("%s (%d years old)", p.Name, p.Age)
 }
 
-// ============================================================================
-// SOLUTION 2: Type Assertions
-// ============================================================================
-
 // GetAge extracts the age from a Stringer if it's a Person.
+// BREAKPOINT: Set breakpoint here to trace type assertion
+// DEBUG: Watch 's' interface value
+// DEBUG: Watch 'ok' to see if assertion succeeds
 func GetAge(s Stringer) (int, bool) {
-	// MICRO-COMMENT: Type assertion with comma-ok idiom
-	// This checks if the concrete type inside s is Person
-	// If yes: p gets the Person value, ok is true
-	// If no: p gets zero value, ok is false
+	// BREAKPOINT: Set breakpoint here for type assertion
+	// DEBUG: Watch 'p, ok := s.(Person)' syntax
+	// DEBUG: Watch 'ok' = true if s contains Person
+	// DEBUG: Watch 'ok' = false if s contains different type
 	p, ok := s.(Person)
 	if !ok {
+		// DEBUG: Not a Person - return zero values
 		return 0, false
 	}
 
-	// MICRO-COMMENT: Return the age from the Person
+	// BREAKPOINT: Set breakpoint here when assertion succeeds
+	// DEBUG: Watch 'p.Age' from extracted Person
 	return p.Age, true
 }
 
-// ============================================================================
-// SOLUTION 3: Type Switches
-// ============================================================================
-
 // DescribeType returns a description of the type of the value.
+// BREAKPOINT: Set breakpoint here to trace type switching
+// DEBUG: Watch 'i' interface value
+// DEBUG: Watch type determination in switch
 func DescribeType(i interface{}) string {
-	// MICRO-COMMENT: Type switch - switches on the type, not the value
-	// v gets the value with the appropriate type in each case
+	// BREAKPOINT: Set breakpoint here before type switch
+	// DEBUG: Watch 'v := i.(type)' syntax
 	switch v := i.(type) {
 	case int:
-		// MICRO-COMMENT: v has type int here
+		// BREAKPOINT: Hit when i contains int
+		// DEBUG: Watch 'v' has type int here
 		return fmt.Sprintf("Integer: %d", v)
 
 	case string:
-		// MICRO-COMMENT: v has type string here
+		// BREAKPOINT: Hit when i contains string
+		// DEBUG: Watch 'v' has type string here
 		return fmt.Sprintf("String: %s", v)
 
 	case bool:
-		// MICRO-COMMENT: v has type bool here
+		// BREAKPOINT: Hit when i contains bool
+		// DEBUG: Watch 'v' has type bool here
 		return fmt.Sprintf("Boolean: %t", v)
 
 	case Person:
-		// MICRO-COMMENT: v has type Person here
-		// We can access Person-specific fields
+		// BREAKPOINT: Hit when i contains Person
+		// DEBUG: Watch 'v' has type Person here
+		// DEBUG: Watch 'v.Name' field access
 		return fmt.Sprintf("Person: %s", v.Name)
 
 	case nil:
-		// MICRO-COMMENT: Special case for nil values
+		// BREAKPOINT: Hit when i is nil interface
+		// DEBUG: Both type and value are nil
 		return "Nil"
 
 	default:
-		// MICRO-COMMENT: Catch-all for any other type
+		// BREAKPOINT: Hit for unhandled types
+		// DEBUG: Watch unknown type fall through
 		return "Unknown"
 	}
 }
 
-// ============================================================================
-// SOLUTION 4: Interface Nil Check
-// ============================================================================
-
 // IsValidEmail checks if a Validator is valid, handling nil correctly.
+// BREAKPOINT: Set breakpoint here to trace nil handling
+// DEBUG: Watch 'v' interface value
+// DEBUG: Demonstrate the "nil interface vs nil pointer" gotcha
 func IsValidEmail(v Validator) bool {
-	// MICRO-COMMENT: First check - is the interface itself nil?
-	// This checks if both type and value are nil
+	// BREAKPOINT: Set breakpoint here for first nil check
+	// DEBUG: Watch 'v == nil' checks if BOTH type and value are nil
 	if v == nil {
+		// DEBUG: True nil interface - no type, no value
 		return false
 	}
 
-	// MACRO-COMMENT: The Two-Part Nil Problem
-	// At this point, we know v is not a nil interface.
-	// But it could still contain a nil pointer!
+	// At this point, v != nil BUT it might contain a nil pointer!
 	// Example: var e *Email = nil; var v Validator = e
-	// In this case, v != nil (interface is not nil)
-	// but e is nil (the pointer inside is nil)
+	// Here v != nil (type is *Email) but the pointer is nil
 
-	// MICRO-COMMENT: Type assert to *Email to check if the pointer is nil
+	// BREAKPOINT: Set breakpoint here for type assertion
+	// DEBUG: Watch 'e, ok := v.(*Email)' extract concrete type
 	e, ok := v.(*Email)
 	if !ok {
-		// Not an *Email, but could be some other Validator
-		// Call IsValid() and trust the implementation
+		// BREAKPOINT: Not an *Email
+		// DEBUG: Different Validator implementation
 		return v.IsValid()
 	}
 
-	// MICRO-COMMENT: Check if the Email pointer itself is nil
+	// BREAKPOINT: Set breakpoint here for pointer nil check
+	// DEBUG: Watch 'e == nil' checks if the *Email pointer is nil
 	if e == nil {
+		// DEBUG: Interface contains nil pointer!
 		return false
 	}
 
-	// MICRO-COMMENT: Finally, call IsValid() on the non-nil Email
+	// BREAKPOINT: Set breakpoint here when Email is valid
+	// DEBUG: Watch e.IsValid() call on non-nil Email
 	return e.IsValid()
 }
 
-// ============================================================================
-// SOLUTION 5: Implementing Multiple Interfaces
-// ============================================================================
-
 // Read returns the current data in the buffer.
+// BREAKPOINT: Set breakpoint here to trace Reader implementation
+// DEBUG: Watch 'b' Buffer pointer
+// DEBUG: Watch 'b.data' field access
 func (b *Buffer) Read() string {
-	// MICRO-COMMENT: Just return the data
-	// This makes Buffer implement the Reader interface
+	// DEBUG: Simple accessor - returns current data
 	return b.data
 }
 
 // Write appends data to the buffer.
+// BREAKPOINT: Set breakpoint here to trace Writer implementation
+// DEBUG: Watch 'b.data' before append
+// DEBUG: Watch 'data' parameter being appended
+// DEBUG: Watch 'b.data' after append
 func (b *Buffer) Write(data string) error {
-	// MICRO-COMMENT: Append to existing data
-	// This makes Buffer implement the Writer interface
+	// BREAKPOINT: Set breakpoint here before append
+	// DEBUG: Watch string concatenation
 	b.data += data
-
-	// MICRO-COMMENT: In-memory buffers don't have errors
+	// DEBUG: In-memory buffer never fails
 	return nil
 }
 
-// ============================================================================
-// SOLUTION 6: Interface Composition
-// ============================================================================
-
 // IsReadWriter checks if an interface value implements ReadWriter.
+// BREAKPOINT: Set breakpoint here to trace interface composition
+// DEBUG: Watch 'i' interface value
+// DEBUG: Watch composite interface checking
 func IsReadWriter(i interface{}) bool {
-	// MICRO-COMMENT: Type assert to ReadWriter
-	// ReadWriter is an interface that embeds both Reader and Writer
-	// So this checks if i has both Read() and Write() methods
+	// BREAKPOINT: Set breakpoint here for type assertion
+	// DEBUG: Watch '_, ok := i.(ReadWriter)' check both Read and Write
+	// DEBUG: ReadWriter requires BOTH Reader and Writer methods
 	_, ok := i.(ReadWriter)
 	return ok
 }
 
-// ============================================================================
-// SOLUTION 7: Method Sets and Receivers
-// ============================================================================
-
 // Increment increments the counter value.
-//
-// MACRO-COMMENT: Pointer Receiver for Mutation
-// We use a pointer receiver (*Counter) because we need to modify the counter.
-// This also means that only *Counter implements Incrementer, not Counter.
+// BREAKPOINT: Set breakpoint here to trace pointer receiver method
+// DEBUG: Watch 'c' pointer to Counter
+// DEBUG: Watch 'c.Value' before and after increment
 func (c *Counter) Increment() {
+	// BREAKPOINT: Set breakpoint here before increment
+	// DEBUG: Watch 'c.Value' increase by 1
 	c.Value++
+	// DEBUG: Pointer receiver required for mutation
 }
 
 // CanIncrement checks if a value can be used as an Incrementer.
+// BREAKPOINT: Set breakpoint here to trace interface checking
+// DEBUG: Watch 'i' interface value
+// DEBUG: Only *Counter satisfies Incrementer (not Counter)
 func CanIncrement(i interface{}) bool {
-	// MICRO-COMMENT: Type assert to Incrementer interface
-	// This will return true only if i has an Increment() method
-	// with the right signature
+	// BREAKPOINT: Set breakpoint here for type assertion
+	// DEBUG: Watch '_, ok := i.(Incrementer)'
+	// DEBUG: Remember: pointer receiver methods only on *T, not T
 	_, ok := i.(Incrementer)
 	return ok
 }
 
-// ============================================================================
-// SOLUTION 8: Working with Empty Interface
-// ============================================================================
-
 // CountTypes counts how many values of each type are in the slice.
+// BREAKPOINT: Set breakpoint here to trace type counting
+// DEBUG: Watch 'values' slice of interface{}
+// DEBUG: Watch 'counts' map build up
 func CountTypes(values []interface{}) map[string]int {
-	// MICRO-COMMENT: Create a map to store counts
+	// BREAKPOINT: Set breakpoint here to create map
+	// DEBUG: Watch map initialization
 	counts := make(map[string]int)
 
-	// MICRO-COMMENT: Iterate through all values
+	// BREAKPOINT: Set breakpoint here before loop
+	// DEBUG: Watch iteration through values
 	for _, v := range values {
-		// MICRO-COMMENT: Get the type name using %T format verb
-		// %T prints the type of the value
+		// BREAKPOINT: Set breakpoint here for each value
+		// DEBUG: Watch 'v' current value
+		// DEBUG: Watch '%T' format verb extract type name
 		typeName := fmt.Sprintf("%T", v)
 
-		// MICRO-COMMENT: Increment the count for this type
+		// BREAKPOINT: Set breakpoint here for increment
+		// DEBUG: Watch 'counts[typeName]++' increment count
+		// DEBUG: Zero value (0) allows safe increment without check
 		counts[typeName]++
 	}
 
+	// DEBUG: Watch final 'counts' map
 	return counts
 }
 
-// ============================================================================
-// SOLUTION 9: Error Interface
-// ============================================================================
-
 // Error implements the error interface for ValidationError.
-//
-// MACRO-COMMENT: The error Interface
-// The error interface is defined as:
-//   type error interface {
-//       Error() string
-//   }
-// Any type with an Error() string method automatically implements error.
+// BREAKPOINT: Set breakpoint here to trace error formatting
+// DEBUG: Watch 'e' ValidationError value
+// DEBUG: Watch error message construction
 func (e ValidationError) Error() string {
-	// MICRO-COMMENT: Format the error message as specified
+	// BREAKPOINT: Set breakpoint here before formatting
+	// DEBUG: Watch 'e.Field' and 'e.Message' fields
 	return fmt.Sprintf("validation error on %s: %s", e.Field, e.Message)
 }
 
-// ============================================================================
-// SOLUTION 10: Polymorphism
-// ============================================================================
-
 // Area calculates the area of a rectangle.
-//
-// MICRO-COMMENT: This makes Rectangle implement the Shape interface.
+// BREAKPOINT: Set breakpoint here to trace Rectangle.Area
+// DEBUG: Watch 'r' Rectangle value
+// DEBUG: Watch 'r.Width' and 'r.Height' fields
 func (r Rectangle) Area() float64 {
+	// BREAKPOINT: Set breakpoint here before calculation
+	// DEBUG: Watch width * height calculation
 	return r.Width * r.Height
 }
 
 // Area calculates the area of a circle.
-//
-// MICRO-COMMENT: This makes Circle implement the Shape interface.
+// BREAKPOINT: Set breakpoint here to trace Circle.Area
+// DEBUG: Watch 'c' Circle pointer
+// DEBUG: Watch 'c.Radius' field
 func (c Circle) Area() float64 {
-	// MICRO-COMMENT: π * r²
+	// BREAKPOINT: Set breakpoint here before calculation
+	// DEBUG: Watch π * r² calculation
+	// DEBUG: Using approximate π value
 	return 3.14159 * c.Radius * c.Radius
 }
 
 // TotalArea calculates the total area of all shapes.
-//
-// MACRO-COMMENT: Polymorphism in Action
-// This function works with any type that implements Shape.
-// It doesn't care if it's a Rectangle, Circle, or some future shape type.
-// This is the power of interfaces: write code once, works with many types.
+// BREAKPOINT: Set breakpoint here to trace polymorphism
+// DEBUG: Watch 'shapes' slice of Shape interface
+// DEBUG: Watch dynamic dispatch to correct Area() method
 func TotalArea(shapes []Shape) float64 {
-	// MICRO-COMMENT: Start with zero total
+	// BREAKPOINT: Set breakpoint here to initialize total
+	// DEBUG: Watch 'total' accumulator
 	total := 0.0
 
-	// MICRO-COMMENT: Sum the areas
-	// Each shape.Area() call is dynamically dispatched to the
-	// appropriate implementation (Rectangle.Area or Circle.Area)
+	// BREAKPOINT: Set breakpoint here before loop
+	// DEBUG: Watch iteration through shapes
 	for _, shape := range shapes {
+		// BREAKPOINT: Set breakpoint here for each shape
+		// DEBUG: Watch 'shape' (could be Rectangle or Circle)
+		// DEBUG: Watch 'shape.Area()' dynamically dispatch
+		// DEBUG: Runtime determines Rectangle.Area or Circle.Area
 		total += shape.Area()
 	}
 
+	// DEBUG: Watch final 'total' (sum of all areas)
 	return total
 }

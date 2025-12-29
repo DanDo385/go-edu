@@ -1,6 +1,27 @@
 //go:build solution
 // +build solution
 
+/*
+Project 18: Goroutines and Concurrency - Solutions
+
+This file contains complete solutions with extensive debugging support.
+
+Key Go Concepts Demonstrated:
+1. Lightweight goroutines (millions possible)
+2. Work distribution and parallelism
+3. Atomic operations for thread-safe counters
+4. Worker pools and fan-in/fan-out patterns
+5. Graceful shutdown with context
+
+DEBUGGING GUIDE:
+- BREAKPOINT comments mark ideal breakpoint locations
+- DEBUG comments explain what to observe in debugger
+- Use Step Over (F10) to execute line by line
+- Use Step Into (F11) to enter function calls
+- Watch panel shows variable values in real-time
+- Use runtime.NumGoroutine() to track goroutine count
+*/
+
 package exercise
 
 import (
@@ -12,40 +33,64 @@ import (
 
 // ParallelSum calculates the sum using multiple workers.
 func ParallelSum(n int, numWorkers int) int64 {
+	// BREAKPOINT: Set breakpoint to observe atomic variable initialization
+	// DEBUG: Watch total.value - starts at 0
+	// DEBUG: atomic.Int64 provides thread-safe operations
 	var total atomic.Int64
 	var wg sync.WaitGroup
 
-	// Calculate range for each worker
+	// BREAKPOINT: Watch range calculation for work distribution
+	// DEBUG: Watch rangeSize and remainder computation
+	// DEBUG: Each worker gets approximately equal work
 	rangeSize := n / numWorkers
 	remainder := n % numWorkers
 
+	// BREAKPOINT: Set breakpoint in loop to watch worker creation
+	// DEBUG: Watch i incrementing as workers launch
+	// DEBUG: Each worker processes a distinct range of numbers
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 
-		// Calculate start and end for this worker
+		// BREAKPOINT: Watch range boundaries being calculated
+		// DEBUG: Watch start and end values for each worker
+		// DEBUG: Ranges don't overlap - partition the work
 		start := i*rangeSize + 1
 		end := (i + 1) * rangeSize
 
-		// Give remainder to last worker
+		// DEBUG: Last worker gets any remainder to ensure all numbers summed
+		// DEBUG: Watch end value increase for last worker
 		if i == numWorkers-1 {
 			end += remainder
 		}
 
+		// BREAKPOINT: Set breakpoint inside goroutine to watch parallel execution
+		// DEBUG: Multiple goroutines run concurrently
+		// DEBUG: Watch s and e parameters captured from loop
 		go func(s, e int) {
 			defer wg.Done()
 
-			// Sum this worker's range
+			// BREAKPOINT: Watch partial sum calculation
+			// DEBUG: Each worker sums its assigned range
+			// DEBUG: Watch sum accumulating within worker
 			var sum int64
 			for j := s; j <= e; j++ {
 				sum += int64(j)
 			}
 
-			// Add to total atomically
+			// BREAKPOINT: Watch atomic add operation
+			// DEBUG: total.Add() is thread-safe - no race condition
+			// DEBUG: Watch total.value increasing from multiple workers
 			total.Add(sum)
 		}(start, end)
 	}
 
+	// BREAKPOINT: Set breakpoint to watch waiting for completion
+	// DEBUG: wg.Wait() blocks until all wg.Done() called
+	// DEBUG: Ensures all workers finish before reading total
 	wg.Wait()
+
+	// BREAKPOINT: Watch final total load
+	// DEBUG: total.Load() atomically reads final sum
 	return total.Load()
 }
 
