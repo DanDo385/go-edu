@@ -11,6 +11,21 @@
 // 6. Polymorphism without inheritance
 // 7. Real-world interface patterns (io.Writer, error, Stringer)
 //
+// USAGE EXAMPLES:
+//   Run all demonstrations:
+//     go run main.go
+//
+//   Run specific section only:
+//     go run main.go -demo=basics
+//     go run main.go -demo=assertions
+//     go run main.go -demo=nil
+//
+//   Enable verbose output:
+//     go run main.go -verbose
+//
+//   Show interface internals:
+//     go run main.go -show-internals
+//
 // COMPILER BEHAVIOR: Interface Values
 // An interface value is a two-word struct containing:
 // 1. A pointer to type information (the "itab" - interface table)
@@ -26,6 +41,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 )
 
@@ -118,10 +134,14 @@ func WriteData(w Writer, data string) {
 func demonstrateInterfaceBasics() {
 	fmt.Println("=== Interface Basics: Implicit Implementation ===")
 
+	// BREAKPOINT: Set breakpoint after creating concrete types
+	// DEBUG: file and network are concrete types, not yet assigned to interfaces
 	// MICRO-COMMENT: Create concrete types
 	file := &File{name: "log.txt"}
 	network := &Network{address: "192.168.1.1:8080"}
 
+	// BREAKPOINT: Set breakpoint before polymorphic calls
+	// DEBUG: Watch WriteData accept different concrete types via the same interface
 	// MACRO-COMMENT: Polymorphism in Action
 	// WriteData accepts a Writer interface.
 	// We can pass File or Network (or any future type with a Write method).
@@ -129,14 +149,18 @@ func demonstrateInterfaceBasics() {
 	WriteData(file, "Hello from file!")
 	WriteData(network, "Hello from network!")
 
+	// DEBUG: About to create interface variable (will hold type+value pair)
 	// MICRO-COMMENT: We can also assign to interface variables
 	var w Writer
 
+	// BREAKPOINT: Set breakpoint after assignment to see interface internals
+	// DEBUG: w now contains (type=*File, value=pointer to File struct)
 	// MICRO-COMMENT: Assigning *File to Writer
 	// The compiler creates an interface value: (type=*File, value=file)
 	w = file
 	w.Write("Using interface variable with File")
 
+	// DEBUG: w is reassigned - now contains (type=*Network, value=pointer to Network struct)
 	// MICRO-COMMENT: Reassigning the same interface variable to *Network
 	// The interface value is updated: (type=*Network, value=network)
 	w = network
@@ -178,13 +202,19 @@ func GetFileName(w Writer) string {
 func demonstrateTypeAssertions() {
 	fmt.Println("=== Type Assertions: Extracting Concrete Types ===")
 
+	// BREAKPOINT: Set breakpoint after interface assignment
+	// DEBUG: w contains (type=*File, value=pointer to File{name: "data.txt"})
 	// MICRO-COMMENT: Create a Writer that's actually a *File
 	var w Writer = &File{name: "data.txt"}
 
+	// DEBUG: GetFileName will use type assertion to extract *File
 	// MICRO-COMMENT: Try to extract the *File
 	filename := GetFileName(w)
 	fmt.Printf("File name: %s\n", filename)
 
+	// BREAKPOINT: Set breakpoint after reassignment
+	// DEBUG: w now contains (type=*Network, value=pointer to Network)
+	// DEBUG: Type assertion to *File will fail (ok=false)
 	// MICRO-COMMENT: Now assign a *Network (not a *File)
 	w = &Network{address: "10.0.0.1:9000"}
 	filename = GetFileName(w)
@@ -257,6 +287,8 @@ func DescribeValue(i interface{}) {
 func demonstrateTypeSwitches() {
 	fmt.Println("=== Type Switches: Pattern Matching on Types ===")
 
+	// DEBUG: DescribeValue uses type switch to handle different types
+	// BREAKPOINT: Set breakpoint before type switch examples
 	// MICRO-COMMENT: Test the type switch with different values
 	DescribeValue(42)
 	DescribeValue("hello")
@@ -298,9 +330,12 @@ func PrintAnything(value interface{}) {
 func demonstrateEmptyInterface() {
 	fmt.Println("=== Empty Interface: The Universal Type ===")
 
+	// DEBUG: interface{} can hold any type - no compile-time type safety
+	// BREAKPOINT: Set breakpoint after creating empty interface slice
 	// MICRO-COMMENT: Create a slice of interface{} (can hold ANY types)
 	var items []interface{}
 
+	// DEBUG: Watch items grow with completely different types
 	// MICRO-COMMENT: Add different types to the same slice
 	items = append(items, 42)
 	items = append(items, "hello")
@@ -348,23 +383,32 @@ func IsNil(w Writer) bool {
 func demonstrateNilInterface() {
 	fmt.Println("=== Nil Interface Gotcha: The Two-Part Nil ===")
 
+	// DEBUG: filePtr is a nil pointer (*File type, but nil value)
+	// BREAKPOINT: Set breakpoint after nil pointer creation
 	// MICRO-COMMENT: Create a nil pointer
 	var filePtr *File = nil
 	fmt.Printf("filePtr == nil: %t\n", filePtr == nil)  // true
 
+	// BREAKPOINT: Set breakpoint after interface assignment
+	// DEBUG: w is NOT nil! It contains (type=*File, value=nil)
+	// DEBUG: An interface is only nil if BOTH type and value are nil
 	// MICRO-COMMENT: Assign the nil pointer to an interface
 	// This creates an interface with (type=*File, value=nil)
 	var w Writer = filePtr
 
+	// DEBUG: This is the most common interface bug in Go!
+	// BREAKPOINT: Set breakpoint here to examine w's internal structure
 	// MACRO-COMMENT: The Gotcha!
 	// Even though filePtr is nil, the interface w is NOT nil.
 	// Why? Because the type part is set (*File).
 	// An interface is nil only if BOTH type and value are nil.
 	fmt.Printf("w == nil: %t ← GOTCHA!\n", w == nil)  // false
 
+	// DEBUG: IsNil checks if w == nil, returns false
 	// MICRO-COMMENT: Call our IsNil function
 	fmt.Printf("IsNil(w): %t\n", IsNil(w))  // false
 
+	// DEBUG: w2 has both type=nil and value=nil (truly nil interface)
 	// MICRO-COMMENT: Create a truly nil interface
 	var w2 Writer = nil  // Both type and value are nil
 	fmt.Printf("w2 == nil: %t\n", w2 == nil)  // true
@@ -432,10 +476,13 @@ func (c *Counter) Increment() {
 func demonstrateMethodSets() {
 	fmt.Println("=== Method Sets: Pointer vs Value Receivers ===")
 
+	// DEBUG: c is a value, p is a pointer - both can call methods directly
+	// BREAKPOINT: Set breakpoint after creating Counter types
 	// MICRO-COMMENT: Create a Counter value and pointer
 	c := Counter{count: 0}
 	p := &Counter{count: 100}
 
+	// DEBUG: Go automatically takes address/dereferences for direct calls
 	// MACRO-COMMENT: Direct Method Calls (Always Work)
 	// When you call a method on a variable, Go auto-addresses:
 	// c.Increment() → (&c).Increment()
@@ -445,6 +492,9 @@ func demonstrateMethodSets() {
 	p.IncrementValue()  // Works (Go dereferences *p automatically)
 	p.Increment()       // Works (pointer receiver on pointer)
 
+	// BREAKPOINT: Set breakpoint before interface assignment
+	// DEBUG: Only *Counter satisfies Incrementer (has pointer receiver Increment)
+	// DEBUG: Trying to assign Counter{} directly would fail to compile
 	// MACRO-COMMENT: Interface Assignment (Strict Rules)
 	// When assigning to an interface, Go does NOT auto-address.
 	// You must use the correct type.
@@ -455,6 +505,7 @@ func demonstrateMethodSets() {
 	// inc = Counter{count: 0}  // COMPILE ERROR
 	// Why? Counter only has methods with pointer receivers in Incrementer.
 
+	// DEBUG: &Counter{count: 200} creates pointer, satisfies Incrementer
 	// MICRO-COMMENT: This works (*Counter implements Incrementer)
 	inc = &Counter{count: 200}
 	inc.Increment()
@@ -520,6 +571,8 @@ func PrintShapeInfo(s Shape) {
 func demonstratePolymorphism() {
 	fmt.Println("=== Polymorphism: Multiple Types, One Interface ===")
 
+	// DEBUG: Circle and Rectangle are unrelated types, both implement Shape
+	// BREAKPOINT: Set breakpoint after creating shapes
 	// MICRO-COMMENT: Create different shapes
 	circle := Circle{Radius: 5.0}
 	rectangle := Rectangle{Width: 4.0, Height: 6.0}
@@ -531,6 +584,8 @@ func demonstratePolymorphism() {
 	fmt.Println("Rectangle:")
 	PrintShapeInfo(rectangle)
 
+	// DEBUG: shapes slice holds different concrete types via interface
+	// BREAKPOINT: Set breakpoint before iterating shapes
 	// MICRO-COMMENT: We can also store them in a slice
 	shapes := []Shape{
 		Circle{Radius: 3.0},
@@ -538,6 +593,7 @@ func demonstratePolymorphism() {
 		Circle{Radius: 7.0},
 	}
 
+	// DEBUG: Watch polymorphic method calls on different types
 	fmt.Println("\nAll shapes:")
 	for i, shape := range shapes {
 		fmt.Printf("Shape %d: ", i+1)
@@ -603,19 +659,25 @@ func (f *FileReader) Close() error {
 func demonstrateInterfaceComposition() {
 	fmt.Println("=== Interface Composition: Building Larger Contracts ===")
 
+	// BREAKPOINT: Set breakpoint after creating ReadCloser
+	// DEBUG: FileReader satisfies ReadCloser (which embeds Reader and Closer)
 	// MICRO-COMMENT: FileReader implements ReadCloser (has both Read and Close)
 	var rc ReadCloser = &FileReader{filename: "data.txt"}
 
+	// DEBUG: Call Read method from Reader interface
 	// MICRO-COMMENT: Use as Reader
 	data := rc.Read()
 	fmt.Println(data)
 
+	// DEBUG: Call Close method from Closer interface
+	// BREAKPOINT: Set breakpoint before Close to see state change
 	// MICRO-COMMENT: Use as Closer
 	err := rc.Close()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
+	// DEBUG: Read after close returns different result (file closed)
 	// MICRO-COMMENT: Try reading after close
 	data = rc.Read()
 	fmt.Println(data)
@@ -648,14 +710,45 @@ func demonstrateInterfaceComposition() {
 // Run with -gcflags='-m' to see heap allocations:
 //   go build -gcflags='-m' cmd/interfaces-demo/main.go
 func main() {
-	demonstrateInterfaceBasics()
-	demonstrateTypeAssertions()
-	demonstrateTypeSwitches()
-	demonstrateEmptyInterface()
-	demonstrateNilInterface()
-	demonstrateMethodSets()
-	demonstratePolymorphism()
-	demonstrateInterfaceComposition()
+	// Parse command-line flags
+	demo := flag.String("demo", "all", "Which demo to run: all, basics, assertions, switches, empty, nil, methodsets, poly, composition")
+	verbose := flag.Bool("verbose", false, "Enable verbose output")
+	showInternals := flag.Bool("show-internals", false, "Show interface internal structure details")
+	flag.Parse()
+
+	// DEBUG: Flags control which demonstrations execute
+	// BREAKPOINT: Set breakpoint here to inspect parsed flags
+
+	if *verbose {
+		fmt.Println("=== Verbose Mode Enabled ===")
+		fmt.Printf("Demo: %s, Show Internals: %t\n\n", *demo, *showInternals)
+	}
+
+	// DEBUG: Watch which demos run based on -demo flag value
+	if *demo == "all" || *demo == "basics" {
+		demonstrateInterfaceBasics()
+	}
+	if *demo == "all" || *demo == "assertions" {
+		demonstrateTypeAssertions()
+	}
+	if *demo == "all" || *demo == "switches" {
+		demonstrateTypeSwitches()
+	}
+	if *demo == "all" || *demo == "empty" {
+		demonstrateEmptyInterface()
+	}
+	if *demo == "all" || *demo == "nil" {
+		demonstrateNilInterface()
+	}
+	if *demo == "all" || *demo == "methodsets" {
+		demonstrateMethodSets()
+	}
+	if *demo == "all" || *demo == "poly" {
+		demonstratePolymorphism()
+	}
+	if *demo == "all" || *demo == "composition" {
+		demonstrateInterfaceComposition()
+	}
 
 	// MACRO-COMMENT: Key Insights
 	// After running this program, you should understand:

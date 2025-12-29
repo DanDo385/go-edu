@@ -37,7 +37,7 @@ package exercise
 import (
 	"strings"
 	"unicode"
-	
+	"unicode/utf8"
 )
 
 // TitleCase converts the first letter of each word to uppercase.

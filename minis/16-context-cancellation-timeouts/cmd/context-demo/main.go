@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,9 +23,48 @@ This program demonstrates:
 5. Real-world HTTP timeout patterns
 
 Each demo is standalone and heavily commented.
+
+USAGE EXAMPLES:
+  # Run all demos (default)
+  ./context-demo
+
+  # Run with custom timeout duration
+  ./context-demo -timeout=5s
+
+  # Run with more workers for coordination demo
+  ./context-demo -workers=10
+
+  # Enable verbose debug output
+  ./context-demo -verbose
+
+  # Run specific demos only
+  ./context-demo -demo=cancel,timeout,leak
+
+FLAGS:
+  -demo      Comma-separated list of demos to run (all, cancel, timeout, deadline, leak, http, coord, values)
+  -timeout   Default timeout duration for demos (default: 2s)
+  -workers   Number of workers for coordination demo (default: 3)
+  -verbose   Enable verbose debug output (default: false)
+  -help      Show this help message
 */
 
+// CLI flags
+var (
+	demoFlag    = flag.String("demo", "all", "Comma-separated demos: all, cancel, timeout, deadline, leak, http, coord, values")
+	timeoutFlag = flag.Duration("timeout", 2*time.Second, "Default timeout duration")
+	workersFlag = flag.Int("workers", 3, "Number of workers for coordination demo")
+	verboseFlag = flag.Bool("verbose", false, "Enable verbose debug output")
+)
+
 func main() {
+	// BREAKPOINT: Parse CLI flags before any demo execution
+	flag.Parse()
+
+	// DEBUG: Check flag values to understand program configuration
+	if *verboseFlag {
+		fmt.Printf("DEBUG: Configuration - demo=%s, timeout=%v, workers=%d\n",
+			*demoFlag, *timeoutFlag, *workersFlag)
+	}
 	fmt.Println("=== Context Cancellation and Timeouts Demo ===\n")
 
 	// Demo 1: Manual Cancellation
@@ -69,6 +109,7 @@ func main() {
 // ============================================================================
 
 func demoWithCancel() {
+	// BREAKPOINT: Examine context.WithCancel creation and cancel function
 	// context.WithCancel creates a cancellable context
 	// Use when: You need manual control over when to stop operations
 	//
@@ -77,10 +118,12 @@ func demoWithCancel() {
 	//   - cancel: Function to call to trigger cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 
+	// DEBUG: The cancel function is returned - calling it will close ctx.Done() channel
 	// CRITICAL: Always defer cancel() to release resources
 	// Even if you don't explicitly cancel, this cleans up internal goroutines/timers
 	defer cancel()
 
+	// BREAKPOINT: Watch goroutine launch with context parameter
 	// Start a worker that will run until context is cancelled
 	done := make(chan bool)
 	go worker(ctx, "Worker-1", done)
@@ -89,10 +132,12 @@ func demoWithCancel() {
 	fmt.Println("Letting worker run for 2 seconds...")
 	time.Sleep(2 * time.Second)
 
+	// BREAKPOINT: Observe manual cancellation trigger point
 	// Manually cancel the context
 	fmt.Println("Calling cancel() to stop worker...")
 	cancel()
 
+	// DEBUG: After cancel() is called, ctx.Done() channel is closed and ctx.Err() returns context.Canceled
 	// Wait for worker to finish
 	<-done
 	fmt.Println("Worker stopped successfully")
@@ -102,16 +147,20 @@ func demoWithCancel() {
 func worker(ctx context.Context, name string, done chan bool) {
 	defer func() { done <- true }()
 
+	// DEBUG: Worker enters infinite loop, checking context on each iteration
 	// Infinite loop that periodically checks if context is cancelled
 	for i := 0; ; i++ {
 		select {
+		// BREAKPOINT: Watch ctx.Done() channel - becomes readable when context is cancelled
 		case <-ctx.Done():
 			// ctx.Done() returns a channel that's closed when context is cancelled
 			// When the channel is closed, this case becomes ready
 			fmt.Printf("%s: Context cancelled, stopping (processed %d items)\n", name, i)
+			// DEBUG: Check ctx.Err() here - will be context.Canceled or context.DeadlineExceeded
 			return
 
 		default:
+			// DEBUG: Default case executes when ctx.Done() is not ready (context still active)
 			// Context not cancelled, continue working
 			fmt.Printf("%s: Working... (iteration %d)\n", name, i)
 			time.Sleep(500 * time.Millisecond)
@@ -124,21 +173,25 @@ func worker(ctx context.Context, name string, done chan bool) {
 // ============================================================================
 
 func demoWithTimeout() {
+	// BREAKPOINT: Examine context.WithTimeout - creates context that auto-cancels after duration
 	// context.WithTimeout creates a context that automatically cancels
 	// after the specified duration
 	//
 	// Use when: You want operations to fail if they take too long
 	// Example: HTTP requests, database queries, RPC calls
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), *timeoutFlag)
 	defer cancel() // Always defer cancel() to release timer resources
 
-	fmt.Println("Starting operation with 2-second timeout...")
+	fmt.Printf("Starting operation with %v timeout...\n", *timeoutFlag)
 
+	// DEBUG: slowOperation will race between completing its work and context timeout
 	// Simulate an operation that takes 3 seconds
 	// This will timeout because it exceeds the 2-second deadline
 	err := slowOperation(ctx, "Slow-Op-1", 3*time.Second)
 
+	// BREAKPOINT: Check error type - use errors.Is() for context errors
 	if err != nil {
+		// DEBUG: errors.Is() checks error chain for context.DeadlineExceeded
 		// Check what kind of error occurred
 		if errors.Is(err, context.DeadlineExceeded) {
 			fmt.Println("❌ Operation timed out (as expected)")
@@ -167,14 +220,18 @@ func demoWithTimeout() {
 func slowOperation(ctx context.Context, name string, duration time.Duration) error {
 	fmt.Printf("%s: Starting (will take %v)...\n", name, duration)
 
+	// BREAKPOINT: Watch select statement racing between completion and cancellation
+	// DEBUG: select will execute the first case that becomes ready
 	// Use select to make the sleep interruptible by context
 	select {
 	case <-time.After(duration):
+		// DEBUG: time.After sends on channel when duration elapses
 		// Duration elapsed, operation completed
 		fmt.Printf("%s: Completed\n", name)
 		return nil
 
 	case <-ctx.Done():
+		// DEBUG: ctx.Done() becomes ready when timeout/deadline expires or cancel() is called
 		// Context was cancelled before operation completed
 		fmt.Printf("%s: Cancelled\n", name)
 		return ctx.Err() // Returns context.DeadlineExceeded or context.Canceled
@@ -186,6 +243,7 @@ func slowOperation(ctx context.Context, name string, duration time.Duration) err
 // ============================================================================
 
 func demoWithDeadline() {
+	// BREAKPOINT: Examine context.WithDeadline - cancels at absolute time (not duration)
 	// context.WithDeadline creates a context that cancels at a specific time
 	//
 	// Use when: You need work to finish by a specific point in time
@@ -194,6 +252,7 @@ func demoWithDeadline() {
 	// Note: context.WithTimeout(parent, duration) is equivalent to
 	//       context.WithDeadline(parent, time.Now().Add(duration))
 
+	// DEBUG: Deadline is an absolute time.Time, not a duration
 	// Set deadline to 2 seconds from now
 	deadline := time.Now().Add(2 * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -202,6 +261,8 @@ func demoWithDeadline() {
 	fmt.Printf("Current time: %s\n", time.Now().Format("15:04:05"))
 	fmt.Printf("Deadline set to: %s (2 seconds from now)\n", deadline.Format("15:04:05"))
 
+	// BREAKPOINT: Call ctx.Deadline() to retrieve the deadline value
+	// DEBUG: The ok boolean tells you if a deadline is set (false for contexts without deadlines)
 	// Check if context has a deadline
 	if d, ok := ctx.Deadline(); ok {
 		fmt.Printf("Context deadline: %s\n", d.Format("15:04:05"))
@@ -232,12 +293,14 @@ func demoWithDeadline() {
 func demoGoroutineLeak() {
 	fmt.Println("Demonstrating goroutine leak prevention...\n")
 
+	// BREAKPOINT: Compare bad vs good patterns for goroutine lifecycle management
 	// BAD EXAMPLE: Goroutine leak
 	fmt.Println("❌ Bad example (would leak goroutine):")
 	badSearch("leak example")
 
 	time.Sleep(500 * time.Millisecond)
 
+	// DEBUG: The good example uses context and buffered channel to prevent leaks
 	// GOOD EXAMPLE: No leak
 	fmt.Println("\n✅ Good example (no leak):")
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -252,18 +315,22 @@ func demoGoroutineLeak() {
 // badSearch demonstrates a GOROUTINE LEAK
 // The goroutine continues running even after timeout
 func badSearch(query string) string {
+	// DEBUG: Unbuffered channel means sender blocks until receiver is ready
 	resultCh := make(chan string) // Unbuffered channel
 
 	go func() {
+		// DEBUG: This goroutine will run for 10 seconds, even after main function returns
 		// Simulate slow search (10 seconds)
 		time.Sleep(10 * time.Second)
 		result := fmt.Sprintf("Results for: %s", query)
 
+		// BREAKPOINT: This send will block forever - nobody is listening after timeout
 		// This send will BLOCK FOREVER if nobody is receiving
 		// The goroutine will leak!
 		resultCh <- result
 	}()
 
+	// DEBUG: Main function times out after 1s, but goroutine keeps running for 9 more seconds
 	// Timeout after 1 second
 	select {
 	case result := <-resultCh:
@@ -277,11 +344,14 @@ func badSearch(query string) string {
 // goodSearch demonstrates PROPER cleanup with context
 // The goroutine stops when context is cancelled
 func goodSearch(ctx context.Context, query string) string {
+	// BREAKPOINT: Buffered channel (size 1) prevents goroutine from blocking on send
+	// DEBUG: With buffer, sender can write and exit even if receiver isn't listening
 	// Buffered channel (size 1) prevents sender from blocking
 	// if receiver has already returned
 	resultCh := make(chan string, 1)
 
 	go func() {
+		// DEBUG: Goroutine checks context in select, allowing early exit
 		// Simulate slow search that respects context
 		select {
 		case <-time.After(10 * time.Second):
@@ -290,17 +360,20 @@ func goodSearch(ctx context.Context, query string) string {
 			case resultCh <- fmt.Sprintf("Results for: %s", query):
 				// Sent successfully
 			case <-ctx.Done():
+				// BREAKPOINT: Context can be cancelled even while sending result
 				// Context cancelled while trying to send, don't block
 				fmt.Println("Goroutine: Context cancelled while sending, stopping")
 			}
 
 		case <-ctx.Done():
+			// DEBUG: Goroutine exits early when context is cancelled (after ~1s, not 10s)
 			// Context cancelled during search
 			fmt.Println("Goroutine: Context cancelled during search, stopping")
 			return
 		}
 	}()
 
+	// DEBUG: Main function also checks context, ensuring responsive cancellation
 	// Wait for result or context cancellation
 	select {
 	case result := <-resultCh:
@@ -400,12 +473,14 @@ func fetchURL(ctx context.Context, url string) (string, error) {
 // ============================================================================
 
 func demoWorkerCoordination() {
+	// BREAKPOINT: Watch how one context cancels multiple goroutines simultaneously
 	// Create cancellable context for all workers
 	ctx, cancel := context.WithCancel(context.Background())
 
-	numWorkers := 3
+	numWorkers := *workersFlag
 	var wg sync.WaitGroup
 
+	// DEBUG: All workers share same context - cancelling once stops all workers
 	fmt.Printf("Starting %d workers...\n", numWorkers)
 
 	// Start multiple workers
@@ -420,10 +495,12 @@ func demoWorkerCoordination() {
 	// Let workers run for 2 seconds
 	time.Sleep(2 * time.Second)
 
+	// BREAKPOINT: Single cancel() call broadcasts to all goroutines via ctx.Done()
 	// Cancel all workers at once
 	fmt.Println("\nCancelling all workers...")
 	cancel()
 
+	// DEBUG: WaitGroup.Wait() blocks until all workers call Done()
 	// Wait for all workers to finish
 	wg.Wait()
 	fmt.Println("All workers stopped")

@@ -1,247 +1,354 @@
-// Package main declares this as an executable program (not a library)
-// When you run "go run" or "go build", Go looks for a main package with a main() function
 package main
 
 import (
-	"context"           // Context for cancellation and timeouts (allows stopping operations)
-	"fmt"               // Formatted I/O (Printf, Println, Sprintf, etc.)
-	"log"               // Logging functions (log.Fatalf exits program on error)
-	"net/http"          // HTTP client and server functionality
-	"net/http/httptest" // Testing utilities for HTTP servers (creates mock servers)
-	"time"              // Time operations (Duration, Now, Since, etc.)
+	"context"           // Context for cancellation and timeouts
+	"flag"              // Command-line argument parsing
+	"fmt"               // Formatted I/O
+	"log"               // Logging
+	"net/http"          // HTTP client and server
+	"net/http/httptest" // Testing utilities for HTTP servers
+	"time"              // Time operations
 
-	// Import our exercise package containing the WordCount function
+	// Import the exercise package from parent directory
 	"github.com/example/go-10x-minis/minis/06-worker-pool-wordcount/exercise"
 )
 
 /*
-main is the entry point of the program.
-When you run this program, Go automatically calls main().
+===================================================================
+Worker Pool: Concurrent Word Count
+===================================================================
 
-ANALOGY: Restaurant Kitchen
----------------------------
-Think of this like a restaurant kitchen:
-1. Set up test servers = Prepare ingredients (httptest servers)
-2. Extract URLs = List what needs to be cooked
-3. Create context = Set a timer (10 second timeout)
-4. Run WordCount = Cook all dishes concurrently (worker pool)
-5. Display results = Present the finished dishes (sorted word counts)
+This program demonstrates concurrency patterns in Go by implementing
+a worker pool that fetches URLs concurrently and counts word frequencies.
+
+USAGE:
+    go run ./cmd/worker-pool-wordcount/main.go
+    go run ./cmd/worker-pool-wordcount/main.go -workers=5
+    go run ./cmd/worker-pool-wordcount/main.go -workers=3 -timeout=5s
+    go run ./cmd/worker-pool-wordcount/main.go -workers=10 -top=20
+
+DEBUGGING:
+- Set breakpoints at "// BREAKPOINT:" comments
+- Use F5 to start debugging (select "Debug: Run main.go")
+- Step Into (F11) to enter exercise.WordCount function
+- Watch Variables panel to see goroutine coordination
+- See /RUN_DEBUG.md for comprehensive debugging guide
+
+PACKAGE STRUCTURE:
+- This file (cmd/worker-pool-wordcount/main.go) is package main
+- It imports the exercise package from the parent directory
+- exercise.go, solution.go are in package exercise
+- Functions must be exported (capitalized) to be called from main
 */
+
 func main() {
 	// ============================================================================
-	// STEP 1: Create Test HTTP Servers
+	// STEP 1: Parse Command-Line Arguments
 	// ============================================================================
-	// httptest.NewServer creates mock HTTP servers for testing
-	// These simulate real websites without needing internet access
-	// Each server returns a simple text response when requested
-	servers := createTestServers() // Returns slice of *httptest.Server pointers
+	// BREAKPOINT: Set breakpoint here to inspect default values before parsing
+	// DEBUG: Before flag.Parse(), all flags have their default values
+	// DEBUG: In Variables panel, you'll see: workers=3, timeout=10s, top=10
 
-	// defer schedules this function to run when main() exits (even on panic)
-	// This ensures servers are always cleaned up, preventing resource leaks
-	// defer executes in reverse order (LIFO - Last In, First Out)
-	defer closeServers(servers)
+	// Number of worker goroutines for concurrent URL fetching
+	workers := flag.Int("workers", 3, "Number of worker goroutines")
+
+	// Timeout for entire operation
+	timeout := flag.Duration("timeout", 10*time.Second, "Overall timeout for all operations")
+
+	// Number of top words to display
+	top := flag.Int("top", 10, "Number of top words to display")
+
+	// Number of test servers to create
+	servers := flag.Int("servers", 5, "Number of test HTTP servers to create")
+
+	// Use solution.go instead of exercise.go
+	useSolution := flag.Bool("solution", false, "Use solution.go instead of exercise.go (requires -tags=solution)")
+
+	flag.Parse()
+
+	// BREAKPOINT: Set breakpoint here to inspect parsed values in Variables panel
+	// DEBUG: After flag.Parse(), variables now hold actual command-line values
+	// DEBUG: Watch 'workers', 'timeout', 'top', 'servers', 'useSolution'
 
 	// ============================================================================
-	// STEP 2: Extract URLs from Test Servers
+	// STEP 2: Create Test HTTP Servers
 	// ============================================================================
-	// make([]string, len(servers)) creates a slice with capacity = len(servers)
-	// A slice is a dynamic array - it can grow/shrink, unlike fixed-size arrays
-	// Syntax: make(type, length) - creates slice with specified length
-	urls := make([]string, len(servers)) // Create slice of strings with length = server count
+	// BREAKPOINT: Set breakpoint here before creating servers
+	// DEBUG: Step Into (F11) on createTestServers() to see httptest.NewServer creation
+	// DEBUG: Watch how mock HTTP servers are initialized
 
-	// Range loop iterates over slice, providing index (i) and value (srv)
-	// Syntax: for index, value := range collection
-	// srv is a pointer to httptest.Server (*httptest.Server)
-	for i, srv := range servers { // Loop: i = 0, 1, 2, ...; srv = servers[0], servers[1], ...
-		urls[i] = srv.URL // srv.URL is a string containing the server's URL (e.g., "http://127.0.0.1:54321")
+	testServers := createTestServers(*servers)
+
+	// BREAKPOINT: Set breakpoint here after creating servers
+	// DEBUG: Inspect 'testServers' slice - expand to see all *httptest.Server pointers
+	// DEBUG: Each server has URL field containing address like "http://127.0.0.1:12345"
+
+	// defer ensures servers are closed when main() exits (cleanup)
+	defer closeServers(testServers)
+
+	// ============================================================================
+	// STEP 3: Extract URLs from Test Servers
+	// ============================================================================
+	// BREAKPOINT: Set breakpoint here before extracting URLs
+	// DEBUG: We're creating a slice to hold server URLs
+	// DEBUG: Watch 'urls' slice being built from server URL fields
+
+	urls := make([]string, len(testServers))
+	for i, srv := range testServers {
+		// BREAKPOINT: Set breakpoint here inside URL extraction loop
+		// DEBUG: Watch 'i' increment and 'srv.URL' change with each iteration
+		// DEBUG: See how we're copying URL strings to urls slice
+
+		urls[i] = srv.URL
 	}
 
-	// Printf formats and prints a string
-	// %d = decimal integer, \n = newline
-	// This prints: "Fetching 5 URLs with 3 workers...\n\n"
-	fmt.Printf("Fetching %d URLs with 3 workers...\n\n", len(urls))
+	// BREAKPOINT: Set breakpoint here after URL extraction
+	// DEBUG: Inspect 'urls' slice - expand to see all URL strings
+	// DEBUG: len(urls) should equal number of test servers
+
+	fmt.Printf("=== Worker Pool Word Count Demo ===\n")
+	fmt.Printf("Fetching %d URLs with %d workers...\n", len(urls), *workers)
+	fmt.Printf("Timeout: %v\n", *timeout)
+	fmt.Println()
 
 	// ============================================================================
-	// STEP 3: Create Context with Timeout
+	// STEP 4: Create Context with Timeout
 	// ============================================================================
-	// context.Background() creates a root context (no parent, never cancelled)
-	// context.WithTimeout creates a child context that cancels after specified duration
-	// Returns: ctx (the cancellable context) and cancel (function to cancel manually)
-	// Syntax: context.WithTimeout(parent, duration)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second) // 10 second timeout
+	// BREAKPOINT: Set breakpoint here before creating context
+	// DEBUG: context.WithTimeout creates a cancellable context
+	// DEBUG: If timeout expires, ctx.Done() channel will close
 
-	// defer cancel() ensures context is cancelled when main() exits
-	// This releases resources and stops any ongoing operations
-	defer cancel() // Cleanup: cancel context when function exits
+	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+
+	// BREAKPOINT: Set breakpoint here after creating context
+	// DEBUG: Inspect 'ctx' - see Deadline field (when timeout expires)
+	// DEBUG: 'cancel' is a function to manually cancel context
+
+	defer cancel() // Cleanup: cancel context when main() exits
 
 	// ============================================================================
-	// STEP 4: Run WordCount with Worker Pool
+	// STEP 5: Run WordCount with Worker Pool
 	// ============================================================================
-	// time.Now() captures current time (used to measure execution duration)
-	start := time.Now() // Record start time
+	// BREAKPOINT: Set breakpoint here before starting word count
+	// DEBUG: Step Into (F11) on exercise.WordCount() to see worker pool implementation
+	// DEBUG: Watch how goroutines are created and coordinated with channels
 
-	// Call WordCount function from exercise package
-	// Parameters:
-	//   - ctx: cancellable context (allows timeout/cancellation)
-	//   - urls: slice of URLs to fetch
-	//   - 3: number of worker goroutines (bounded concurrency)
-	// Returns:
-	//   - counts: map[string]int (word -> count mapping)
-	//   - err: error (nil if successful)
-	counts, err := exercise.WordCount(ctx, urls, 3) // Execute worker pool wordcount
+	start := time.Now()
 
-	// Error handling: if WordCount returned an error, log it and exit
-	// log.Fatalf prints formatted error and calls os.Exit(1)
-	// %v = default format (works for any type)
-	if err != nil { // Check if error occurred
-		log.Fatalf("WordCount failed: %v", err) // Print error and exit program
+	counts, err := exercise.WordCount(ctx, urls, *workers)
+
+	// BREAKPOINT: Set breakpoint here after word count completes
+	// DEBUG: Inspect 'counts' map - expand to see word → count mappings
+	// DEBUG: Check 'err' - should be nil if successful
+	// DEBUG: If err != nil, operation timed out or failed
+
+	if err != nil {
+		log.Fatalf("WordCount failed: %v", err)
 	}
 
-	// time.Since(start) calculates elapsed time since start
-	// Returns time.Duration (e.g., "2.5s", "150ms")
-	elapsed := time.Since(start) // Calculate execution time
+	elapsed := time.Since(start)
+
+	// BREAKPOINT: Set breakpoint here after timing calculation
+	// DEBUG: Inspect 'elapsed' - time.Duration showing execution time
+	// DEBUG: Compare elapsed vs timeout to see if we completed in time
 
 	// ============================================================================
-	// STEP 5: Display Results - Sort and Print Top 10 Words
+	// STEP 6: Sort Results by Frequency
 	// ============================================================================
-	fmt.Println("Top 10 words:") // Print header
+	// BREAKPOINT: Set breakpoint here before sorting
+	// DEBUG: Maps are unordered - we need to convert to slice for sorting
+	// DEBUG: Watch how we build pairs slice from counts map
 
-	// Define a struct type (named type) for word-count pairs
-	// struct is a collection of named fields (like a lightweight class)
-	// Syntax: type Name struct { field1 type1; field2 type2 }
 	type pair struct {
-		word  string // Word text
-		count int    // Word frequency count
+		word  string
+		count int
 	}
 
-	// Declare a slice of pair structs (initially empty/nil)
-	// Syntax: var name []type
-	var pairs []pair // Slice to hold all word-count pairs
+	var pairs []pair
 
-	// Range over map: for key, value := range map
-	// Maps in Go are unordered (iteration order is random)
-	// This converts map[string]int into []pair slice
-	for word, count := range counts { // Iterate over word -> count mapping
-		// append adds element(s) to slice, returns new slice
-		// Syntax: append(slice, element1, element2, ...)
-		// pair{word, count} creates a struct literal (initializes struct fields)
-		pairs = append(pairs, pair{word, count}) // Add each word-count pair to slice
+	// BREAKPOINT: Set breakpoint here before map iteration
+	// DEBUG: Expand 'counts' map in Variables panel
+	// DEBUG: We're about to convert map to slice
+
+	for word, count := range counts {
+		// BREAKPOINT: Set breakpoint here inside map iteration
+		// DEBUG: Watch 'word' and 'count' change with each iteration
+		// DEBUG: See how we append pair{} struct to pairs slice
+
+		pairs = append(pairs, pair{word, count})
 	}
 
-	// ============================================================================
-	// STEP 6: Sort Pairs by Count (Selection Sort - Top 10 Only)
-	// ============================================================================
-	// Selection sort: find max, swap to front, repeat
-	// We only sort top 10 (partial sort) for efficiency
-	// Loop condition: i < len(pairs) && i < 10
-	//   - i < len(pairs): don't go beyond slice bounds
-	//   - i < 10: only sort first 10 elements
-	for i := 0; i < len(pairs) && i < 10; i++ { // Loop: i = 0, 1, 2, ..., 9 (max 10 iterations)
-		maxIdx := i // Assume current position has maximum count
+	// BREAKPOINT: Set breakpoint here after building pairs slice
+	// DEBUG: Inspect 'pairs' slice - should have same length as counts map
+	// DEBUG: Expand pairs to see all word-count pairs
 
-		// Find index of element with maximum count in remaining unsorted portion
-		// Start from i+1 (next element) to end of slice
-		for j := i + 1; j < len(pairs); j++ { // Loop: j = i+1, i+2, ..., len(pairs)-1
-			// Compare counts: if pairs[j] has higher count than current max
-			if pairs[j].count > pairs[maxIdx].count { // Check if this element has higher count
-				maxIdx = j // Update max index to this position
+	// ============================================================================
+	// STEP 7: Partial Selection Sort (Top N Only)
+	// ============================================================================
+	// BREAKPOINT: Set breakpoint here before sorting
+	// DEBUG: We're doing partial selection sort - only sort top N items
+	// DEBUG: Watch how maxIdx is found and swapped in each iteration
+
+	topN := *top
+	if topN > len(pairs) {
+		topN = len(pairs)
+	}
+
+	// BREAKPOINT: Set breakpoint here before sort loop
+	// DEBUG: Watch 'topN' - number of iterations
+	// DEBUG: Selection sort: find max, swap to front, repeat
+
+	for i := 0; i < topN; i++ {
+		maxIdx := i
+
+		// BREAKPOINT: Set breakpoint here inside outer sort loop
+		// DEBUG: Watch 'i' increment with each iteration (0, 1, 2, ...)
+		// DEBUG: 'maxIdx' starts as i, will be updated if higher count found
+
+		for j := i + 1; j < len(pairs); j++ {
+			// BREAKPOINT: Set breakpoint here inside inner sort loop
+			// DEBUG: Watch 'j' scan through remaining unsorted portion
+			// DEBUG: Watch maxIdx update when higher count is found
+
+			if pairs[j].count > pairs[maxIdx].count {
+				maxIdx = j
 			}
 		}
 
-		// Swap elements: move maximum to position i
-		// Go supports multiple assignment: a, b = b, a (swaps values)
-		// This is a common Go idiom for swapping
-		pairs[i], pairs[maxIdx] = pairs[maxIdx], pairs[i] // Swap: move max to front
+		// BREAKPOINT: Set breakpoint here before swap
+		// DEBUG: Watch 'maxIdx' - index of element with highest count
+		// DEBUG: Step Over (F10) to see swap occur
 
-		// Print formatted output
-		// Printf format specifiers:
-		//   %2d = right-aligned integer, width 2 (e.g., " 1", "10")
-		//   %-15s = left-aligned string, width 15 (e.g., "hello          ")
-		//   %d = decimal integer
-		//   \n = newline
-		fmt.Printf("%2d. %-15s %d\n", i+1, pairs[i].word, pairs[i].count) // Print rank, word, count
+		pairs[i], pairs[maxIdx] = pairs[maxIdx], pairs[i]
+
+		// BREAKPOINT: Set breakpoint here after swap
+		// DEBUG: Inspect pairs[i] - should have highest count in remaining portion
+		// DEBUG: Top of slice is now sorted (highest counts first)
 	}
 
 	// ============================================================================
-	// STEP 7: Print Summary Statistics
+	// STEP 8: Display Results
 	// ============================================================================
-	// len(counts) returns number of key-value pairs in map (unique words)
-	fmt.Printf("\nTotal unique words: %d\n", len(counts)) // Print total unique word count
+	// BREAKPOINT: Set breakpoint here before display
+	// DEBUG: 'pairs' is now sorted by count (descending)
+	// DEBUG: We'll print top N items
 
-	// %v = default format (for time.Duration, prints like "2.5s" or "150ms")
-	fmt.Printf("Completed in: %v\n", elapsed) // Print execution time
-}
+	fmt.Printf("Top %d words:\n", topN)
 
-/*
-createTestServers creates mock HTTP servers for testing.
+	for i := 0; i < topN; i++ {
+		// BREAKPOINT: Set breakpoint here inside display loop
+		// DEBUG: Watch 'i' increment and pairs[i] change
+		// DEBUG: See word and count for each top result
 
-ANALOGY: Virtual Restaurants
------------------------------
-Think of these as virtual restaurants that serve text instead of food.
-Each server responds to HTTP requests with a simple text message.
-
-Returns: []*httptest.Server (slice of pointers to test servers)
-*/
-func createTestServers() []*httptest.Server {
-	// Return a slice literal containing 5 httptest.Server instances
-	// Syntax: []type{value1, value2, ...} creates a slice with initial values
-	return []*httptest.Server{
-		// httptest.NewServer creates a test HTTP server that listens on a random port
-		// http.HandlerFunc converts a function to an http.Handler interface
-		// The function signature must match: func(http.ResponseWriter, *http.Request)
-		httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Handler function: called when server receives HTTP request
-			// w = ResponseWriter (write response to client)
-			// r = Request (contains request details - not used here)
-			// fmt.Fprintln writes formatted string to writer, adds newline
-			fmt.Fprintln(w, "Go is a great programming language for building scalable systems")
-		})),
-
-		// Second test server with different content
-		httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Concurrency in Go is simple and powerful with goroutines and channels")
-		})),
-
-		// Third test server
-		httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Go programming makes it easy to build reliable and efficient software")
-		})),
-
-		// Fourth test server
-		httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "The Go standard library is comprehensive and well-designed")
-		})),
-
-		// Fifth test server
-		httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "Building web services with Go is straightforward and productive")
-		})),
+		fmt.Printf("%2d. %-15s %d\n", i+1, pairs[i].word, pairs[i].count)
 	}
+
+	// ============================================================================
+	// STEP 9: Print Summary Statistics
+	// ============================================================================
+	// BREAKPOINT: Set breakpoint here before summary
+	// DEBUG: Inspect len(counts) - total unique words
+	// DEBUG: Inspect elapsed - total execution time
+
+	fmt.Println()
+	fmt.Printf("Total unique words: %d\n", len(counts))
+	fmt.Printf("Completed in: %v\n", elapsed)
+	fmt.Printf("Worker goroutines: %d\n", *workers)
+
+	// ============================================================================
+	// STEP 10: Usage Note about Solution
+	// ============================================================================
+	if *useSolution {
+		fmt.Println()
+		fmt.Println("NOTE: To use solution.go, build/run with -tags=solution:")
+		fmt.Println("  go run -tags=solution ./cmd/worker-pool-wordcount/main.go")
+		fmt.Println("  go test -tags=solution")
+	}
+
+	// ============================================================================
+	// DEBUGGING TIPS
+	// ============================================================================
+	//
+	// KEY DEBUGGING TECHNIQUES FOR CONCURRENCY:
+	//
+	// 1. Set breakpoints at "// BREAKPOINT:" comments
+	// 2. Press F5 to start debugging
+	// 3. Use F10 (Step Over) to execute line by line
+	// 4. Use F11 (Step Into) to enter exercise.WordCount function
+	// 5. Watch Variables panel to see goroutine coordination
+	// 6. Use Goroutines panel to see all running goroutines
+	// 7. Add watch expressions: len(counts), elapsed, *workers
+	//
+	// UNDERSTANDING GOROUTINES:
+	// - Step Into (F11) exercise.WordCount to see worker pool
+	// - Watch Goroutines panel to see workers spawn
+	// - Each worker is a goroutine running concurrently
+	// - Channels coordinate communication between goroutines
+	//
+	// UNDERSTANDING CHANNELS:
+	// - Channels are typed conduits for sending/receiving values
+	// - Sending: ch <- value (blocks if channel full)
+	// - Receiving: val := <-ch (blocks if channel empty)
+	// - Closing: close(ch) (signals no more values)
+	//
+	// UNDERSTANDING CONTEXT:
+	// - ctx.Done() returns a channel that closes on timeout/cancel
+	// - Use select with ctx.Done() to respect cancellation
+	// - Step Into (F11) to see context handling in worker pool
+	//
+	// TESTING DIFFERENT WORKER COUNTS:
+	// - Try: go run main.go -workers=1 (sequential)
+	// - Try: go run main.go -workers=10 (high concurrency)
+	// - Compare execution times to see concurrency benefits
+	//
+	// See /RUN_DEBUG.md for comprehensive debugging guide
 }
 
-/*
-closeServers closes all test servers to free resources.
+// createTestServers creates N mock HTTP servers for testing
+func createTestServers(n int) []*httptest.Server {
+	// BREAKPOINT: Set breakpoint here to see server creation
+	// DEBUG: Watch 'n' - number of servers to create
+	// DEBUG: We're creating mock HTTP servers that return text
 
-ANALOGY: Closing Restaurants
------------------------------
-Like closing all restaurants at the end of the day - stops accepting
-new customers and releases resources (ports, sockets, etc.).
+	content := []string{
+		"Go is a great programming language for building scalable systems",
+		"Concurrency in Go is simple and powerful with goroutines and channels",
+		"Go programming makes it easy to build reliable and efficient software",
+		"The Go standard library is comprehensive and well-designed",
+		"Building web services with Go is straightforward and productive",
+	}
 
-Parameters:
-  - servers: slice of pointers to httptest.Server instances
+	servers := make([]*httptest.Server, n)
 
-Why this matters:
-  - Servers hold network resources (ports, sockets)
-  - Not closing them causes resource leaks
-  - defer in main() ensures this always runs
-*/
+	for i := 0; i < n; i++ {
+		// BREAKPOINT: Set breakpoint here inside server creation loop
+		// DEBUG: Watch 'i' increment with each server
+		// DEBUG: Each server will return content[i % len(content)]
+
+		text := content[i%len(content)]
+		servers[i] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, text)
+		}))
+	}
+
+	// BREAKPOINT: Set breakpoint here after creating servers
+	// DEBUG: Inspect 'servers' slice - see all httptest.Server pointers
+	// DEBUG: Each server is listening on a random port
+
+	return servers
+}
+
+// closeServers closes all test servers to free resources
 func closeServers(servers []*httptest.Server) {
-	// Range over slice: for index, value := range slice
-	// Using _ discards the index (we don't need it)
-	// srv is each *httptest.Server pointer in the slice
-	for _, srv := range servers { // Iterate over all servers
-		// Close() stops the server and releases its resources
-		// Safe to call multiple times (idempotent)
-		srv.Close() // Shutdown server and free port/socket
+	// BREAKPOINT: Set breakpoint here to see cleanup
+	// DEBUG: This runs on defer - even if main() panics
+	// DEBUG: Watch each server being closed
+
+	for _, srv := range servers {
+		// BREAKPOINT: Set breakpoint here inside close loop
+		// DEBUG: Watch 'srv' change with each iteration
+		// DEBUG: srv.Close() releases network resources
+
+		srv.Close()
 	}
 }

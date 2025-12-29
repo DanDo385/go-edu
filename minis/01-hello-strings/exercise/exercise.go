@@ -3,21 +3,20 @@
 
 package exercise
 
+// TODO: Import required packages
+// You'll need:
+// - "strings" for string manipulation functions
+// - "unicode" for character case conversion
+// - "unicode/utf8" for UTF-8 utilities
+//
+// Uncomment these imports when you implement the functions:
+/*
 import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
-
-// TODO: Import required packages
-// You'll need:
-// - "strings" for string manipulation functions
-// - "unicode" for character case conversion
-//
-// import (
-//     "strings"
-//     "unicode"
-// )
+*/
 
 // TitleCase converts the first letter of each word to uppercase.
 // Words are separated by whitespace.

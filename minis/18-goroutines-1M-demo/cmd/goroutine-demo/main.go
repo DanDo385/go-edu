@@ -17,16 +17,49 @@
 // MEMORY IMPLICATIONS:
 // 1M goroutines × 2.5KB each ≈ 2.5GB RAM
 // 1M OS threads × 2MB each ≈ 2TB RAM (impossible on most systems!)
+//
+// USAGE EXAMPLES:
+//   # Run all demos with default 1M goroutines
+//   ./goroutine-demo
+//
+//   # Test with smaller number of goroutines
+//   ./goroutine-demo -goroutines=10000
+//
+//   # Run specific demos only
+//   ./goroutine-demo -demo=basic,million,comm
+//
+//   # Configure worker count and job count
+//   ./goroutine-demo -workers=1000 -jobs=100000
+//
+//   # Enable verbose output
+//   ./goroutine-demo -verbose
+//
+// FLAGS:
+//   -demo        Demos to run: all, basic, million, comm, context, overhead, stack
+//   -goroutines  Number of goroutines for million demo (default: 1000000)
+//   -workers     Number of worker goroutines (default: 100)
+//   -jobs        Number of jobs to process (default: 10000)
+//   -verbose     Enable verbose debug output
 
 package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
+)
+
+// CLI flags
+var (
+	demoFlag       = flag.String("demo", "all", "Demos: all, basic, million, comm, context, overhead, stack")
+	goroutinesFlag = flag.Int("goroutines", 1_000_000, "Number of goroutines for million demo")
+	workersFlag    = flag.Int("workers", 100, "Number of worker goroutines")
+	jobsFlag       = flag.Int("jobs", 10_000, "Number of jobs to process")
+	verboseFlag    = flag.Bool("verbose", false, "Enable verbose output")
 )
 
 // ============================================================================
@@ -50,15 +83,19 @@ import (
 func demonstrateBasicGoroutine() {
 	fmt.Println("=== Basic Goroutine Creation ===")
 
+	// BREAKPOINT: Examine WaitGroup usage for goroutine synchronization
+	// DEBUG: WaitGroup counter tracks pending goroutines - must reach 0 for Wait() to return
 	// MICRO-COMMENT: Track when goroutines finish using a WaitGroup
 	// WaitGroup is a counter: Add(n) increments by n, Done() decrements by 1
 	// Wait() blocks until the counter reaches 0
 	var wg sync.WaitGroup
 
+	// DEBUG: Loop variable capture is a common gotcha - must pass as argument
 	// MICRO-COMMENT: Launch 10 goroutines
 	for i := 0; i < 10; i++ {
 		wg.Add(1) // Increment counter before launching goroutine
 
+		// BREAKPOINT: Watch goroutine launch with `go` keyword
 		// MICRO-COMMENT: Launch goroutine (note: must pass i as argument!)
 		// If we captured i from the loop, all goroutines would see i=10
 		// This is because i is a single variable that all closures share
@@ -75,6 +112,8 @@ func demonstrateBasicGoroutine() {
 		}(i) // Pass i as argument (copies the current value)
 	}
 
+	// BREAKPOINT: WaitGroup.Wait() blocks until counter reaches zero
+	// DEBUG: After Wait() returns, all goroutines have completed
 	// MICRO-COMMENT: Wait for all goroutines to finish
 	// This blocks the main goroutine until all 10 workers call Done()
 	wg.Wait()
@@ -115,27 +154,34 @@ func getThreadID() int {
 func demonstrateMillionGoroutines() {
 	fmt.Println("=== Launching 1 Million Goroutines ===")
 
-	const numGoroutines = 1_000_000
+	numGoroutines := *goroutinesFlag
 
+	// BREAKPOINT: Measure baseline memory before creating goroutines
+	// DEBUG: runtime.MemStats provides detailed memory allocation statistics
 	// MICRO-COMMENT: Measure memory before launching goroutines
 	var memBefore runtime.MemStats
 	runtime.ReadMemStats(&memBefore)
 	fmt.Printf("Memory before: %d MB\n", memBefore.Alloc/1024/1024)
 
+	// BREAKPOINT: Create signal channel for coordinated shutdown
+	// DEBUG: Closing this channel broadcasts to ALL blocked goroutines simultaneously
 	// MICRO-COMMENT: Create a channel to signal shutdown
 	// We'll close this channel to wake up all goroutines at once
 	// Receiving from a closed channel returns immediately with the zero value
 	done := make(chan struct{})
 
+	// DEBUG: atomic.Int64 provides lock-free thread-safe counter
 	// MICRO-COMMENT: Track goroutine readiness
 	// We use atomic operations because multiple goroutines will increment this
 	var ready atomic.Int64
 
+	// BREAKPOINT: Watch rapid goroutine creation loop
 	// MICRO-COMMENT: Launch 1 million goroutines
 	fmt.Printf("Launching %d goroutines...\n", numGoroutines)
 	startLaunch := time.Now()
 
 	for i := 0; i < numGoroutines; i++ {
+		// DEBUG: Each iteration creates ~2.5KB goroutine (G struct + stack)
 		// MACRO-COMMENT: The Goroutine Body
 		// Each goroutine:
 		// 1. Increments the ready counter (atomic)
@@ -147,28 +193,36 @@ func demonstrateMillionGoroutines() {
 		// - The Go scheduler parks blocked goroutines (doesn't schedule them)
 		// - Memory is the only resource consumed (stack space)
 		go func() {
+			// BREAKPOINT: Atomic increment - thread-safe without locks
 			// MICRO-COMMENT: Signal that this goroutine is ready
 			ready.Add(1)
 
+			// BREAKPOINT: Channel receive blocks goroutine until signal
+			// DEBUG: Blocked goroutines are parked off-CPU - zero CPU usage while waiting
 			// MICRO-COMMENT: Block until shutdown signal
 			// This is a receive operation on a channel
 			// The goroutine will be parked (not scheduled) until done is closed
 			<-done
 
+			// DEBUG: Stack memory is freed, G struct recycled to pool for reuse
 			// MICRO-COMMENT: Goroutine exits here
 			// The stack is freed, G struct is recycled (not freed, cached for reuse)
 		}()
 	}
 
+	// BREAKPOINT: Poll ready counter to ensure all goroutines have started
+	// DEBUG: Busy-wait loop checking atomic counter - could use channel instead
 	// MICRO-COMMENT: Wait for all goroutines to start
 	// We poll the ready counter until it reaches numGoroutines
 	// This ensures all goroutines are fully initialized before we measure memory
-	for ready.Load() < numGoroutines {
+	for ready.Load() < int64(numGoroutines) {
 		time.Sleep(10 * time.Millisecond)
 	}
 
 	launchDuration := time.Since(startLaunch)
 
+	// BREAKPOINT: Force GC before memory measurement for accuracy
+	// DEBUG: runtime.GC() blocks until garbage collection completes
 	// MICRO-COMMENT: Measure memory after launching goroutines
 	runtime.GC() // Force garbage collection to get accurate numbers
 	var memAfter runtime.MemStats
@@ -183,6 +237,8 @@ func demonstrateMillionGoroutines() {
 	fmt.Printf("  Active goroutines:  %d\n", runtime.NumGoroutine())
 	fmt.Printf("  GOMAXPROCS:         %d\n", runtime.GOMAXPROCS(0))
 
+	// BREAKPOINT: Watch channel close broadcasting to millions of goroutines
+	// DEBUG: close() is O(1) operation but wakes O(N) goroutines efficiently
 	// MACRO-COMMENT: Graceful Shutdown
 	// Closing the done channel broadcasts to ALL goroutines simultaneously.
 	// This is much faster than signaling each goroutine individually.
@@ -225,17 +281,19 @@ func demonstrateMillionGoroutines() {
 func demonstrateCommunication() {
 	fmt.Println("=== Goroutine Communication ===")
 
-	const (
-		numWorkers = 100
-		numJobs    = 10_000
-	)
+	numWorkers := *workersFlag
+	numJobs := *jobsFlag
 
+	// BREAKPOINT: Examine buffered channel creation for work queue
+	// DEBUG: Buffer size prevents blocking - sender can queue up to N items
 	// MICRO-COMMENT: Create channels for work distribution
 	// jobs: workers receive work from this channel
 	// results: workers send results to this channel
 	jobs := make(chan int, 100)    // Buffered (allows sending 100 jobs without blocking)
 	results := make(chan int, 100) // Buffered (allows workers to send without blocking)
 
+	// BREAKPOINT: Launch worker pool - all sharing same input channel
+	// DEBUG: Multiple goroutines can safely receive from same channel (Go runtime serializes)
 	// MICRO-COMMENT: Launch worker goroutines
 	// Each worker:
 	// 1. Receives jobs from the jobs channel
@@ -247,6 +305,8 @@ func demonstrateCommunication() {
 		go func(id int) {
 			defer wg.Done()
 
+			// BREAKPOINT: Range over channel - loops until channel is closed
+			// DEBUG: When jobs channel closes, range loop exits and goroutine completes
 			// MICRO-COMMENT: Process jobs until channel is closed
 			// The `for job := range jobs` loop automatically:
 			// 1. Receives values from the channel
@@ -255,6 +315,7 @@ func demonstrateCommunication() {
 				// MICRO-COMMENT: Simulate work
 				result := job * 2
 
+				// DEBUG: Send to results channel - buffered so usually non-blocking
 				// MICRO-COMMENT: Send result
 				results <- result
 			}
@@ -311,14 +372,17 @@ func demonstrateCommunication() {
 func demonstrateContextCancellation() {
 	fmt.Println("=== Context-Based Cancellation ===")
 
+	// BREAKPOINT: Create cancellable context for coordinated shutdown
+	// DEBUG: cancel() function closes ctx.Done() channel, signaling all listeners
 	// MICRO-COMMENT: Create a cancellable context
 	// ctx: the context passed to goroutines
 	// cancel: function to cancel the context (signals all goroutines to stop)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	const numWorkers = 1000
+	numWorkers := *workersFlag
 	var wg sync.WaitGroup
 
+	// DEBUG: Atomic operations avoid mutex overhead for simple counters
 	// MICRO-COMMENT: Track work done
 	var workDone atomic.Int64
 
@@ -328,6 +392,8 @@ func demonstrateContextCancellation() {
 		go func(id int) {
 			defer wg.Done()
 
+			// BREAKPOINT: Watch select statement checking context cancellation
+			// DEBUG: select with default is non-blocking - checks ctx.Done() every iteration
 			// MACRO-COMMENT: Cancellation-Aware Loop
 			// This loop:
 			// 1. Checks if context is cancelled (ctx.Done() is closed)
@@ -342,10 +408,12 @@ func demonstrateContextCancellation() {
 			for {
 				select {
 				case <-ctx.Done():
+					// BREAKPOINT: Context cancellation detected - exit immediately
 					// MICRO-COMMENT: Context was cancelled, exit immediately
 					return
 
 				default:
+					// DEBUG: Default case allows loop to continue if context not cancelled
 					// MICRO-COMMENT: No cancellation, do work
 					workDone.Add(1)
 					time.Sleep(1 * time.Millisecond)
@@ -357,10 +425,13 @@ func demonstrateContextCancellation() {
 	// MICRO-COMMENT: Let workers run for a bit
 	time.Sleep(100 * time.Millisecond)
 
+	// BREAKPOINT: Single cancel() call stops all workers via context
+	// DEBUG: This demonstrates the power of context-based cancellation
 	// MICRO-COMMENT: Cancel all workers
 	fmt.Printf("Cancelling %d workers...\n", numWorkers)
 	cancel() // This closes ctx.Done(), signaling all workers to stop
 
+	// DEBUG: WaitGroup ensures all goroutines have exited before continuing
 	// MICRO-COMMENT: Wait for all workers to exit
 	wg.Wait()
 
@@ -480,6 +551,15 @@ func demonstrateStackGrowth() {
 // 5. Overhead (performance characteristics)
 // 6. Stack growth (runtime behavior)
 func main() {
+	// BREAKPOINT: Parse CLI flags before running demos
+	flag.Parse()
+
+	// DEBUG: Show configuration in verbose mode
+	if *verboseFlag {
+		fmt.Printf("DEBUG: Config - goroutines=%d, workers=%d, jobs=%d\n",
+			*goroutinesFlag, *workersFlag, *jobsFlag)
+	}
+
 	fmt.Printf("=== Goroutine Demonstration ===\n")
 	fmt.Printf("GOMAXPROCS (CPU cores): %d\n", runtime.GOMAXPROCS(0))
 	fmt.Printf("NumCPU (logical CPUs):  %d\n\n", runtime.NumCPU())
