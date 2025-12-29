@@ -8,6 +8,24 @@
 // 3. How to safely isolate slices using 3-index syntax
 // 4. Performance implications of pre-allocation vs dynamic growth
 //
+// USAGE EXAMPLES:
+//   Run all demonstrations:
+//     go run main.go
+//
+//   Run specific section only:
+//     go run main.go -demo=growth
+//     go run main.go -demo=shared
+//     go run main.go -demo=safe
+//
+//   Enable verbose output with addresses:
+//     go run main.go -verbose
+//
+//   Custom iteration count for preallocation demo:
+//     go run main.go -demo=prealloc -iterations=100000
+//
+//   Run with escape analysis:
+//     go build -gcflags='-m -m' main.go
+//
 // COMPILER BEHAVIOR: Escape Analysis
 // When you run this with `-gcflags='-m'`, you'll see which slices escape to the heap.
 // The compiler allocates slices on the heap when:
@@ -25,6 +43,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 )
 
@@ -43,11 +62,10 @@ import (
 func demonstrateCapacityGrowth() {
 	fmt.Println("=== Capacity Growth Demonstration ===")
 
-	// MICRO-COMMENT: Create an empty slice (zero length, zero capacity)
-	// At this point:
-	// - Ptr points to nil (no backing array allocated)
-	// - Len = 0
-	// - Cap = 0
+	// BREAKPOINT: Set breakpoint here to examine initial empty slice
+	// DEBUG: At this point, s is nil - no backing array exists yet
+	// var s []int
+	// Expected: len=0, cap=0, underlying pointer=nil
 	var s []int
 
 	// MICRO-COMMENT: Track previous capacity to detect when it changes
@@ -61,6 +79,9 @@ func demonstrateCapacityGrowth() {
 	// - Amortized O(1) append cost (doubling ensures this)
 	// - Memory efficiency (not wasting too much space)
 	for i := 0; i < 100; i++ {
+		// BREAKPOINT: Set breakpoint here when i=0 to watch first allocation
+		// DEBUG: Watch how s changes from nil to a real slice with backing array
+		// DEBUG: On first append, Go allocates initial capacity (usually 1 or 2)
 		// MICRO-COMMENT: Append returns a NEW slice header (potentially with a new backing array)
 		// This is why we MUST reassign: s = append(s, i)
 		// If capacity is exceeded, append will:
@@ -73,6 +94,9 @@ func demonstrateCapacityGrowth() {
 		// MICRO-COMMENT: cap() returns the capacity field from the slice header
 		currentCap := cap(s)
 
+		// DEBUG: When currentCap != prevCap, a reallocation just occurred
+		// DEBUG: The old backing array is now garbage (will be collected later)
+		// BREAKPOINT: Set conditional breakpoint when currentCap != prevCap to see reallocations
 		// MICRO-COMMENT: When capacity changes, it means a new backing array was allocated
 		if currentCap != prevCap {
 			// MICRO-COMMENT: Calculate growth multiplier to show the growth pattern
@@ -114,10 +138,15 @@ func demonstrateCapacityGrowth() {
 func demonstrateSharedBackingArray() {
 	fmt.Println("=== Re-Slicing Gotcha: Shared Backing Array ===")
 
+	// BREAKPOINT: Set breakpoint here before creating the original slice
+	// DEBUG: After this line, inspect memory address of original's backing array
 	// MICRO-COMMENT: Create a slice with 5 elements using a composite literal
 	// The compiler allocates a backing array with exactly 5 slots
 	original := []int{10, 20, 30, 40, 50}
 
+	// BREAKPOINT: Set breakpoint after re-slicing to compare addresses
+	// DEBUG: slice1 and original share the SAME backing array
+	// DEBUG: Check &original[0] vs &slice1[0] - different addresses, same underlying array
 	// MICRO-COMMENT: Re-slice from index 1 to 4 (exclusive)
 	// This creates a NEW slice header, but the backing array is SHARED
 	// slice1's Ptr points to &original[1] (address of element 20)
@@ -129,6 +158,9 @@ func demonstrateSharedBackingArray() {
 	fmt.Printf("  Original: %v\n", original)
 	fmt.Printf("  Slice1:   %v\n", slice1)
 
+	// BREAKPOINT: Set breakpoint before this mutation
+	// DEBUG: Watch both slice1[0] and original[1] change to 999 simultaneously
+	// DEBUG: This is because they point to the SAME memory location
 	// MICRO-COMMENT: Modify the first element of slice1
 	// Since slice1[0] points to the same memory location as original[1],
 	// this modification affects BOTH slices!
@@ -162,9 +194,13 @@ func demonstrateSharedBackingArray() {
 func demonstrateSafeReslicing() {
 	fmt.Println("=== Safe Re-Slicing with 3-Index Syntax ===")
 
+	// DEBUG: Before 3-index slicing, original has full capacity
 	// MICRO-COMMENT: Create original slice (len=5, cap=5)
 	original := []int{10, 20, 30, 40, 50}
 
+	// BREAKPOINT: Set breakpoint after 3-index slicing
+	// DEBUG: Compare slice2's capacity (2) vs original's capacity (5)
+	// DEBUG: slice2 cannot grow into original's backing array due to limited cap
 	// MICRO-COMMENT: Use 3-index slice: [low:high:max]
 	// low = 1 (start at index 1, element 20)
 	// high = 3 (end before index 3, includes elements 20, 30)
@@ -176,6 +212,9 @@ func demonstrateSafeReslicing() {
 	fmt.Printf("Original: %v (len=%d, cap=%d)\n", original, len(original), cap(original))
 	fmt.Printf("Slice2:   %v (len=%d, cap=%d)\n", slice2, len(slice2), cap(slice2))
 
+	// BREAKPOINT: Set breakpoint before append to check capacity is full
+	// DEBUG: Before append, slice2 has len=2, cap=2 (no spare capacity)
+	// DEBUG: After append, slice2 will have a NEW backing array (reallocation)
 	// MICRO-COMMENT: Append to slice2
 	// Since cap=2 and len=2, the capacity is FULL
 	// append() is forced to:
@@ -186,6 +225,8 @@ func demonstrateSafeReslicing() {
 	//
 	// Original is NOT affected because slice2 now points to a different array
 	slice2 = append(slice2, 99)
+
+	// DEBUG: Check that original is unchanged - slice2 now has separate backing array
 
 	fmt.Printf("\nAfter append(slice2, 99):\n")
 	fmt.Printf("  Original: %v  ← UNCHANGED (different backing array)\n", original)
@@ -213,6 +254,9 @@ func demonstrateSafeReslicing() {
 func demonstrateAppendWithCapacity() {
 	fmt.Println("=== Append With Spare Capacity (No Allocation) ===")
 
+	// BREAKPOINT: Set breakpoint after make to inspect pre-allocated slice
+	// DEBUG: s has backing array with 5 slots, but only 2 are initialized
+	// DEBUG: The 3 extra slots (s[2], s[3], s[4]) exist but aren't accessible yet
 	// MICRO-COMMENT: make([]int, len, cap) creates a slice with:
 	// - Initial length = 2 (elements are zero-initialized)
 	// - Capacity = 5 (room for 5 total elements before reallocation)
@@ -222,6 +266,9 @@ func demonstrateAppendWithCapacity() {
 
 	fmt.Printf("Initial:  %v (len=%d, cap=%d)\n", s, len(s), cap(s))
 
+	// DEBUG: Watch len increase from 2→3→4→5 without cap changing (no reallocation)
+	// DEBUG: Each append just writes to next slot in existing backing array
+	// BREAKPOINT: Set breakpoint before first append with spare capacity
 	// MICRO-COMMENT: Append 3 more elements (within capacity)
 	// Each append:
 	// 1. Checks if len < cap (yes, we have room)
@@ -237,6 +284,9 @@ func demonstrateAppendWithCapacity() {
 	s = append(s, 50)
 	fmt.Printf("After +50: %v (len=%d, cap=%d) ← No reallocation\n", s, len(s), cap(s))
 
+	// BREAKPOINT: Set breakpoint before append that exceeds capacity
+	// DEBUG: Before: len=5, cap=5 (full). After: len=6, cap=10 (new backing array)
+	// DEBUG: The backing array address will change - old array becomes garbage
 	// MICRO-COMMENT: Now append beyond capacity
 	// len=5, cap=5, so the next append MUST allocate
 	s = append(s, 60)
@@ -268,6 +318,8 @@ func demonstratePreallocation() {
 	const numElements = 10000
 
 	// APPROACH 1: No pre-allocation
+	// DEBUG: Watch allocCount1 increase (expect ~13-14 reallocations for 10K elements)
+	// BREAKPOINT: Set breakpoint after loop to see total reallocations
 	// MICRO-COMMENT: var declaration creates a nil slice (no backing array)
 	var s1 []int
 
@@ -283,10 +335,15 @@ func demonstratePreallocation() {
 		}
 	}
 
+	// DEBUG: Final s1 capacity will be ~16384 (next power of 2 after 10000)
+
 	fmt.Printf("Approach 1 (no pre-allocation):\n")
 	fmt.Printf("  Elements: %d, Final Cap: %d, Reallocations: %d\n", len(s1), cap(s1), allocCount1)
 
 	// APPROACH 2: Pre-allocate exact capacity
+	// BREAKPOINT: Set breakpoint after pre-allocation to inspect s2
+	// DEBUG: s2 has len=0 but cap=10000 (backing array already exists)
+	// DEBUG: Watch allocCount2 stay at 0 throughout the loop (zero reallocations!)
 	// MICRO-COMMENT: make([]int, 0, numElements) creates:
 	// - Len = 0 (empty)
 	// - Cap = numElements (backing array already allocated)
@@ -329,12 +386,16 @@ func demonstratePreallocation() {
 func demonstrateCopy() {
 	fmt.Println("=== Using copy() to Isolate Slices ===")
 
+	// DEBUG: Before copy, isolated has its own backing array but all zeros
+	// BREAKPOINT: Set breakpoint after copy to verify independent backing arrays
 	// MICRO-COMMENT: Create original slice
 	original := []int{10, 20, 30, 40, 50}
 
 	// MICRO-COMMENT: Allocate a NEW backing array with the same length
 	isolated := make([]int, len(original))
 
+	// DEBUG: copy() returns number of elements copied (should be 5)
+	// DEBUG: After copy, check &original[0] != &isolated[0] (different arrays)
 	// MICRO-COMMENT: copy() performs a deep copy (element-by-element)
 	// This creates a completely independent slice with its own backing array
 	// PERFORMANCE: copy() is optimized at the runtime level (uses memmove internally)
@@ -344,12 +405,16 @@ func demonstrateCopy() {
 	fmt.Printf("Original:  %v\n", original)
 	fmt.Printf("Isolated:  %v\n", isolated)
 
+	// BREAKPOINT: Set breakpoint before mutation to verify independence
+	// DEBUG: Watch isolated[0] change to 999 while original[0] stays at 10
 	// MICRO-COMMENT: Modify the isolated slice
 	isolated[0] = 999
 
 	fmt.Printf("\nAfter modifying isolated[0] = 999:\n")
 	fmt.Printf("  Original:  %v  ← UNCHANGED (different backing array)\n", original)
 	fmt.Printf("  Isolated:  %v\n", isolated)
+
+	// DEBUG: Confirm original is truly unchanged - proves copy created new backing array
 
 	fmt.Println()
 }
@@ -372,13 +437,41 @@ func demonstrateCopy() {
 // TRY THIS: Run with escape analysis to see heap allocations:
 // go build -gcflags='-m' cmd/slices-demo/main.go
 func main() {
-	// MICRO-COMMENT: Call each demonstration function
-	demonstrateCapacityGrowth()
-	demonstrateSharedBackingArray()
-	demonstrateSafeReslicing()
-	demonstrateAppendWithCapacity()
-	demonstratePreallocation()
-	demonstrateCopy()
+	// Parse command-line flags
+	demo := flag.String("demo", "all", "Which demo to run: all, growth, shared, safe, append, prealloc, copy")
+	verbose := flag.Bool("verbose", false, "Enable verbose output with memory addresses")
+	iterations := flag.Int("iterations", 10000, "Number of iterations for preallocation demo")
+	flag.Parse()
+
+	// DEBUG: Flag values control which demonstrations run
+	// DEBUG: Use -demo=growth to run only capacity growth demo
+	// BREAKPOINT: Set breakpoint here to inspect parsed flags
+
+	if *verbose {
+		fmt.Println("=== Verbose Mode Enabled ===")
+		fmt.Printf("Demo: %s, Iterations: %d\n\n", *demo, *iterations)
+	}
+
+	// MICRO-COMMENT: Call each demonstration function based on flags
+	// DEBUG: Watch which demos execute based on -demo flag value
+	if *demo == "all" || *demo == "growth" {
+		demonstrateCapacityGrowth()
+	}
+	if *demo == "all" || *demo == "shared" {
+		demonstrateSharedBackingArray()
+	}
+	if *demo == "all" || *demo == "safe" {
+		demonstrateSafeReslicing()
+	}
+	if *demo == "all" || *demo == "append" {
+		demonstrateAppendWithCapacity()
+	}
+	if *demo == "all" || *demo == "prealloc" {
+		demonstratePreallocation()
+	}
+	if *demo == "all" || *demo == "copy" {
+		demonstrateCopy()
+	}
 
 	// MACRO-COMMENT: Compiler Optimization Notes
 	// If you run with -gcflags='-m', you'll see lines like:

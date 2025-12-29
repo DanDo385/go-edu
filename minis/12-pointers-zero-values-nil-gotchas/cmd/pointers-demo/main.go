@@ -9,6 +9,25 @@
 // 4. Pointer vs value receivers
 // 5. new, make, and composite literals
 //
+// USAGE EXAMPLES:
+//   Run all demonstrations:
+//     go run main.go
+//
+//   Run specific section only:
+//     go run main.go -demo=basics
+//     go run main.go -demo=zero
+//     go run main.go -demo=nil
+//     go run main.go -demo=receivers
+//
+//   Enable verbose output with addresses:
+//     go run main.go -verbose
+//
+//   Skip panic demo (if you don't want to trigger panic/recover):
+//     go run main.go -skip-panic
+//
+//   Run with escape analysis:
+//     go build -gcflags='-m -m' main.go
+//
 // COMPILER BEHAVIOR:
 // When you run with -gcflags='-m', you'll see which variables escape to the heap.
 // Variables that are returned as pointers or stored in heap structures escape.
@@ -20,6 +39,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 )
 
@@ -37,10 +57,15 @@ import (
 func demonstratePointerBasics() {
 	fmt.Println("=== Pointer Basics ===")
 
+	// BREAKPOINT: Set breakpoint here to examine x before taking address
+	// DEBUG: x is allocated on the stack with value 42
 	// MICRO-COMMENT: Create a regular integer variable
 	// This allocates space for an int and stores 42 in it
 	x := 42
 
+	// BREAKPOINT: Set breakpoint after taking address to see pointer value
+	// DEBUG: p contains the memory address of x (e.g., 0xc000014098)
+	// DEBUG: The type of p is *int (pointer to int)
 	// MICRO-COMMENT: The & operator gets the memory address of x
 	// p is a "pointer to int" (*int type)
 	// It stores the address where x lives in memory
@@ -53,12 +78,16 @@ func demonstratePointerBasics() {
 	// *p means "go to the address in p and get the value there"
 	fmt.Printf("Value at address p: %d\n", *p)
 
+	// BREAKPOINT: Set breakpoint before dereferencing to modify
+	// DEBUG: About to write 100 to the memory location pointed to by p
+	// DEBUG: Watch x change from 42 to 100 even though we only modify *p
 	// MACRO-COMMENT: Modifying Through Pointers
 	// This is the key power of pointers: changing data indirectly
 	// *p = 100 means "go to the address in p and SET the value to 100"
 	// Since p points to x, this changes x
 	*p = 100
 
+	// DEBUG: Both x and *p now equal 100 - they reference the same memory
 	fmt.Printf("\nAfter *p = 100:\n")
 	fmt.Printf("  x: %d\n", x)   // 100 (x was modified!)
 	fmt.Printf("  *p: %d\n", *p) // 100 (same value, same memory location)
@@ -98,6 +127,9 @@ func demonstrateZeroValues() {
 	var b bool
 	fmt.Printf("bool:    %t\n", b)  // false
 
+	// BREAKPOINT: Set breakpoint after nil pointer declaration
+	// DEBUG: p is nil (doesn't point to any valid memory address)
+	// DEBUG: Dereferencing p (*p) would cause a panic!
 	// MICRO-COMMENT: Pointers zero to nil
 	// nil means "doesn't point to anything"
 	var p *int
@@ -113,12 +145,14 @@ func demonstrateZeroValues() {
 	// You can safely call len(), cap(), range over it
 	// But it has no backing array allocated
 
+	// DEBUG: Nil map can be read (returns zero value) but NOT written
 	// MICRO-COMMENT: Nil map (UNSAFE for writing!)
 	var m map[string]int
 	fmt.Printf("map:     %v\n", m)  // map[]
 	// Reading is OK: m["key"] returns 0
 	// Writing PANICS: m["key"] = 1 would crash
 
+	// DEBUG: Nil channel will block forever if you try to send/receive
 	// MICRO-COMMENT: Nil channel (UNSAFE - blocks forever!)
 	var ch chan int
 	fmt.Printf("chan:    %v\n", ch)  // <nil>
@@ -144,11 +178,14 @@ func demonstrateZeroValues() {
 func demonstrateNilDereference() {
 	fmt.Println("=== Nil Pointer Dereference (Recovered) ===")
 
+	// DEBUG: defer runs AFTER panic, allowing us to recover
 	// MACRO-COMMENT: Using defer/recover to Catch Panics
 	// defer schedules a function to run when the current function returns
 	// recover() catches a panic and returns its value (returns nil if no panic)
 	// This is Go's exception handling mechanism
 	defer func() {
+		// BREAKPOINT: Set breakpoint inside recover to see panic value
+		// DEBUG: recover() returns the panic message if panic occurred
 		// MICRO-COMMENT: recover() returns nil if no panic occurred
 		// If a panic occurred, it returns the panic value and stops the panic
 		if r := recover(); r != nil {
@@ -156,10 +193,13 @@ func demonstrateNilDereference() {
 		}
 	}()
 
+	// BREAKPOINT: Set breakpoint before nil dereference
+	// DEBUG: p is nil - dereferencing will cause runtime panic
 	// MICRO-COMMENT: Create a nil pointer (zero value)
 	var p *int
 	fmt.Printf("p is nil: %t\n", p == nil)
 
+	// DEBUG: This line will trigger panic (invalid memory access at address 0x0)
 	// MICRO-COMMENT: This will panic!
 	// The runtime will try to access memory at address nil (0x0)
 	// The OS will send a segmentation fault signal
@@ -206,10 +246,13 @@ func (u *User) Greet() {
 func demonstrateSafeNilChecks() {
 	fmt.Println("\n=== Safe Nil Checks ===")
 
+	// BREAKPOINT: Set breakpoint to verify u is nil
+	// DEBUG: u is nil but we can still call methods on it safely
 	// MICRO-COMMENT: Create a nil pointer
 	var u *User
 	fmt.Printf("u is nil: %t\n", u == nil)
 
+	// DEBUG: Watch Greet() handle nil receiver gracefully
 	// MICRO-COMMENT: Call method on nil receiver
 	// This is SAFE because Greet() checks for nil
 	u.Greet()  // Prints "Hello, guest!"
@@ -260,14 +303,21 @@ func (c *Counter) IncrementPointer() {
 func demonstrateReceivers() {
 	fmt.Println("=== Value vs Pointer Receivers ===")
 
+	// BREAKPOINT: Set breakpoint before IncrementValue
+	// DEBUG: c1.count is 0 before and after (value receiver doesn't modify original)
 	// MICRO-COMMENT: Test value receiver
 	c1 := Counter{count: 0}
 	fmt.Println("Before IncrementValue:", c1.count)
 	c1.IncrementValue()
 	fmt.Println("After IncrementValue:", c1.count)  // Still 0 (copy was modified)
 
+	// DEBUG: The increment happened on a COPY, not the original c1
+
 	fmt.Println()
 
+	// BREAKPOINT: Set breakpoint before IncrementPointer
+	// DEBUG: c2.count changes from 0 to 1 (pointer receiver modifies original)
+	// DEBUG: Go automatically converts c2.IncrementPointer() to (&c2).IncrementPointer()
 	// MICRO-COMMENT: Test pointer receiver
 	c2 := Counter{count: 0}
 	fmt.Println("Before IncrementPointer:", c2.count)
@@ -291,12 +341,17 @@ func demonstrateReceivers() {
 func demonstrateAllocation() {
 	fmt.Println("=== new vs make vs Composite Literals ===")
 
+	// BREAKPOINT: Set breakpoint after composite literal
+	// DEBUG: u1 points to a User struct with initialized fields
+	// DEBUG: Check the address of u1 - likely heap allocated
 	// APPROACH 1: Composite literal (most common)
 	// MICRO-COMMENT: Creates a User and returns a pointer to it
 	// The compiler allocates memory, initializes fields, returns address
 	u1 := &User{Name: "Alice", Email: "alice@example.com"}
 	fmt.Printf("Composite literal: %+v\n", u1)
 
+	// BREAKPOINT: Set breakpoint after new()
+	// DEBUG: u2 points to a User with zero values (Name="", Email="")
 	// APPROACH 2: new() - allocates and zeros
 	// MICRO-COMMENT: new(User) allocates a User, zeros all fields, returns *User
 	// Equivalent to: var temp User; u2 := &temp
@@ -305,6 +360,9 @@ func demonstrateAllocation() {
 	u2.Email = "bob@example.com"
 	fmt.Printf("new():             %+v\n", u2)
 
+	// BREAKPOINT: Set breakpoint after make(map)
+	// DEBUG: m is a ready-to-use map (not nil, can write immediately)
+	// DEBUG: make() initialized the internal hash table structure
 	// APPROACH 3: make() - for slices, maps, channels ONLY
 	// MICRO-COMMENT: make() not only allocates but also initializes internal structures
 	// For maps, it creates the hash table
@@ -314,6 +372,7 @@ func demonstrateAllocation() {
 	m["key"] = 42
 	fmt.Printf("make(map):         %v\n", m)
 
+	// DEBUG: s has a backing array with 5 zero-initialized elements
 	s := make([]int, 5)  // Creates a slice with len=5, cap=5, all zeros
 	fmt.Printf("make(slice):       %v\n", s)
 
@@ -336,6 +395,8 @@ func demonstrateAllocation() {
 // x is local to this function and not returned, so it lives on the stack.
 // When the function returns, x is automatically destroyed (very fast).
 func stackAllocated() int {
+	// DEBUG: x is allocated on the stack (no heap allocation)
+	// DEBUG: Run with -gcflags='-m' to see "x does not escape"
 	x := 42  // Stack-allocated (compiler flag -m will confirm)
 	return x  // Return the VALUE, not the address
 }
@@ -347,6 +408,9 @@ func stackAllocated() int {
 // The compiler moves x to the heap so it survives after the function returns.
 // The garbage collector will eventually reclaim it.
 func heapAllocated() *int {
+	// DEBUG: x escapes to heap (must outlive the function)
+	// DEBUG: Run with -gcflags='-m' to see "moved to heap: x"
+	// BREAKPOINT: Set breakpoint here in escape analysis mode
 	x := 42   // Escapes to heap (compiler flag -m will confirm)
 	return &x  // Return the ADDRESS - x must survive!
 }
@@ -367,6 +431,9 @@ func demonstrateEscapeAnalysis() {
 	val := stackAllocated()
 	fmt.Printf("Stack-allocated value: %d\n", val)
 
+	// BREAKPOINT: Set breakpoint after heapAllocated call
+	// DEBUG: ptr points to heap memory that survived the function return
+	// DEBUG: This memory will be garbage collected later
 	// MICRO-COMMENT: Call heap-allocated function
 	// The return value is a pointer to heap-allocated memory
 	ptr := heapAllocated()
@@ -391,13 +458,42 @@ func demonstrateEscapeAnalysis() {
 // 6. Allocation (memory management)
 // 7. Escape analysis (performance)
 func main() {
-	demonstratePointerBasics()
-	demonstrateZeroValues()
-	demonstrateNilDereference()  // Panics and recovers
-	demonstrateSafeNilChecks()
-	demonstrateReceivers()
-	demonstrateAllocation()
-	demonstrateEscapeAnalysis()
+	// Parse command-line flags
+	demo := flag.String("demo", "all", "Which demo to run: all, basics, zero, nil, safe, receivers, alloc, escape")
+	verbose := flag.Bool("verbose", false, "Enable verbose output with memory addresses")
+	skipPanic := flag.Bool("skip-panic", false, "Skip the nil dereference panic demo")
+	flag.Parse()
+
+	// DEBUG: Flag values control program behavior
+	// BREAKPOINT: Set breakpoint here to inspect parsed flags
+
+	if *verbose {
+		fmt.Println("=== Verbose Mode Enabled ===")
+		fmt.Printf("Demo: %s, Skip Panic: %t\n\n", *demo, *skipPanic)
+	}
+
+	// DEBUG: Watch which demos execute based on -demo flag
+	if *demo == "all" || *demo == "basics" {
+		demonstratePointerBasics()
+	}
+	if *demo == "all" || *demo == "zero" {
+		demonstrateZeroValues()
+	}
+	if (*demo == "all" || *demo == "nil") && !*skipPanic {
+		demonstrateNilDereference()  // Panics and recovers
+	}
+	if *demo == "all" || *demo == "safe" {
+		demonstrateSafeNilChecks()
+	}
+	if *demo == "all" || *demo == "receivers" {
+		demonstrateReceivers()
+	}
+	if *demo == "all" || *demo == "alloc" {
+		demonstrateAllocation()
+	}
+	if *demo == "all" || *demo == "escape" {
+		demonstrateEscapeAnalysis()
+	}
 
 	// MACRO-COMMENT: Try running with:
 	// go build -gcflags='-m -m' cmd/pointers-demo/main.go

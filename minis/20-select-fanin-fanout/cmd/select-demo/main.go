@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -20,9 +21,43 @@ This program demonstrates:
 7. Advanced patterns (quit channels, priority select)
 
 Each demo is standalone and heavily commented.
+
+USAGE EXAMPLES:
+  # Run all demos
+  ./select-demo
+
+  # Run specific demos
+  ./select-demo -demo=select,fanin,fanout
+
+  # Configure workers and jobs
+  ./select-demo -workers=5 -jobs=50
+
+  # Enable verbose output
+  ./select-demo -verbose
+
+FLAGS:
+  -demo      Demos: all, select, nonblock, timeout, fanin, fanout, pipeline, quit, priority
+  -workers   Number of workers (default: 3)
+  -jobs      Number of jobs (default: 20)
+  -verbose   Enable verbose debug output
 */
 
+// CLI flags
+var (
+	demoFlag    = flag.String("demo", "all", "Demos to run")
+	workersFlag = flag.Int("workers", 3, "Number of workers")
+	jobsFlag    = flag.Int("jobs", 20, "Number of jobs")
+	verboseFlag = flag.Bool("verbose", false, "Verbose output")
+)
+
 func main() {
+	// BREAKPOINT: Parse CLI flags
+	flag.Parse()
+
+	// DEBUG: Show configuration
+	if *verboseFlag {
+		fmt.Printf("DEBUG: workers=%d, jobs=%d\n", *workersFlag, *jobsFlag)
+	}
 	fmt.Println("=== Select, Fan-In, and Fan-Out Demo ===\n")
 
 	// Demo 1: Select Basics
@@ -72,6 +107,8 @@ func main() {
 // ============================================================================
 
 func demoSelectBasics() {
+	// BREAKPOINT: Examine select statement - multiplexes multiple channel operations
+	// DEBUG: select is like switch for channels, executes first ready case
 	// The select statement lets you wait on multiple channel operations
 	// It's like a switch statement for channels
 	//
@@ -95,6 +132,8 @@ func demoSelectBasics() {
 		ch2 <- "message from ch2"
 	}()
 
+	// BREAKPOINT: Watch select racing between two channels
+	// DEBUG: ch2 sends at 500ms, ch1 at 1s - ch2 case will execute
 	// Select will pick whichever channel sends first
 	// In this case, ch2 will be ready first (500ms < 1s)
 	select {
@@ -105,6 +144,8 @@ func demoSelectBasics() {
 	}
 	// Output: "Received from ch2: message from ch2"
 
+	// BREAKPOINT: Demonstrate random selection fairness
+	// DEBUG: Both channels ready - select chooses randomly to prevent starvation
 	// Demonstrate random selection when both are ready
 	fmt.Println("\nDemonstrating random selection (run multiple times):")
 
@@ -115,6 +156,8 @@ func demoSelectBasics() {
 	ch3 <- 3
 	ch4 <- 4
 
+	// BREAKPOINT: When multiple cases ready, select picks randomly
+	// DEBUG: Re-run program multiple times to see different selections
 	// Select will randomly choose between ch3 and ch4
 	// Run this program multiple times - you'll see different outputs
 	select {
@@ -130,6 +173,8 @@ func demoSelectBasics() {
 // ============================================================================
 
 func demoNonBlocking() {
+	// BREAKPOINT: Examine default case - makes select non-blocking
+	// DEBUG: If all cases would block, default executes immediately
 	// The default case makes select non-blocking
 	// If no other case is ready, default executes immediately
 	//
@@ -137,6 +182,8 @@ func demoNonBlocking() {
 
 	ch := make(chan int, 1)
 
+	// BREAKPOINT: Watch non-blocking receive attempt
+	// DEBUG: Channel empty, so default case executes
 	// Example 1: Try to receive without blocking
 	fmt.Println("Example 1: Non-blocking receive (empty channel)")
 	select {
@@ -193,11 +240,15 @@ func demoNonBlocking() {
 // ============================================================================
 
 func demoTimeouts() {
+	// BREAKPOINT: Examine timeout pattern with time.After
+	// DEBUG: time.After creates channel that sends after duration
 	// Timeout patterns prevent operations from hanging indefinitely
 	//
 	// time.After(duration) returns a channel that receives a value
 	// after the specified duration
 
+	// BREAKPOINT: Watch select racing between work completion and timeout
+	// DEBUG: Operation takes 2s, timeout is 1s - timeout case will execute
 	// Example 1: Operation that times out
 	fmt.Println("Example 1: Operation timeout")
 	ch1 := make(chan string)
@@ -353,6 +404,8 @@ func fanIn(ch1, ch2 <-chan string) <-chan string {
 // ============================================================================
 
 func demoFanOut() {
+	// BREAKPOINT: Examine fan-out pattern - one channel to many workers
+	// DEBUG: Multiple workers compete for jobs from shared channel
 	// Fan-Out: Distribute work from single channel to multiple workers
 	//
 	// Real-world analogy: Single task queue distributed to multiple workers
@@ -362,13 +415,15 @@ func demoFanOut() {
 	// - Load balancing
 	// - Concurrent HTTP request handling
 
+	// BREAKPOINT: Create buffered task channel for work distribution
 	// Create a channel of tasks
-	tasks := make(chan Task, 20)
+	tasks := make(chan Task, *jobsFlag)
 
-	// Generate 20 tasks
+	// DEBUG: Producer goroutine generates all tasks then closes channel
+	// Generate tasks
 	go func() {
 		defer close(tasks)
-		for i := 1; i <= 20; i++ {
+		for i := 1; i <= *jobsFlag; i++ {
 			tasks <- Task{
 				ID:   i,
 				Data: fmt.Sprintf("task-%d", i),
@@ -376,9 +431,11 @@ func demoFanOut() {
 		}
 	}()
 
-	// Fan-out: Start 3 workers to process tasks concurrently
-	const numWorkers = 3
-	results := make(chan Result, 20)
+	// BREAKPOINT: Launch worker pool - all reading from same channel
+	// DEBUG: Go runtime distributes tasks fairly among workers
+	// Fan-out: Start workers to process tasks concurrently
+	numWorkers := *workersFlag
+	results := make(chan Result, *jobsFlag)
 
 	var wg sync.WaitGroup
 	for i := 1; i <= numWorkers; i++ {
@@ -392,6 +449,8 @@ func demoFanOut() {
 		close(results)
 	}()
 
+	// BREAKPOINT: Fan-in - collect results from all workers
+	// DEBUG: Range over results channel until it's closed
 	// Collect results
 	fmt.Printf("Processing tasks with %d workers:\n", numWorkers)
 	processed := 0
@@ -549,6 +608,8 @@ func fanInInts(channels ...<-chan int) <-chan int {
 // ============================================================================
 
 func demoQuitChannel() {
+	// BREAKPOINT: Examine quit channel pattern for graceful shutdown
+	// DEBUG: Closing quit channel broadcasts to all waiting goroutines
 	// Quit channel pattern: Signal goroutines to stop gracefully
 	//
 	// Use case: Shutting down worker goroutines without killing them
@@ -557,6 +618,8 @@ func demoQuitChannel() {
 	quit := make(chan struct{})
 	done := make(chan struct{})
 
+	// BREAKPOINT: Worker uses select to check quit signal periodically
+	// DEBUG: Worker can perform cleanup before exiting
 	// Start a worker that runs until quit signal
 	go func() {
 		defer func() { done <- struct{}{} }()
@@ -572,6 +635,7 @@ func demoQuitChannel() {
 				fmt.Printf("  Worker: iteration %d\n", iteration)
 
 			case <-quit:
+				// BREAKPOINT: Quit signal received - perform cleanup
 				fmt.Println("  Worker: Quit signal received, cleaning up...")
 				// Simulate cleanup
 				time.Sleep(100 * time.Millisecond)
@@ -585,10 +649,13 @@ func demoQuitChannel() {
 	fmt.Println("Worker running...")
 	time.Sleep(1 * time.Second)
 
+	// BREAKPOINT: Close quit channel to broadcast shutdown signal
+	// DEBUG: close() wakes all goroutines blocked on receive
 	// Send quit signal
 	fmt.Println("\nSending quit signal...")
 	close(quit) // Closing channel broadcasts to all receivers
 
+	// DEBUG: Wait for worker to signal completion via done channel
 	// Wait for worker to finish cleanup
 	<-done
 	fmt.Println("Worker stopped gracefully")

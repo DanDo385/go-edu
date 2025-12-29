@@ -10,6 +10,21 @@
 // 5. Nil receiver handling
 // 6. Common pitfalls and how to avoid them
 //
+// USAGE EXAMPLES:
+//   Run all demonstrations:
+//     go run main.go
+//
+//   Run specific section:
+//     go run main.go -demo=value
+//     go run main.go -demo=pointer
+//     go run main.go -demo=performance
+//
+//   Enable verbose output:
+//     go run main.go -verbose
+//
+//   Custom performance iterations:
+//     go run main.go -demo=performance -iterations=10000000
+//
 // COMPILER BEHAVIOR:
 // When you run with -gcflags='-m', you'll see which values escape to the heap.
 // Pointer receivers may force heap allocation, while value receivers can stay on stack.
@@ -21,6 +36,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"time"
 )
@@ -67,16 +83,21 @@ func (c Counter) GetCount() int {
 func demonstrateValueReceiver() {
 	fmt.Println("=== Value Receiver: No Modification ===")
 
+	// BREAKPOINT: Set breakpoint after creating counter
+	// DEBUG: c.count is 0, about to call IncrementValue 3 times
 	// MICRO-COMMENT: Create a counter with count = 0
 	c := Counter{count: 0}
 	fmt.Printf("Before: Counter{count: %d}\n", c.count)
 
+	// DEBUG: Each IncrementValue call modifies a COPY, not the original
+	// BREAKPOINT: Set breakpoint after increments to verify c.count is still 0
 	// MICRO-COMMENT: Call IncrementValue multiple times
 	// Each call works on a COPY, so the original is never changed
 	c.IncrementValue()
 	c.IncrementValue()
 	c.IncrementValue()
 
+	// DEBUG: c.count is STILL 0 - this is the value receiver gotcha!
 	// MICRO-COMMENT: The original is STILL 0 (unchanged!)
 	// This is often a bug in real code when the programmer expected modification
 	fmt.Printf("After:  Counter{count: %d}  ← Unchanged!\n", c.count)
@@ -117,10 +138,14 @@ func (c *Counter) Reset() {
 func demonstratePointerReceiver() {
 	fmt.Println("=== Pointer Receiver: Modification Works ===")
 
+	// BREAKPOINT: Set breakpoint before incrementing
+	// DEBUG: c.count is 0, about to increment 5 times with pointer receiver
 	// MICRO-COMMENT: Create a counter with count = 0
 	c := Counter{count: 0}
 	fmt.Printf("Before: Counter{count: %d}\n", c.count)
 
+	// DEBUG: Go automatically converts c.IncrementPointer() to (&c).IncrementPointer()
+	// BREAKPOINT: Set breakpoint after increments to verify c.count is 5
 	// MACRO-COMMENT: Go's Syntactic Sugar
 	// Even though c is a VALUE and IncrementPointer expects a POINTER,
 	// Go automatically converts c.IncrementPointer() to (&c).IncrementPointer()
@@ -130,9 +155,12 @@ func demonstratePointerReceiver() {
 	c.IncrementPointer()
 	c.IncrementPointer()
 
+	// DEBUG: c.count is now 5 - pointer receiver successfully modified original
 	// MICRO-COMMENT: The original IS modified (changed to 5!)
 	fmt.Printf("After:  Counter{count: %d}  ← Changed!\n", c.count)
 
+	// BREAKPOINT: Set breakpoint before Reset to see count go back to 0
+	// DEBUG: Reset modifies c through pointer, setting count to 0
 	// MICRO-COMMENT: Reset also uses a pointer receiver
 	c.Reset()
 	fmt.Printf("After Reset: Counter{count: %d}\n", c.count)
@@ -190,12 +218,15 @@ func (b Book) Print() {
 func demonstrateInterfaceSatisfaction() {
 	fmt.Println("=== Interface Satisfaction ===")
 
+	// BREAKPOINT: Set breakpoint before interface assignment
+	// DEBUG: Only *Document satisfies Printer (not Document value)
 	// MICRO-COMMENT: Document with pointer receiver
 	var p1 Printer
 
 	// This FAILS to compile (commented out to let the program run):
 	// p1 = Document{content: "hello"}  // ❌ ERROR: Document doesn't implement Printer
 
+	// DEBUG: &Document creates pointer, satisfies Printer interface
 	// This WORKS:
 	p1 = &Document{content: "hello"}  // ✅ *Document implements Printer
 	fmt.Print("*Document implements Printer: ")
@@ -215,13 +246,17 @@ func demonstrateInterfaceSatisfaction() {
 
 	fmt.Println()
 
+	// DEBUG: Both Book and *Book satisfy Printer (value receiver)
+	// BREAKPOINT: Set breakpoint before Book assignments
 	// MICRO-COMMENT: Book with value receiver
 	var p2 Printer
 
+	// DEBUG: Book value implements Printer (value receiver method)
 	// Both of these WORK:
 	p2 = Book{title: "Go Programming"}     // ✅ Book implements Printer
 	p2.Print()
 
+	// DEBUG: *Book also implements Printer (inherits value receiver methods)
 	p2 = &Book{title: "Advanced Go"}       // ✅ *Book also implements Printer
 	p2.Print()
 
@@ -282,6 +317,8 @@ func (l *LargeStruct) ProcessPointerLarge() int64 {
 func demonstratePerformance() {
 	fmt.Println("=== Performance: Small vs Large Structs ===")
 
+	// BREAKPOINT: Set breakpoint before performance test
+	// DEBUG: About to benchmark 1M iterations with small struct
 	// MICRO-COMMENT: Small struct (16 bytes)
 	small := SmallStruct{a: 10, b: 20}
 	start := time.Now()
@@ -296,12 +333,15 @@ func demonstratePerformance() {
 	}
 	pointerTime := time.Since(start)
 
+	// DEBUG: For small structs, value vs pointer difference is minimal
 	fmt.Println("Small struct (16 bytes), 1M iterations:")
 	fmt.Printf("  Value receiver:   %v\n", valueTime)
 	fmt.Printf("  Pointer receiver: %v\n", pointerTime)
 	fmt.Printf("  Difference: Negligible\n")
 	fmt.Println()
 
+	// BREAKPOINT: Set breakpoint before large struct test
+	// DEBUG: About to benchmark 100K iterations with 8000-byte struct
 	// MICRO-COMMENT: Large struct (8000 bytes)
 	large := LargeStruct{}
 	large.data[0] = 100
@@ -319,6 +359,8 @@ func demonstratePerformance() {
 	}
 	pointerLargeTime := time.Since(start)
 
+	// DEBUG: Large struct shows dramatic difference - pointer is MUCH faster
+	// BREAKPOINT: Set breakpoint to see performance difference
 	fmt.Println("Large struct (8000 bytes), 100K iterations:")
 	fmt.Printf("  Value receiver:   %v\n", valueLargeTime)
 	fmt.Printf("  Pointer receiver: %v\n", pointerLargeTime)
@@ -371,6 +413,8 @@ func (l *IntList) Len() int {
 func demonstrateNilReceiver() {
 	fmt.Println("=== Nil Receiver Handling ===")
 
+	// BREAKPOINT: Set breakpoint after creating linked list
+	// DEBUG: list is a 3-element linked list terminated by nil
 	// MICRO-COMMENT: Create a list: 1 -> 2 -> 3 -> nil
 	list := &IntList{
 		value: 1,
@@ -391,6 +435,9 @@ func demonstrateNilReceiver() {
 	fmt.Printf("Sum: %d\n", list.Sum())
 	fmt.Printf("Len: %d\n", list.Len())
 
+	// BREAKPOINT: Set breakpoint before calling methods on nil
+	// DEBUG: nilList is nil but Sum() and Len() handle it gracefully
+	// DEBUG: Methods check for nil receiver before dereferencing
 	// MACRO-COMMENT: Nil Receiver Works!
 	// Even though nilList is nil, we can call methods on it safely
 	var nilList *IntList  // nil
@@ -409,6 +456,8 @@ func demonstrateNilReceiver() {
 func demonstratePitfalls() {
 	fmt.Println("=== Common Pitfalls ===")
 
+	// BREAKPOINT: Set breakpoint before demonstrating pitfalls
+	// DEBUG: Watch value receiver fail to modify, then pointer receiver succeed
 	// PITFALL 1: Value receiver doesn't modify
 	fmt.Println("Pitfall 1: Value receiver doesn't modify")
 	c1 := Counter{count: 0}
@@ -418,6 +467,8 @@ func demonstratePitfalls() {
 	fmt.Printf("  After IncrementPointer(): count = %d ✓\n", c1.count)
 	fmt.Println()
 
+	// DEBUG: Map elements are not addressable - can't call pointer receiver methods
+	// BREAKPOINT: Set breakpoint to demonstrate map element workarounds
 	// PITFALL 2: Can't take address of map elements
 	fmt.Println("Pitfall 2: Can't take address of map elements")
 	m := map[string]Counter{
@@ -425,12 +476,14 @@ func demonstratePitfalls() {
 	}
 	// m["a"].IncrementPointer()  // ❌ COMPILE ERROR: can't take address
 
+	// DEBUG: Extract to temp variable, modify, then store back
 	// FIX 1: Extract, modify, store back
 	temp := m["a"]
 	temp.IncrementPointer()
 	m["a"] = temp
 	fmt.Printf("  After extract-modify-store: count = %d\n", m["a"].count)
 
+	// DEBUG: Better solution - store pointers in map (always addressable)
 	// FIX 2: Use pointers in the map
 	m2 := map[string]*Counter{
 		"b": &Counter{count: 0},
@@ -475,18 +528,46 @@ func demonstrateDecisionCriteria() {
 // ============================================================================
 
 func main() {
+	// Parse command-line flags
+	demo := flag.String("demo", "all", "Which demo to run: all, value, pointer, interface, performance, nil, pitfalls, criteria")
+	verbose := flag.Bool("verbose", false, "Enable verbose output")
+	iterations := flag.Int("iterations", 1000000, "Performance test iterations (for small struct)")
+	flag.Parse()
+
+	// DEBUG: Flags control execution flow
+	// BREAKPOINT: Set breakpoint here to inspect parsed flags
+
 	fmt.Println("╔═══════════════════════════════════════════════════════════╗")
 	fmt.Println("║  Methods: Value vs Pointer Receivers                     ║")
 	fmt.Println("╚═══════════════════════════════════════════════════════════╝")
 	fmt.Println()
 
-	demonstrateValueReceiver()
-	demonstratePointerReceiver()
-	demonstrateInterfaceSatisfaction()
-	demonstratePerformance()
-	demonstrateNilReceiver()
-	demonstratePitfalls()
-	demonstrateDecisionCriteria()
+	if *verbose {
+		fmt.Printf("Demo: %s, Iterations: %d\n\n", *demo, *iterations)
+	}
+
+	// DEBUG: Watch which demos execute based on -demo flag
+	if *demo == "all" || *demo == "value" {
+		demonstrateValueReceiver()
+	}
+	if *demo == "all" || *demo == "pointer" {
+		demonstratePointerReceiver()
+	}
+	if *demo == "all" || *demo == "interface" {
+		demonstrateInterfaceSatisfaction()
+	}
+	if *demo == "all" || *demo == "performance" {
+		demonstratePerformance()
+	}
+	if *demo == "all" || *demo == "nil" {
+		demonstrateNilReceiver()
+	}
+	if *demo == "all" || *demo == "pitfalls" {
+		demonstratePitfalls()
+	}
+	if *demo == "all" || *demo == "criteria" {
+		demonstrateDecisionCriteria()
+	}
 
 	fmt.Println("╔═══════════════════════════════════════════════════════════╗")
 	fmt.Println("║  Key Insights                                             ║")

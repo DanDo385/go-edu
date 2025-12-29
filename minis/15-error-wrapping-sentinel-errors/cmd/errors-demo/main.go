@@ -11,6 +11,21 @@
 // 6. Custom error types with additional data
 // 7. Error handling patterns and best practices
 //
+// USAGE EXAMPLES:
+//   Run all demonstrations:
+//     go run main.go
+//
+//   Run specific section:
+//     go run main.go -demo=sentinel
+//     go run main.go -demo=wrapping
+//     go run main.go -demo=custom
+//
+//   Enable verbose output:
+//     go run main.go -verbose
+//
+//   Show error chain details:
+//     go run main.go -show-chains
+//
 // PHILOSOPHY:
 // In Go, errors are VALUES, not exceptions. This means:
 // - Errors are returned explicitly (not thrown)
@@ -27,6 +42,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -97,9 +113,12 @@ func getUser(id int) (string, error) {
 func demonstrateSentinelErrors() {
 	fmt.Println("=== Sentinel Errors ===")
 
+	// BREAKPOINT: Set breakpoint after error is returned
+	// DEBUG: err should equal ErrNotFound (user 999 doesn't exist)
 	// MICRO-COMMENT: Try to get a user that doesn't exist
 	_, err := getUser(999)
 
+	// DEBUG: Direct comparison checks pointer equality
 	// MACRO-COMMENT: Checking Sentinel Errors (Two Ways)
 	// Way 1: Direct comparison with ==
 	// This works because sentinel errors are package-level variables
@@ -108,6 +127,8 @@ func demonstrateSentinelErrors() {
 		fmt.Println("User not found (checked with ==)")
 	}
 
+	// DEBUG: errors.Is traverses wrapped error chains (more robust)
+	// BREAKPOINT: Set breakpoint to compare == vs errors.Is
 	// Way 2: Using errors.Is (preferred, explained in detail later)
 	// This is better because it works even if the error is wrapped.
 	if errors.Is(err, ErrNotFound) {
@@ -177,13 +198,18 @@ func loadConfig(path string) (string, error) {
 func demonstrateErrorWrapping() {
 	fmt.Println("=== Error Wrapping ===")
 
+	// BREAKPOINT: Set breakpoint after loadConfig returns error
+	// DEBUG: err contains wrapped chain: loadConfig -> readFile -> os.ReadFile
 	// MICRO-COMMENT: Try to load a config file that doesn't exist
 	_, err := loadConfig("nonexistent.json")
 
+	// DEBUG: Error message shows full context chain
 	// MICRO-COMMENT: Print the error (shows the full chain)
 	fmt.Printf("Error: %v\n", err)
 	// Output: "load config: read file nonexistent.json: open nonexistent.json: no such file or directory"
 
+	// BREAKPOINT: Set breakpoint before errors.Is check
+	// DEBUG: errors.Is walks the chain to find os.ErrNotExist
 	// MACRO-COMMENT: Unwrapping Errors
 	// Even though the error is wrapped multiple times, we can still
 	// check if the ORIGINAL error is os.ErrNotExist.
@@ -196,6 +222,8 @@ func demonstrateErrorWrapping() {
 	if errors.Is(err, os.ErrNotExist) {
 		fmt.Println("Root cause: file does not exist (found via errors.Is)")
 	}
+
+	// DEBUG: This demonstrates the power of %w wrapping - preserves error chain
 
 	// MACRO-COMMENT: Contrast with %v (NO WRAPPING)
 	// If we had used %v instead of %w:
@@ -273,9 +301,12 @@ func validateAge(age int) error {
 func demonstrateCustomErrors() {
 	fmt.Println("=== Custom Error Types ===")
 
+	// BREAKPOINT: Set breakpoint after validation fails
+	// DEBUG: err is a ValidationError with Field, Value, and Reason
 	// MICRO-COMMENT: Try to validate an invalid age
 	err := validateAge(-5)
 
+	// DEBUG: First approach treats error as simple value
 	// MACRO-COMMENT: Using Custom Errors (Two Approaches)
 	//
 	// Approach 1: Just check if there's an error
@@ -283,9 +314,12 @@ func demonstrateCustomErrors() {
 		fmt.Printf("Error: %v\n", err)
 	}
 
+	// BREAKPOINT: Set breakpoint before errors.As extraction
+	// DEBUG: errors.As extracts the ValidationError, allowing field access
 	// Approach 2: Extract the custom error type to access fields
 	var ve ValidationError
 	if errors.As(err, &ve) {
+		// DEBUG: Now we can access structured error data (Field, Value, Reason)
 		// MICRO-COMMENT: Now we have access to all fields!
 		fmt.Printf("Field: %s\n", ve.Field)
 		fmt.Printf("Value: %v\n", ve.Value)
@@ -357,18 +391,25 @@ func queryUser(id int) (string, error) {
 func demonstrateWrappedCustomErrors() {
 	fmt.Println("=== Wrapped Custom Errors ===")
 
+	// BREAKPOINT: Set breakpoint after queryUser returns error
+	// DEBUG: err is DatabaseError wrapping ErrNotFound
 	// MICRO-COMMENT: Query a user that doesn't exist
 	_, err := queryUser(999)
 
+	// DEBUG: Error message includes database context + wrapped error
 	// MICRO-COMMENT: Print the full error message
 	fmt.Printf("Error: %v\n", err)
 
+	// BREAKPOINT: Set breakpoint before extracting DatabaseError
+	// DEBUG: errors.As finds DatabaseError in the error chain
 	// MACRO-COMMENT: Extract the DatabaseError
 	var dbErr DatabaseError
 	if errors.As(err, &dbErr) {
 		fmt.Printf("Operation: %s\n", dbErr.Operation)
 		fmt.Printf("Table: %s\n", dbErr.Table)
 
+		// DEBUG: DatabaseError.Unwrap() allows errors.Is to find wrapped error
+		// BREAKPOINT: Set breakpoint to verify error chain traversal
 		// MACRO-COMMENT: Check the wrapped error
 		// Even though the error is wrapped in DatabaseError,
 		// errors.Is can still find ErrNotFound because
@@ -402,19 +443,25 @@ func demonstrateWrappedCustomErrors() {
 func demonstrateErrorsIs() {
 	fmt.Println("=== errors.Is (Checking Error Identity) ===")
 
+	// BREAKPOINT: Set breakpoint after creating error chain
+	// DEBUG: wrapped3 contains 3 levels of wrapping around ErrNotFound
 	// MICRO-COMMENT: Create a chain of wrapped errors
 	baseErr := ErrNotFound
 	wrapped1 := fmt.Errorf("level 1: %w", baseErr)
 	wrapped2 := fmt.Errorf("level 2: %w", wrapped1)
 	wrapped3 := fmt.Errorf("level 3: %w", wrapped2)
 
+	// DEBUG: Error message shows all 3 wrapping levels
 	fmt.Printf("Error chain: %v\n", wrapped3)
 
+	// BREAKPOINT: Set breakpoint to compare == vs errors.Is
+	// DEBUG: == fails because wrapped3 is not the same pointer as ErrNotFound
 	// MACRO-COMMENT: Direct Comparison Fails
 	// wrapped3 is NOT the same pointer as ErrNotFound
 	isEqual := (wrapped3 == ErrNotFound)
 	fmt.Printf("wrapped3 == ErrNotFound: %v (pointer comparison)\n", isEqual)
 
+	// DEBUG: errors.Is walks the chain (wrapped3 -> wrapped2 -> wrapped1 -> baseErr)
 	// MACRO-COMMENT: errors.Is Succeeds
 	// errors.Is walks the chain and finds ErrNotFound
 	isFound := errors.Is(wrapped3, ErrNotFound)
@@ -468,6 +515,8 @@ func (e TimeoutError) Error() string {
 func demonstrateErrorsAs() {
 	fmt.Println("=== errors.As (Extracting Error Types) ===")
 
+	// BREAKPOINT: Set breakpoint after creating wrapped error
+	// DEBUG: wrapped contains TimeoutError with Operation and Duration fields
 	// MICRO-COMMENT: Create a wrapped timeout error
 	baseErr := TimeoutError{
 		Operation: "database query",
@@ -477,14 +526,18 @@ func demonstrateErrorsAs() {
 
 	fmt.Printf("Error: %v\n", wrapped)
 
+	// BREAKPOINT: Set breakpoint before errors.As extraction
+	// DEBUG: errors.As extracts TimeoutError from wrapped error
 	// MACRO-COMMENT: Extract the TimeoutError
 	// errors.As takes a POINTER to the target type
 	var te TimeoutError
 	if errors.As(wrapped, &te) {
+		// DEBUG: Now we can access TimeoutError fields (Operation, Duration)
 		// MICRO-COMMENT: Now we have the original TimeoutError!
 		fmt.Printf("Timeout operation: %s\n", te.Operation)
 		fmt.Printf("Timeout duration: %v\n", te.Duration)
 
+		// DEBUG: Can make decisions based on timeout duration
 		// MACRO-COMMENT: Handle Timeout-Specific Logic
 		// Based on the timeout duration, we might decide to retry
 		if te.Duration < 10*time.Second {
@@ -582,6 +635,8 @@ func processItem(item int) error {
 func demonstrateMultiError() {
 	fmt.Println("=== Multi-Error Handling ===")
 
+	// BREAKPOINT: Set breakpoint after processItems
+	// DEBUG: err contains MultiError with 2 validation failures
 	// MICRO-COMMENT: Process items with some invalid values
 	items := []int{10, -5, 50, 200, 75}
 	err := processItems(items)
@@ -589,6 +644,8 @@ func demonstrateMultiError() {
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 
+		// DEBUG: MultiError.Errors slice contains all individual errors
+		// BREAKPOINT: Set breakpoint to inspect all collected errors
 		// MACRO-COMMENT: Extract MultiError to Access All Errors
 		var multi MultiError
 		if errors.As(err, &multi) {
@@ -684,6 +741,8 @@ func writeToFile(path string, data []byte) (err error) {
 func demonstrateErrorPatterns() {
 	fmt.Println("=== Error Handling Patterns ===")
 
+	// BREAKPOINT: Set breakpoint before parseAndValidate
+	// DEBUG: Watch guard clause pattern (early returns on error)
 	// MICRO-COMMENT: Guard clauses
 	value, err := parseAndValidate("25")
 	if err != nil {
@@ -692,6 +751,8 @@ func demonstrateErrorPatterns() {
 		fmt.Printf("Parse succeeded: %d\n", value)
 	}
 
+	// DEBUG: Named return pattern allows defer to modify return value
+	// BREAKPOINT: Set breakpoint to see cleanup pattern
 	// MICRO-COMMENT: Named return with cleanup
 	err = writeToFile("/tmp/test.txt", []byte("hello"))
 	if err != nil {
@@ -751,6 +812,8 @@ func safeDivide(a, b int) (int, error) {
 func demonstratePanicVsError() {
 	fmt.Println("=== Panic vs Error ===")
 
+	// BREAKPOINT: Set breakpoint before division by zero
+	// DEBUG: safeDivide returns error (not panic) for division by zero
 	// MICRO-COMMENT: Error (expected condition, caller handles)
 	result, err := safeDivide(10, 0)
 	if err != nil {
@@ -803,21 +866,55 @@ func demonstrateStdlibErrors() {
 // ============================================================================
 
 func main() {
+	// Parse command-line flags
+	demo := flag.String("demo", "all", "Which demo to run: all, sentinel, wrapping, custom, wrapped, is, as, multi, patterns, panic, stdlib")
+	verbose := flag.Bool("verbose", false, "Enable verbose output")
+	showChains := flag.Bool("show-chains", false, "Show detailed error chain information")
+	flag.Parse()
+
+	// DEBUG: Flags control which demonstrations run
+	// BREAKPOINT: Set breakpoint here to inspect parsed flags
+
 	fmt.Println("╔═══════════════════════════════════════════════════════════╗")
 	fmt.Println("║  Error Handling in Go                                    ║")
 	fmt.Println("╚═══════════════════════════════════════════════════════════╝")
 	fmt.Println()
 
-	demonstrateSentinelErrors()
-	demonstrateErrorWrapping()
-	demonstrateCustomErrors()
-	demonstrateWrappedCustomErrors()
-	demonstrateErrorsIs()
-	demonstrateErrorsAs()
-	demonstrateMultiError()
-	demonstrateErrorPatterns()
-	demonstratePanicVsError()
-	demonstrateStdlibErrors()
+	if *verbose {
+		fmt.Printf("Demo: %s, Show Chains: %t\n\n", *demo, *showChains)
+	}
+
+	// DEBUG: Watch which demos execute based on -demo flag
+	if *demo == "all" || *demo == "sentinel" {
+		demonstrateSentinelErrors()
+	}
+	if *demo == "all" || *demo == "wrapping" {
+		demonstrateErrorWrapping()
+	}
+	if *demo == "all" || *demo == "custom" {
+		demonstrateCustomErrors()
+	}
+	if *demo == "all" || *demo == "wrapped" {
+		demonstrateWrappedCustomErrors()
+	}
+	if *demo == "all" || *demo == "is" {
+		demonstrateErrorsIs()
+	}
+	if *demo == "all" || *demo == "as" {
+		demonstrateErrorsAs()
+	}
+	if *demo == "all" || *demo == "multi" {
+		demonstrateMultiError()
+	}
+	if *demo == "all" || *demo == "patterns" {
+		demonstrateErrorPatterns()
+	}
+	if *demo == "all" || *demo == "panic" {
+		demonstratePanicVsError()
+	}
+	if *demo == "all" || *demo == "stdlib" {
+		demonstrateStdlibErrors()
+	}
 
 	fmt.Println("╔═══════════════════════════════════════════════════════════╗")
 	fmt.Println("║  Key Insights                                             ║")

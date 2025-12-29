@@ -17,13 +17,41 @@
 // prevent many concurrency bugs by design.
 //
 // "Don't communicate by sharing memory; share memory by communicating."
+//
+// USAGE EXAMPLES:
+//   # Run all demos
+//   ./channels-demo
+//
+//   # Run specific demos
+//   ./channels-demo -demo=unbuf,buf,close,select
+//
+//   # Configure worker and job counts
+//   ./channels-demo -workers=5 -jobs=20
+//
+//   # Enable verbose output
+//   ./channels-demo -verbose
+//
+// FLAGS:
+//   -demo      Demos: all, unbuf, buf, close, range, select, pipeline, fanout, quit, future, dir
+//   -workers   Number of workers for fan-out demo (default: 3)
+//   -jobs      Number of jobs for fan-out demo (default: 10)
+//   -verbose   Enable verbose debug output
 
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math/rand"
 	"time"
+)
+
+// CLI flags
+var (
+	demoFlag    = flag.String("demo", "all", "Demos to run")
+	workersFlag = flag.Int("workers", 3, "Number of workers")
+	jobsFlag    = flag.Int("jobs", 10, "Number of jobs")
+	verboseFlag = flag.Bool("verbose", false, "Verbose output")
 )
 
 // ============================================================================
@@ -55,16 +83,21 @@ import (
 func demonstrateUnbufferedChannel() {
 	fmt.Println("=== Unbuffered Channels ===")
 
+	// BREAKPOINT: Examine unbuffered channel creation (capacity = 0)
+	// DEBUG: Unbuffered = synchronous handoff, sender blocks until receiver ready
 	// MICRO-COMMENT: Create unbuffered channel
 	// The absence of a capacity argument means capacity = 0
 	ch := make(chan int)
 
+	// BREAKPOINT: Launch sender in goroutine to prevent deadlock
+	// DEBUG: If we sent on main goroutine, it would deadlock (no receiver yet)
 	// MACRO-COMMENT: Launch sender goroutine
 	// This goroutine will BLOCK on send until the receiver is ready.
 	// If we didn't launch this in a goroutine, the main goroutine would
 	// block forever (deadlock) because there's no receiver yet.
 	go func() {
 		fmt.Println("  Sender: About to send (will block until receiver ready)...")
+		// BREAKPOINT: Send operation blocks until receive happens
 		ch <- 42 // BLOCKS until main goroutine receives
 		fmt.Println("  Sender: Send complete (receiver received the value)")
 	}()
@@ -73,6 +106,8 @@ func demonstrateUnbufferedChannel() {
 	// In real code, you don't need this - channels handle synchronization
 	time.Sleep(100 * time.Millisecond)
 
+	// BREAKPOINT: Receive operation unblocks sender - synchronization point
+	// DEBUG: Both send and receive complete simultaneously
 	// MICRO-COMMENT: Receive from channel
 	// This will unblock the sender and complete the handoff
 	fmt.Println("  Receiver: About to receive (will unblock sender)...")
@@ -112,16 +147,21 @@ func demonstrateUnbufferedChannel() {
 func demonstrateBufferedChannel() {
 	fmt.Println("=== Buffered Channels ===")
 
+	// BREAKPOINT: Examine buffered channel (capacity = 3)
+	// DEBUG: Buffered = asynchronous, sender only blocks when buffer full
 	// MICRO-COMMENT: Create buffered channel with capacity 3
 	// This channel can hold 3 values before blocking sends
 	ch := make(chan int, 3)
 
+	// BREAKPOINT: Watch non-blocking sends until buffer fills
+	// DEBUG: First 3 sends don't block - buffer has space
 	// MICRO-COMMENT: Send 3 values (all succeed immediately)
 	fmt.Println("  Sending 3 values to buffered channel (capacity 3)...")
 	ch <- 1
 	fmt.Println("    Sent 1 (buffer: [1, _, _])")
 	ch <- 2
 	fmt.Println("    Sent 2 (buffer: [1, 2, _])")
+	// BREAKPOINT: Buffer now full - next send will block
 	ch <- 3
 	fmt.Println("    Sent 3 (buffer: [1, 2, 3]) - buffer now FULL")
 
@@ -181,11 +221,14 @@ func demonstrateClosingChannels() {
 
 	ch := make(chan int, 3)
 
+	// DEBUG: Send values before closing
 	// MICRO-COMMENT: Send some values
 	ch <- 1
 	ch <- 2
 	ch <- 3
 
+	// BREAKPOINT: Watch close() operation - signals no more sends
+	// DEBUG: Close doesn't remove buffered values - they're still readable
 	// MICRO-COMMENT: Close the channel
 	// This signals "no more values will be sent"
 	// Receivers can still drain buffered values
@@ -198,6 +241,8 @@ func demonstrateClosingChannels() {
 	v3 := <-ch
 	fmt.Printf("  Received buffered values: %d, %d, %d\n", v1, v2, v3)
 
+	// BREAKPOINT: Two-value receive detects closed channel
+	// DEBUG: ok=false means channel is closed and empty
 	// MACRO-COMMENT: Detecting Closure with Two-Value Receive
 	// After draining buffered values, receives return zero value + false
 	v4, ok := <-ch
@@ -552,21 +597,25 @@ func demonstratePipeline() {
 func demonstrateFanOutFanIn() {
 	fmt.Println("=== Fan-Out / Fan-In Pattern ===")
 
-	const (
-		numJobs    = 10
-		numWorkers = 3
-	)
+	numJobs := *jobsFlag
+	numWorkers := *workersFlag
 
+	// BREAKPOINT: Create work distribution channels
+	// DEBUG: Buffered channels prevent blocking during fan-out/fan-in
 	jobs := make(chan int, numJobs)
 	results := make(chan int, numJobs)
 
+	// BREAKPOINT: Fan-out - multiple workers reading from one channel
+	// DEBUG: Go runtime ensures each message goes to exactly one worker
 	// MACRO-COMMENT: Fan-Out - Launch workers
 	// All workers read from the SAME jobs channel.
 	// Go's runtime ensures only ONE worker receives each job.
 	fmt.Printf("  Launching %d workers...\n", numWorkers)
 	for w := 1; w <= numWorkers; w++ {
 		go func(id int) {
+			// BREAKPOINT: Range over shared channel - automatic load balancing
 			for job := range jobs {
+				// DEBUG: Random delay simulates variable processing time
 				// MICRO-COMMENT: Simulate work
 				time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 				result := job * 2
@@ -757,6 +806,14 @@ func demonstrateDirectionalChannels() {
 // ============================================================================
 
 func main() {
+	// BREAKPOINT: Parse CLI flags
+	flag.Parse()
+
+	// DEBUG: Show config if verbose
+	if *verboseFlag {
+		fmt.Printf("DEBUG: workers=%d, jobs=%d\n", *workersFlag, *jobsFlag)
+	}
+
 	fmt.Println("=== Channel Basics Demonstration ===\n")
 
 	// SECTION 1: Unbuffered vs Buffered
