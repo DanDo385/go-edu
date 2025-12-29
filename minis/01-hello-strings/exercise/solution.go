@@ -25,11 +25,18 @@ Why Go is well-suited:
 - Excellent stdlib: `unicode/utf8` and `strings` cover most needs
 - Fast: no string copying overhead (immutable strings are shared internally)
 
-Compared to other languages:
-- Python: Easier (strings are always Unicode), but slower and less explicit
-- JavaScript: Similar ease, but UTF-16 internals cause edge cases (surrogate pairs)
-- Rust: More control, but `String`/`&str`/`char` has a steeper learning curve
-- C/C++: Requires third-party libraries (ICU), prone to encoding errors
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints at critical transformation points
+2. Watching variable state changes in the Variables panel
+3. Using F10 (Step Over) vs F11 (Step Into) effectively
+4. Inspecting memory allocations and data structure transformations
+5. Using the Debug Console to evaluate expressions
+6. Understanding the call stack at each level
 */
 
 package exercise
@@ -47,19 +54,57 @@ import (
 // - []rune conversion: allows character-level manipulation
 // - unicode.ToUpper(): handles all Unicode uppercase rules (not just ASCII)
 // - Pass by value vs reference semantics
+//
+// DEBUGGING WORKFLOW:
+// ===================
+// 1. Set breakpoint at function entry (line 66)
+// 2. Call with test input: TitleCase("hello café 世界")
+// 3. Step through each transformation
+// 4. Watch memory allocations in real-time
 func TitleCase(s string) string {
+	// BREAKPOINT 1: Set here to inspect function entry
+	// DEBUG: In Variables panel, expand 's' to see:
+	//   - s.len: byte length (not character count!)
+	//   - s.data: pointer to underlying byte array
+	// DEBUG: In Debug Console, type: len(s)
+	// DEBUG: In Debug Console, type: utf8.RuneCountInString(s)
+	// Compare byte length vs rune count for UTF-8 strings
 
+	// BREAKPOINT 2: Set here BEFORE strings.Fields call
+	// Step Into (F11) to see how strings.Fields works internally
+	// Watch how it identifies Unicode whitespace characters
 	words := strings.Fields(s)
+
+	// BREAKPOINT 3: Set here AFTER strings.Fields call
+	// DEBUG: In Variables panel, expand 'words' slice to see:
+	//   - words.len: number of words found
+	//   - words.cap: capacity of underlying array
+	//   - words[0], words[1], etc.: each word as a string
+	// DEBUG: In Debug Console, type: len(words)
+	// DEBUG: In Debug Console, type: cap(words)
+	// DEBUG: In Debug Console, type: words[0]
+	// Notice how slice capacity may exceed length (growth strategy)
 
 	// ============================================================================
 	// RANGE LOOP: value semantics
 	// ============================================================================
 	// range returns (index, value) where:
 	// - i is the index (int, copied)
-	// - word is a COPY of words[i] (string copied, but data shared as explained above)
+	// - word is a COPY of words[i] (string copied, but data shared)
 	// - Modifying 'word' won't change words[i]
 	// - You MUST use words[i] = ... to modify the slice
+	//
+	// BREAKPOINT 4: Set here at loop start
+	// Step Over (F10) to iterate through each word
+	// Watch 'i' and 'word' change with each iteration
 	for i, word := range words {
+		// BREAKPOINT 5: Set here at start of loop body
+		// DEBUG: In Variables panel, watch:
+		//   - i: current loop index
+		//   - word: current word (a copy of words[i])
+		// DEBUG: In Debug Console, type: words[i] == word
+		// This should be 'true' - they have the same value
+
 		// ========================================================================
 		// CONVERSION: string → []rune allocates memory
 		// ========================================================================
@@ -75,8 +120,27 @@ func TitleCase(s string) string {
 		// The rune slice is: struct { ptr *rune; len, cap int }
 		// - 'runes' is the slice header (on stack)
 		// - The actual rune array is on the heap
+		//
+		// BREAKPOINT 6: Set here BEFORE []rune conversion
+		// DEBUG: In Variables panel, look at 'word':
+		//   - word: still a string
+		//   - Note its byte representation
+		// BREAKPOINT 7: Set here AFTER []rune conversion
+		// DEBUG: In Variables panel, expand 'runes' to see:
+		//   - runes.len: number of runes (characters)
+		//   - runes.cap: capacity of underlying array
+		//   - runes[0], runes[1], etc.: each rune as int32
+		// DEBUG: In Debug Console, type: len(word)
+		// DEBUG: In Debug Console, type: len(runes)
+		// Compare byte length of word vs rune count
+		// DEBUG: In Debug Console, type: runes[0]
+		// See the numeric Unicode code point value
 		runes := []rune(word)
 
+		// BREAKPOINT 8: Set here BEFORE length check
+		// DEBUG: Watch Variables panel for 'runes.len'
+		// Step Over (F10) - if len > 0, we enter the if block
+		// If len == 0, we skip the if block (empty word edge case)
 		if len(runes) > 0 {
 			// ====================================================================
 			// INDEXING: Direct modification through slice
@@ -88,6 +152,20 @@ func TitleCase(s string) string {
 			// - The input rune is copied (4 bytes, cheap)
 			// - A new rune is returned (4 bytes)
 			// - No pointers involved, no heap allocation
+			//
+			// BREAKPOINT 9: Set here BEFORE unicode.ToUpper call
+			// DEBUG: In Variables panel, note current value of runes[0]
+			// DEBUG: In Debug Console, type: runes[0]
+			// DEBUG: In Debug Console, type: string(runes[0])
+			// See the character representation
+			// Step Into (F11) to see unicode.ToUpper implementation
+			// BREAKPOINT 10: Set here AFTER uppercase assignment
+			// DEBUG: In Variables panel, see runes[0] is now uppercase
+			// DEBUG: In Debug Console, type: runes[0]
+			// DEBUG: In Debug Console, type: string(runes[0])
+			// Compare before/after values - observe the transformation
+			// DEBUG: Watch how lowercase rune value changes to uppercase
+			// Example: 'h' (104) becomes 'H' (72)
 			runes[0] = unicode.ToUpper(runes[0])
 		}
 
@@ -105,8 +183,34 @@ func TitleCase(s string) string {
 		// - We're not modifying the slice header
 		// - We're changing the data that words[i] points to
 		// - This IS visible to anyone holding a reference to the same slice
+		//
+		// BREAKPOINT 11: Set here BEFORE string conversion
+		// DEBUG: In Variables panel, expand 'runes' slice
+		// See the array of int32 values
+		// BREAKPOINT 12: Set here AFTER words[i] assignment
+		// DEBUG: In Variables panel, expand 'words' slice
+		// DEBUG: Look at words[i] - it now has the capitalized word
+		// DEBUG: In Debug Console, type: words[i]
+		// DEBUG: In Debug Console, type: string(runes)
+		// They should be equal
+		// DEBUG: Watch how the []rune array is encoded back to UTF-8 string
 		words[i] = string(runes)
+
+		// BREAKPOINT 13: Set here at end of loop iteration
+		// DEBUG: In Variables panel, review the transformation:
+		//   - Original 'word' variable is unchanged (it was a copy)
+		//   - words[i] now contains the capitalized version
+		// DEBUG: In Debug Console, type: word
+		// DEBUG: In Debug Console, type: words[i]
+		// Notice word != words[i] after modification
+		// Step Over (F10) to continue to next iteration
 	}
+
+	// BREAKPOINT 14: Set here AFTER loop completes
+	// DEBUG: In Variables panel, expand 'words' slice
+	// All elements should now be title-cased
+	// DEBUG: In Debug Console, type: words
+	// See the entire transformed slice
 
 	// ============================================================================
 	// RETURN: strings.Join creates a new string
@@ -118,6 +222,15 @@ func TitleCase(s string) string {
 	// - Returns a new string (immutable)
 	//
 	// We return this string BY VALUE (copies pointer + len, shares data)
+	//
+	// BREAKPOINT 15: Set here BEFORE strings.Join
+	// Step Into (F11) to see strings.Join implementation
+	// Watch how it calculates buffer size and concatenates
+	// BREAKPOINT 16: Set here at return statement
+	// DEBUG: In Variables panel, see the final result string
+	// DEBUG: In Debug Console, type: strings.Join(words, " ")
+	// This is the final output
+	// DEBUG: Compare input 's' with output - transformation complete
 	return strings.Join(words, " ")
 }
 
@@ -145,7 +258,22 @@ func TitleCase(s string) string {
 //   []rune conversion → [H, i, 👋] (3 runes, but 6 bytes!)
 //   After swap loop  → [👋, i, H]
 //   Result: "👋iH" (correctly preserves emoji)
+//
+// DEBUGGING WORKFLOW:
+// ===================
+// 1. Set breakpoint at function entry (line 235)
+// 2. Call with: Reverse("Hi👋")
+// 3. Watch the two-pointer swap algorithm work
+// 4. Observe memory transformations step by step
 func Reverse(s string) string {
+	// BREAKPOINT 17: Set here to inspect function entry
+	// DEBUG: In Variables panel, expand 's' to see:
+	//   - s.len: byte length
+	//   - s.data: pointer to byte array
+	// DEBUG: In Debug Console, type: len(s)
+	// DEBUG: In Debug Console, type: utf8.RuneCountInString(s)
+	// For "Hi👋", len=6 bytes but 3 runes!
+
 	// ============================================================================
 	// CONVERSION: string → []rune
 	// ============================================================================
@@ -158,6 +286,19 @@ func Reverse(s string) string {
 	// - Creates a new array on the heap (size = rune count * 4 bytes)
 	// - Returns a slice header pointing to it
 	// - The slice 'runes' contains: { ptr *rune, len int, cap int }
+	//
+	// BREAKPOINT 18: Set here BEFORE []rune conversion
+	// DEBUG: In Variables panel, look at 's' as bytes
+	// For UTF-8 strings, you'll see multi-byte sequences
+	// BREAKPOINT 19: Set here AFTER []rune conversion
+	// DEBUG: In Variables panel, expand 'runes' slice to see:
+	//   - runes.len: number of characters
+	//   - runes[0], runes[1], etc.: each character as int32
+	// DEBUG: In Debug Console, type: len(runes)
+	// DEBUG: In Debug Console, type: cap(runes)
+	// DEBUG: For "Hi👋", you should see len=3, cap=3
+	// DEBUG: In Debug Console, type: runes[2]
+	// This is the emoji as a single int32 value (128075 for 👋)
 	runes := []rune(s)
 
 	// ============================================================================
@@ -172,7 +313,26 @@ func Reverse(s string) string {
 	// - We swap elements at positions i and j
 	// - After each swap, move i right and j left
 	// - When pointers meet, all elements have been swapped
+	//
+	// BREAKPOINT 20: Set here BEFORE loop initialization
+	// DEBUG: In Variables panel, note runes in original order
+	// DEBUG: In Debug Console, type: len(runes)
+	// Calculate expected iterations: len(runes) / 2
+	// BREAKPOINT 21: Set here at loop condition check
+	// DEBUG: Watch Variables panel for 'i' and 'j' values
+	// On first iteration: i=0, j=len(runes)-1
+	// Step Over (F10) to see loop execute
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		// BREAKPOINT 22: Set here at start of loop body
+		// DEBUG: In Variables panel, watch:
+		//   - i: left pointer (starts at 0, increments)
+		//   - j: right pointer (starts at len-1, decrements)
+		// DEBUG: In Debug Console, type: runes[i]
+		// DEBUG: In Debug Console, type: string(runes[i])
+		// DEBUG: In Debug Console, type: runes[j]
+		// DEBUG: In Debug Console, type: string(runes[j])
+		// See which characters will be swapped
+
 		// ====================================================================
 		// SIMULTANEOUS ASSIGNMENT: Go's tuple assignment
 		// ====================================================================
@@ -192,8 +352,38 @@ func Reverse(s string) string {
 		// - They're direct indexed access to array elements
 		// - Assignment changes the array data (which lives on the heap)
 		// - The slice 'runes' still points to the same array
+		//
+		// BREAKPOINT 23: Set here BEFORE swap
+		// DEBUG: In Variables panel, expand 'runes' slice
+		// Note values at indices i and j
+		// DEBUG: In Debug Console, type: runes[i]
+		// DEBUG: In Debug Console, type: runes[j]
+		// BREAKPOINT 24: Set here AFTER swap
+		// DEBUG: In Variables panel, expand 'runes' slice again
+		// Values at i and j should be swapped
+		// DEBUG: In Debug Console, type: runes[i]
+		// DEBUG: In Debug Console, type: runes[j]
+		// Compare before/after - they've switched positions
+		// DEBUG: Watch how the underlying array is modified in-place
 		runes[i], runes[j] = runes[j], runes[i]
+
+		// BREAKPOINT 25: Set here at end of loop iteration
+		// DEBUG: In Variables panel, watch 'i' and 'j' update
+		// Step Over (F10) - i increments, j decrements
+		// DEBUG: In Debug Console, type: i
+		// DEBUG: In Debug Console, type: j
+		// When i >= j, loop terminates (pointers have met/crossed)
+		// DEBUG: In Debug Console, type: runes
+		// See progressive reversal with each iteration
 	}
+
+	// BREAKPOINT 26: Set here AFTER loop completes
+	// DEBUG: In Variables panel, expand 'runes' slice
+	// All elements should now be in reverse order
+	// DEBUG: In Debug Console, type: runes
+	// Compare with original input - completely reversed
+	// DEBUG: In Debug Console, type: string(runes)
+	// See the reversed string representation
 
 	// ============================================================================
 	// CONVERSION: []rune → string
@@ -210,6 +400,15 @@ func Reverse(s string) string {
 	// Return: We return the string BY VALUE
 	// - Copies the string struct (pointer + length, ~16 bytes)
 	// - Does NOT copy the actual string data (it's shared immutably)
+	//
+	// BREAKPOINT 27: Set here BEFORE string conversion
+	// DEBUG: In Variables panel, expand 'runes' - see int32 array
+	// BREAKPOINT 28: Set here at return statement
+	// DEBUG: In Variables panel, see final string result
+	// DEBUG: In Debug Console, type: string(runes)
+	// This is the UTF-8 encoded result
+	// DEBUG: Watch how []rune is encoded to UTF-8 bytes
+	// For emoji, each int32 rune becomes multiple bytes
 	return string(runes)
 }
 
@@ -241,7 +440,25 @@ func Reverse(s string) string {
 //   😀 = 4 bytes [0xF0, 0x9F, 0x98, 0x80]
 //   utf8.RuneCountInString recognizes multi-byte sequences
 //   Result: 2 runes (not 8!)
+//
+// DEBUGGING WORKFLOW:
+// ===================
+// 1. Set breakpoint at function entry (line 430)
+// 2. Call with: RuneLen("👋😀")
+// 3. Watch how it counts runes vs bytes
+// 4. Step into utf8.RuneCountInString to see internals
 func RuneLen(s string) int {
+	// BREAKPOINT 29: Set here to inspect function entry
+	// DEBUG: In Variables panel, expand 's' to see:
+	//   - s.len: byte length
+	//   - s.data: pointer to byte array
+	// DEBUG: In Debug Console, type: len(s)
+	// This is the BYTE count, not character count
+	// For "👋😀", len(s) = 8 bytes
+	// DEBUG: In Debug Console, type: utf8.RuneCountInString(s)
+	// This is the CHARACTER count
+	// For "👋😀", RuneCount = 2 characters
+
 	// ============================================================================
 	// PARAMETER: s is passed by value
 	// ============================================================================
@@ -254,6 +471,10 @@ func RuneLen(s string) int {
 	// - Copies str's pointer and length (~16 bytes copied)
 	// - Both caller's str and our s point to same "hello" data
 	// - Safe because strings are immutable (can't be modified)
+	//
+	// DEBUG: In Variables panel, note that 's' is a local copy
+	// Modifying 's' here wouldn't affect the caller's string
+	// (though strings are immutable, so we can't modify anyway)
 
 	// ============================================================================
 	// STDLIB FUNCTION: utf8.RuneCountInString
@@ -269,11 +490,23 @@ func RuneLen(s string) int {
 	// - Counts how many runes (code points) exist
 	// - Never allocates memory on the heap
 	//
+	// BREAKPOINT 30: Set here BEFORE utf8.RuneCountInString call
+	// Step Into (F11) to see the stdlib implementation
+	// Watch how it decodes UTF-8 sequences byte by byte
+	// DEBUG: In Variables panel, 's' hasn't been modified
+	// BREAKPOINT 31: Set here at return statement
+	// DEBUG: In Variables panel, see the return value
+	// DEBUG: In Debug Console, type: utf8.RuneCountInString(s)
+	// DEBUG: In Debug Console, type: len(s)
+	// Compare rune count vs byte count - key difference!
+	//
 	// Alternative implementations (for learning):
 	//
 	// Method 1: Convert to []rune (allocates!)
 	//   return len([]rune(s))
 	//   Problem: Allocates a rune slice on the heap (wasteful)
+	//   DEBUG: Try in Debug Console: len([]rune(s))
+	//   Same result, but check memory allocation in profiler
 	//
 	// Method 2: range loop (no allocation)
 	//   count := 0
@@ -282,6 +515,7 @@ func RuneLen(s string) int {
 	//   }
 	//   return count
 	//   Note: range over string iterates RUNES, not bytes!
+	//   DEBUG: Try this in Debug Console to verify same result
 	//
 	// Method 3: Manual decoding (educational)
 	//   count := 0
@@ -295,11 +529,76 @@ func RuneLen(s string) int {
 	//
 	// We use utf8.RuneCountInString because it's the most efficient
 	// This is implemented in assembly on many platforms for speed
+	//
+	// DEBUGGING TIP: Use Watch Expressions
+	// Add these to the Watch panel (right-click in Variables panel):
+	// 1. len(s) - byte length
+	// 2. utf8.RuneCountInString(s) - character count
+	// 3. s - the actual string value
+	// Watch these update as you step through the code
 	return utf8.RuneCountInString(s)
 }
 
 /*
+ADVANCED DEBUGGING TECHNIQUES:
+===============================
+
+1. CONDITIONAL BREAKPOINTS:
+   Right-click on any breakpoint and add conditions
+   Examples:
+   - In TitleCase loop: i == 2 (break only on 3rd iteration)
+   - In Reverse loop: i == j (break when pointers meet)
+   - In RuneLen: len(s) > 10 (break only for long strings)
+
+2. LOGPOINTS:
+   Right-click on line number → Add Logpoint
+   Examples:
+   - In TitleCase loop: Log "Processing word {i}: {word}"
+   - In Reverse loop: Log "Swapping i={i}, j={j}: {runes[i]} ↔ {runes[j]}"
+   - No need to modify code or add print statements!
+
+3. DEBUG CONSOLE EXPRESSIONS:
+   During debugging, try these in the Debug Console:
+   - Type: s to see current string value
+   - Type: []byte(s) to see byte representation
+   - Type: []rune(s) to see rune representation
+   - Type: utf8.ValidString(s) to check if valid UTF-8
+   - Type: fmt.Printf("%q", s) to see escaped representation
+   - Type: fmt.Printf("%#v", s) to see Go syntax representation
+
+4. WATCH EXPRESSIONS:
+   Add these to the Watch panel for real-time monitoring:
+   - len(s) vs utf8.RuneCountInString(s)
+   - cap(words) vs len(words)
+   - runes[i] for current character value
+   - string(runes[i]) for character representation
+
+5. CALL STACK NAVIGATION:
+   In the Call Stack panel:
+   - Click different frames to see state at each level
+   - Observe how variables change across stack frames
+   - Use "Step Out" (Shift+F11) to return to caller
+
+6. MEMORY INSPECTION:
+   To see memory allocations:
+   - Use Go's pprof in production
+   - In debugger, watch heap allocations via escape analysis
+   - Compare &s (address) in different stack frames
+   - Notice when []rune(s) allocates new memory
+
+7. STEP COMMANDS:
+   - F10 (Step Over): Execute line, don't enter functions
+   - F11 (Step Into): Enter function calls to see internals
+   - Shift+F11 (Step Out): Return to caller
+   - F5 (Continue): Run until next breakpoint
+
+8. DATA BREAKPOINTS:
+   Watch for when specific variables change:
+   - Right-click variable → Break When Value Changes
+   - Useful for tracking when words[i] gets modified
+
 Alternatives & Trade-offs:
+==========================
 
 1. TitleCase: We could use strings.Title() from the stdlib, but it's deprecated
    as of Go 1.18 because it doesn't follow Unicode word-breaking rules properly.
@@ -317,22 +616,43 @@ Alternatives & Trade-offs:
    return len([]rune(s))  // Allocates a slice!
    utf8.RuneCountInString() is O(n) time but O(1) space.
 
-Go vs X:
+DEBUGGING EXERCISES:
+====================
 
-Go vs Python:
-- Python: `s.title()` just works, but encoding surprises can occur (Python 2 vs 3)
-- Go: More verbose, but encoding is always explicit and predictable
+Exercise 1: Trace TitleCase execution
+- Input: "hello world"
+- Set breakpoints at: 66, 74, 78, 120, 155, 168, 181
+- Watch: s, words, i, word, runes
+- Question: How many times does the loop iterate?
+- Question: What's the value of words[0] before and after the loop?
 
-Go vs JavaScript:
-- JS: `s.split('').reverse().join('')` works, but can split surrogate pairs (emoji)
-- Go: Rune handling prevents these edge cases
+Exercise 2: Understand UTF-8 vs ASCII
+- Input: "café" vs "cafe"
+- Set breakpoints at: 66, 120, 155
+- In Debug Console: len(s) vs utf8.RuneCountInString(s)
+- Question: Why are they different for "café" but same for "cafe"?
 
-Go vs Rust:
-- Rust: `s.chars().rev().collect()` is similar to our []rune approach
-- Go: Simpler syntax, but Rust's zero-cost abstractions are faster for large strings
-- Both are memory-safe, but Go's GC vs Rust's ownership is a philosophical choice
+Exercise 3: Two-pointer algorithm visualization
+- Input: "12345"
+- Set breakpoints at: 235, 275, 302, 330
+- Watch: runes, i, j
+- Step through each iteration
+- Question: What are i and j values at each iteration?
+- Question: When does the loop terminate?
 
-Go vs C:
-- C: Requires ICU library for proper Unicode, easy to introduce buffer overflows
-- Go: Standard library + memory safety = fewer production bugs
+Exercise 4: Empty string edge case
+- Input: ""
+- Set breakpoints at: 66, 235, 430
+- Question: Does TitleCase loop execute? How many times?
+- Question: Does Reverse loop execute? Why not?
+- Question: What does RuneLen return?
+
+Exercise 5: Multi-byte emoji handling
+- Input: "Hi👋"
+- Set breakpoints at: 235, 275, 302, 330, 365
+- Watch: s, runes, i, j
+- In Debug Console: len(s) vs len(runes)
+- Question: How many bytes is the emoji?
+- Question: How is it stored as a rune (int32)?
+- Question: After reversal, is the emoji still intact?
 */

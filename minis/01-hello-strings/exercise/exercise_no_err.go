@@ -22,84 +22,56 @@ KEY CONCEPTS:
 - String immutability in Go
 - Converting between strings and runes
 - UTF-8 encoding awareness
-
-DEBUGGING:
-- Set breakpoints at function entry points (marked with // BREAKPOINT)
-- Step through the pure logic without error handling distractions
-- Focus on understanding the algorithm
-- Watch Variables panel to see string transformations
-
-See /RUN_DEBUG.md for comprehensive debugging guide.
 */
 
-// CoreTitleCase demonstrates the core logic of capitalizing first letters
-// BREAKPOINT: Set breakpoint here to step through algorithm
-// DEBUG: Watch Variables panel to see how words are processed
+// CoreTitleCase demonstrates core logic of capitalizing first letters
+// without error handling
+//
+// Algorithm steps:
+// 1. Split the string into words
+// 2. For each word, convert to runes and capitalize first character
+// 3. Join words back together with spaces
 func CoreTitleCase(s string) string {
-	// DEBUG: Inspect 's' parameter - see input string
+	// TODO: Step 1 - Split input string into words using strings.Fields
 
-	// Split into words
-	words := strings.Fields(s)
-	// DEBUG: Expand 'words' - see slice of individual words
+	// TODO: Step 2 - Iterate through words, convert each to runes
 
-	// Process each word
-	for i, word := range words {
-		// Convert to runes to work with Unicode characters
-		runes := []rune(word)
-		// DEBUG: Expand 'runes' - see Unicode code points
+	// TODO: Step 2a - For non-empty words, capitalize first rune using unicode.ToUpper
 
-		if len(runes) > 0 {
-			// Capitalize first rune
-			runes[0] = unicode.ToUpper(runes[0])
-			// DEBUG: Inspect runes[0] - now uppercase
+	// TODO: Step 2b - Convert runes back to string
 
-			// Convert back to string
-			words[i] = string(runes)
-		}
-	}
+	// TODO: Step 3 - Join all processed words back together with space delimiter
 
-	// Join words back together
-	result := strings.Join(words, " ")
-	// DEBUG: Inspect 'result' - see final capitalized string
-
-	return result
+	return ""
 }
 
-// CoreReverse demonstrates the core logic of reversing strings
-// BREAKPOINT: Set breakpoint here to step through algorithm
-// DEBUG: Watch how runes are swapped in Variables panel
+// CoreReverse demonstrates core logic of reversing strings
+// without error handling
+//
+// Algorithm steps:
+// 1. Convert string to runes (for proper Unicode handling)
+// 2. Use two-pointer technique to swap characters from both ends
+// 3. Convert runes back to string
 func CoreReverse(s string) string {
-	// DEBUG: Inspect 's' parameter - see input string
+	// TODO: Step 1 - Convert input string to slice of runes
 
-	// Convert to runes to handle Unicode correctly
-	runes := []rune(s)
-	// DEBUG: Expand 'runes' - see all characters as code points
+	// TODO: Step 2 - Use two-pointer technique (i starts at 0, j at len-1)
+	//               Swap elements and move pointers until they meet
 
-	// Reverse using two-pointer technique
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		// DEBUG: Watch 'i' increase and 'j' decrease
-		// DEBUG: After swap, inspect runes[i] and runes[j]
-		runes[i], runes[j] = runes[j], runes[i]
-	}
+	// TODO: Step 3 - Convert runes slice back to string
 
-	// Convert back to string
-	result := string(runes)
-	// DEBUG: Compare 's' (input) with 'result' (reversed)
-
-	return result
+	return ""
 }
 
-// CoreRuneLen demonstrates counting Unicode characters
-// BREAKPOINT: Set breakpoint here to step through algorithm
-// DEBUG: Compare byte count vs rune count in Watch panel
+// CoreRuneLen demonstrates counting Unicode characters without error handling
+//
+// Algorithm steps:
+// 1. Count the number of Unicode characters in the string
+// 2. Return the count (note: different from len(s) for multi-byte characters)
 func CoreRuneLen(s string) int {
-	// DEBUG: Add watch expression: len(s) to see byte count
-	// DEBUG: Compare with return value (rune count)
+	// TODO: Step 1 - Count Unicode runes in string using utf8.RuneCountInString
 
-	// Count Unicode characters (not bytes)
-	count := utf8.RuneCountInString(s)
-	// DEBUG: For ASCII: count == len(s)
-	// DEBUG: For Unicode: count < len(s)
+	// TODO: Step 2 - Return the rune count
 
-	return count
+	return 0
 }
