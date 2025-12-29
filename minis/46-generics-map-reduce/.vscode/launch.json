@@ -1,0 +1,101 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug: Run main.go (Default Args)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/minis/46-generics-map-reduce/cmd/mapreduce-demo",
+            "args": [],
+            "showLog": true,
+            "trace": "log",
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Runs main.go with default CLI arguments. Set breakpoints and step through code."
+        },
+        {
+            "name": "Debug: Run main.go (Custom Args)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/minis/46-generics-map-reduce/cmd/mapreduce-demo",
+            "args": [
+                "-help"
+            ],
+            "showLog": true,
+            "trace": "log",
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Runs main.go with custom CLI arguments. Edit 'args' array to change arguments."
+        },
+        {
+            "name": "Debug: Test exercise.go",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/minis/46-generics-map-reduce/exercise",
+            "args": [
+                "-test.v"
+            ],
+            "showLog": true,
+            "trace": "log",
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Runs tests for exercise.go. Set breakpoints in test functions or exercise.go."
+        },
+        {
+            "name": "Debug: Test solution.go",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/minis/46-generics-map-reduce/exercise",
+            "args": [
+                "-tags=solution",
+                "-test.v"
+            ],
+            "showLog": true,
+            "trace": "log",
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Runs tests for solution.go. Set breakpoints to see reference implementation."
+        },
+        {
+            "name": "Debug: Current File",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${fileDirname}",
+            "args": [],
+            "showLog": true,
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Debugs the currently open file. Useful for quick debugging."
+        },
+        {
+            "name": "Debug: Current Test",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${fileDirname}",
+            "args": [
+                "-test.v",
+                "-test.run",
+                "^${selectedText}$"
+            ],
+            "showLog": true,
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Debugs the currently selected test function. Select test name first."
+        },
+        {
+            "name": "Debug: Concurrent Code (with Race Detector)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/minis/46-generics-map-reduce/exercise",
+            "args": [
+                "-race",
+                "-test.v"
+            ],
+            "showLog": true,
+            "trace": "log",
+            "buildFlags": "-gcflags='-N -l'",
+            "comment": "Runs tests with race detector. Detects data races in concurrent code."
+        }
+    ]
+}
