@@ -2,6 +2,7 @@
 // +build !solution
 
 package exercise
+
 // TODO: Import required packages
 // You'll need:
 // - "context" for cancellation
@@ -10,9 +11,12 @@ package exercise
 // - "net/http" for HTTP requests
 // - "strings" for text processing
 // - "unicode" for character classification
-// - "golang.org/x/sync/errgroup" for simplified goroutine coordination
+// - "golang.org/x/sync/errgroup" for goroutine coordination
+//
+// Uncomment these imports when you implement the functions:
+/*
 import (
-	"context" // Context for cancellation
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,142 +25,113 @@ import (
 
 	"golang.org/x/sync/errgroup"
 )
-
-/*
-WordCount fetches URLs concurrently using errgroup.
-
-ANALOGY: Smart Factory Manager
-------------------------------
-errgroup is like a smart factory manager who:
-- Automatically tracks workers (no manual WaitGroup management)
-- Automatically stops everything on first error (no error channel needed)
-- Automatically cleans up resources (no manual defer cancel needed)
-
-This makes the code ~40% shorter and much safer!
 */
 
+// WordCount fetches URLs concurrently using a worker pool pattern and returns
+// aggregated word frequency counts from all URLs.
+//
+// Algorithm:
+// 1. Create an errgroup for managing concurrent workers
+// 2. Create job and result channels for communication
+// 3. Launch worker goroutines that process jobs from the jobs channel
+// 4. Send URLs to workers via jobs channel
+// 5. Collect results from the results channel
+// 6. Aggregate word counts into final map
+// 7. Return aggregated counts and any errors
+//
+// CS Concepts:
+// - Concurrency: Multiple workers process jobs in parallel
+// - Channels: Thread-safe communication between goroutines
+// - Worker Pool: Fixed number of workers handling variable workload
+// - Aggregation: Combining results from multiple sources
+// - Graceful Shutdown: Proper cleanup when done or on error
+// TODO: Implement this function
 func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
-	// TODO: Step 1 - Create errgroup
-	//   Use errgroup.WithContext(ctx) to get:
-	//   - g: *errgroup.Group (manages goroutines and errors)
-	//   - ctx: context.Context (cancellable context)
-	g, ctx := errgroup.WithContext(ctx) // Create errgroup and cancellable context
-	// TODO: Step 2 - Create channels
-	jobs := make(chan string, workers) // Create jobs channel with buffered channel
-	results := make(chan map[string]int, workers) // Create results channel with buffered channel
+	// TODO: Step 1 - Create errgroup with context
 
-	// TODO: Step 3 - Launch workers using errgroup
-	//   Key points:
-	//   - g.Go() automatically calls WaitGroup.Add(1) and defer Done()
-	//   - Just return error - errgroup cancels context automatically
-	for i := 0; i < workers; i++ { // Loop over worker count
-		g.Go(func() error { // Launch worker goroutine
-			for { // Infinite loop
-				select { // Select on ctx.Done() and jobs channel
-				case <-ctx.Done(): // Stop if cancelled
-					return ctx.Err() // Return error if cancelled
-				case url, ok := <-jobs: // Receive URL from jobs channel
-					if !ok { // Channel closed, no more jobs
-						return nil // Exit normally
-					}
-					counts, err := fetchAndCount(ctx, url) // Fetch and count words
-					// fetchAndCount takes context and url, returns map[string]int and error
-					if err != nil { // Error fetching and counting words
-						return fmt.Errorf("fetching %s: %w", url, err) // Return error (errgroup handles cancellation)
-					}
-					// Send results with cancellation check
-					select {
-					case <-ctx.Done(): // Check if cancelled while processing
-						return ctx.Err()
-					case results <- counts: // Sends word counts to results channel
-						// Successfully sent
-					}
-				}
-			}
-		}) // Add worker to errgroup
-	}
-	// TODO: Step 4 - Send jobs in separate goroutine
-	go func() { // Launch goroutine to send jobs
-		defer close(jobs)          // Close jobs channel when done
-		for _, url := range urls { // Range over urls
-			select { // Check cancellation before sending each URL
-			case <-ctx.Done(): // Stop if cancelled
-				return // Exit if cancelled
-			case jobs <- url: // Send URL to jobs channel
-				// Successfully sent URL to jobs channel
-			}
-		}
-	}()
+	// TODO: Step 2 - Create jobs and results channels with buffer size = workers
 
-	// TODO: Step 5 - Close results when workers finish
-	go func() { // Launch goroutine to close results channel
-		g.Wait()       // Wait for all workers to finish
-		close(results) // Close results channel
-	}()
-	// TODO: Step 6 - Aggregate results
-	finalCounts := make(map[string]int) // Create map to store final counts
-	for counts := range results { // Range over results channel
-		for word, count := range counts { // Range over map
-			finalCounts[word] += count // Accumulate counts for each word
-		}
-	}
-	// TODO: Step 7 - Check for errors
-	if err := g.Wait(); err != nil { // Wait for all workers and check for errors
-		return nil, err // Return error if any occurred
-	}
-	return finalCounts, nil // Return final counts
+	// TODO: Step 3 - Launch worker goroutines
+
+	// TODO: Step 4 - Create job sender goroutine
+
+	// TODO: Step 5 - Create results channel closer goroutine
+
+	// TODO: Step 6 - Aggregate results into final map
+
+	// TODO: Step 7 - Wait for workers to finish
+
+	// TODO: Step 8 - Return aggregated counts and any errors
+
+	return nil, nil
 }
 
-func fetchAndCount(ctx context.Context, url string) (map[string]int, error) { // Fetch and count words from URL
-	// TODO: Implement fetchAndCount
-	//   1. Create HTTP request: http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil) // Create HTTP request
-	if err != nil { // Error creating request
-		return nil, err // Return error
-	}
-	//   2. Execute request: http.DefaultClient.Do(req) with error handling
-	resp, err := http.DefaultClient.Do(req) // Execute request
-	if err != nil { // Error executing request
-		return nil, err // Return error
-	}
-	defer resp.Body.Close() // Close response body
-	//   3. Check if status code is not 200 OK
-	if resp.StatusCode != http.StatusOK { // Status code is not 200 OK
-		return nil, fmt.Errorf("unexpected status: %d", resp.StatusCode) // Return error
-	}
-	//   4. Read body: io.ReadAll(resp.Body)
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	//   5. Convert to string and call tokenizeAndCount
-	text := string(body)
-	counts := tokenizeAndCount(text)
-	//   7. Return counts and error
-	return counts, nil
+// fetchAndCount fetches a URL and returns word frequency counts
+// TODO: Implement this function
+//
+// Algorithm:
+// 1. Create HTTP request with context (allows cancellation)
+// 2. Execute request and handle errors
+// 3. Check response status code
+// 4. Read response body
+// 5. Tokenize and count words
+// 6. Return word counts
+//
+// CS Concepts:
+// - HTTP: Fetching remote resources
+// - Error Handling: Checking status codes and I/O errors
+// - Cancellation: Respecting context.Done() for graceful shutdown
+func fetchAndCount(ctx context.Context, url string) (map[string]int, error) {
+	// TODO: Step 1 - Create HTTP request with context
+
+	// TODO: Step 2 - Execute request
+
+	// TODO: Step 3 - Check status code
+
+	// TODO: Step 4 - Read response body
+
+	// TODO: Step 5 - Tokenize and count words
+
+	// TODO: Step 6 - Return counts
+
+	return nil, nil
 }
 
+// tokenizeAndCount splits text into words, normalizes them, and counts occurrences
+// TODO: Implement this function
+//
+// Algorithm:
+// 1. Create empty map for word counts
+// 2. Split text into words using whitespace
+// 3. For each word:
+//    a. Convert to lowercase
+//    b. Remove non-letter characters
+//    c. Increment count if word is non-empty
+// 4. Return word count map
+//
+// CS Concepts:
+// - Tokenization: Breaking text into individual words
+// - Normalization: Converting text to consistent form (lowercase, remove punctuation)
+// - Frequency Counting: Using map to track occurrences
 func tokenizeAndCount(text string) map[string]int {
-	// TODO: Implement tokenizeAndCount
-	//   1. Create map: counts := make(map[string]int)
-	counts := make(map[string]int)
-	//   2. Split text: strings.Fields(text)
-	words := strings.Fields(text)
-	//   3. For each word:
-	for _, word := range words { // Range over words
-		word = strings.ToLower(word) // Convert word to lowercase
-		word = strings.Map(func(r rune) rune { // Map over word
-			if unicode.IsLetter(r) { // Check if letter
-				return r // Return letter
-			}
-			return -1 // Return -1 to delete
-		}, word)
-		// Skip empty words (might be empty after removing all non-letters)
-		if word == "" { // Check if empty
-			continue // Skip to next word
-		}
-		counts[word]++ // Count word
-	}
-	//   4. Return counts
-	return counts
+	// TODO: Step 1 - Create word count map
+
+	// TODO: Step 2 - Split text into words
+
+	// TODO: Step 3 - Loop through words
+
+	// TODO: Step 4 - Normalize word (lowercase, remove non-letters)
+
+	// TODO: Step 5 - Skip empty words
+
+	// TODO: Step 6 - Increment word count
+
+	// TODO: Step 7 - Return map
+
+	return nil
 }
+
+// After implementing:
+// - Run: go test ./...
+// - Check: go test -v for verbose output
+// - Compare with solution.go to see detailed explanations

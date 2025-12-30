@@ -4,37 +4,63 @@
 package exercise
 
 /*
-Core Logic Without Error Handling
-==================================
+Core Retry Algorithm - Simplified Version
+==========================================
 
-This file demonstrates the core algorithm without error handling complexity.
-It's designed to help you understand the fundamental logic flow.
+This file focuses on the core exponential backoff algorithm without error handling.
+Use this to understand the fundamental retry logic.
 
-KEY CONCEPTS:
-- Focus on the algorithm, not error handling
-- Simplified implementations for learning
-- Use this to understand core logic before adding error handling
+ALGORITHM STEPS:
 
-DEBUGGING:
-- Set breakpoints at function entry points
-- Step through the pure logic without error handling distractions
-- Focus on understanding the algorithm
-- Watch Variables panel to see data transformations
+1. Exponential Backoff Calculation:
+   - delay = BaseDelay * (2^attempt)
+   - attempt 0: BaseDelay * 1
+   - attempt 1: BaseDelay * 2
+   - attempt 2: BaseDelay * 4
+   - attempt 3: BaseDelay * 8
 
-See /RUN_DEBUG.md for comprehensive debugging guide.
+2. Jitter Calculation:
+   - jitter = delay * (rand [-0.2, 0.2])
+   - finalDelay = delay + jitter
+   - Spreads retries to prevent thundering herd
+
+3. Retry Loop:
+   - Try request
+   - If success, return
+   - Calculate backoff delay
+   - Wait delay duration
+   - Retry up to MaxRetries times
+
+DEBUGGING GUIDE:
+- Set breakpoint in retry loop to see attempt progression
+- Watch delay calculation to understand exponential growth
+- Watch jitter to see randomization effect
 */
 
-// TODO: Implement core logic functions here
-// These should mirror the logic in exercise.go but without error handling
-// Focus on the algorithm, assume all operations succeed
+// TODO: Implement SimpleExponentialBackoff
+// Core algorithm for calculating exponential backoff delay
+// Steps:
+// 1. Calculate base delay: baseDelay * (2^attempt)
+// 2. Add jitter: delay * (random value between -0.2 and 0.2)
+// 3. Return final delay
+// Signature: func SimpleExponentialBackoff(baseDelay time.Duration, attempt int) time.Duration
 
-// Example:
-// func CoreFunctionName(input string) string {
-//     // BREAKPOINT: Set breakpoint here to step through algorithm
-//     // DEBUG: Watch Variables panel to see transformations
-//
-//     // Core logic without error handling
-//     result := processInput(input)
-//
-//     return result
-// }
+// TODO: Implement SimpleRetryLoop
+// Core algorithm for retry loop without error handling
+// Steps:
+// 1. For each attempt from 0 to maxRetries:
+//    - Try operation
+//    - If success, return
+//    - Calculate backoff delay
+//    - Sleep for delay duration
+// 2. Return after maxRetries exhausted
+// Signature: func SimpleRetryLoop(maxRetries int, baseDelay time.Duration, operation func() bool)
+
+// TODO: Implement SimpleJitterCalculation
+// Core algorithm for adding jitter to delay
+// Steps:
+// 1. Generate random float between 0 and 1
+// 2. Scale to range [-0.2, 0.2]: rand * 0.4 - 0.2
+// 3. Multiply by delay to get jitter amount
+// 4. Return jitter
+// Signature: func SimpleJitterCalculation(delay time.Duration) time.Duration

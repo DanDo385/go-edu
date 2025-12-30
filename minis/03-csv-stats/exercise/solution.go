@@ -26,13 +26,18 @@ Why Go is well-suited:
 - Strong typing: Compile-time detection of struct field mismatches
 - Explicit error handling: No silent data corruption
 
-Compared to other languages:
-- Python (pandas): df.groupby('category')['amount'].agg(['count','sum','mean'])
-  Pros: One-liner, powerful analytics
-  Cons: Loads entire file into memory; slower for large files
-- JavaScript: Requires external CSV library; async I/O complicates streaming
-- Rust: `csv` crate is excellent; zero-copy parsing is faster than Go
-- SQL: Natural fit (SELECT category, COUNT(*), SUM(amount), AVG(amount) GROUP BY category)
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints at critical CSV parsing points
+2. Watching struct field transformations in the Variables panel
+3. Using F10 (Step Over) vs F11 (Step Into) effectively
+4. Inspecting map aggregation patterns
+5. Using the Debug Console to evaluate expressions
+6. Understanding streaming I/O and memory usage
 */
 
 package exercise
@@ -78,7 +83,20 @@ type Stat struct {
 //   Row 1: "1,groceries,12.50" → groceries: {Count:1, Sum:12.50}
 //   Row 2: "2,books,invalid"   → Error: "row 3: invalid amount"
 //   Result: nil, error (fail-fast)
+//
+// DEBUGGING WORKFLOW:
+// ===================
+// 1. Set breakpoint at function entry (line 100)
+// 2. Call with test CSV containing multiple categories
+// 3. Step through CSV parsing and aggregation
+// 4. Watch stats map build category by category
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
+	// BREAKPOINT 1: Set here to inspect function entry
+	// DEBUG: In Variables panel, expand 'r' to see:
+	//   - The io.Reader interface value
+	//   - For strings.Reader, you can see the underlying CSV data
+	// DEBUG: In Debug Console, type: r
+	// This shows what type of reader was passed in
 	// ============================================================================
 	// CSV READER: Struct with internal state
 	// ============================================================================
@@ -91,73 +109,189 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 	// - csv.NewReader returns a csv.Reader STRUCT (not a pointer!)
 	// - But the struct contains pointers to: buffer, io.Reader, etc.
 	// - So csvReader is a value type, but shares internal state
-	// - Passing csvReader to another function copies the struct, but pointers
-	//   inside still reference the same buffers
+	//
+	// BREAKPOINT 2: Set here BEFORE csv.NewReader call
+	// BREAKPOINT 3: Set here AFTER csv.NewReader call
+	// DEBUG: In Variables panel, expand 'csvReader' to see:
+	//   - Internal buffer state
+	//   - Reader configuration
+	// DEBUG: In Debug Console, type: csvReader
 	csvReader := csv.NewReader(r)
 
+	// ============================================================================
+	// HEADER READING: Validate CSV structure
+	// ============================================================================
 	// Read the header row
 	// This validates the CSV structure and allows us to check column names
+	//
+	// BREAKPOINT 4: Set here BEFORE reading headers
+	// Step Into (F11) to see csv.Reader.Read() implementation
+	// BREAKPOINT 5: Set here AFTER reading headers
+	// DEBUG: In Variables panel, expand 'headers' to see:
+	//   - headers.len: should be 3
+	//   - headers[0], headers[1], headers[2]: column names
+	// DEBUG: In Debug Console, type: headers
+	// DEBUG: In Debug Console, type: len(headers)
 	headers, err := csvReader.Read()
 	if err != nil {
+		// BREAKPOINT 6: Set here in error path
+		// DEBUG: In Variables panel, expand 'err'
+		// DEBUG: In Debug Console, type: err == io.EOF
 		// Distinguish between empty file vs. I/O error
 		if err == io.EOF {
 			return nil, fmt.Errorf("empty CSV file (no header)")
 		}
-		return nil, fmt.Errorf("reading header: %w", err) // if not io.EOF, return error
+		return nil, fmt.Errorf("reading header: %w", err)
 	}
 
+	// ====================================================================
+	// HEADER VALIDATION: Schema checking
+	// ====================================================================
 	// Validate header format
 	// We expect exactly 3 columns: id, category, amount
 	// This is a defensive check to fail fast on schema mismatches
+	//
+	// BREAKPOINT 7: Set here BEFORE validation
+	// DEBUG: In Debug Console, type: len(headers) != 3
+	// DEBUG: In Debug Console, type: headers[0] != "id"
+	// DEBUG: In Debug Console, type: headers[1] != "category"
+	// DEBUG: In Debug Console, type: headers[2] != "amount"
+	// See which condition (if any) will trigger the error
 	if len(headers) != 3 || headers[0] != "id" || headers[1] != "category" || headers[2] != "amount" {
+		// BREAKPOINT 8: Set here if validation fails
 		return nil, fmt.Errorf("invalid header: expected [id,category,amount], got %v", headers)
 	}
 
+	// ============================================================================
+	// STATS MAP: Initialize aggregation structure
+	// ============================================================================
 	// Initialize the aggregation map
 	// Key: category name
 	// Value: running totals (count and sum; average computed later)
+	//
+	// BREAKPOINT 9: Set here BEFORE map creation
+	// BREAKPOINT 10: Set here AFTER map creation
+	// DEBUG: In Variables panel, expand 'stats' to see:
+	//   - Empty map: map[]
+	// DEBUG: In Debug Console, type: len(stats)
+	// Should be 0 initially
 	stats := make(map[string]Stat)
 
 	// Track row number for error messages (starting at 2 since row 1 is header)
+	// BREAKPOINT 11: Set here AFTER rowNum initialization
+	// DEBUG: In Variables panel, watch 'rowNum'
+	// It should be 2 (row 1 was the header)
 	rowNum := 2
 
+	// ============================================================================
+	// MAIN LOOP: Read and process each CSV row
+	// ============================================================================
 	// Read records line-by-line (streaming)
 	// csv.Reader.Read() returns []string for each row
 	// It returns io.EOF when the file is exhausted (not an error!)
+	//
+	// BREAKPOINT 12: Set here at loop start
+	// Step Over (F10) to iterate through each row
+	// Watch stats map grow with each category
 	for {
+		// BREAKPOINT 13: Set here at start of loop body
+		// DEBUG: In Variables panel, watch:
+		//   - rowNum: current row being processed
+		//   - stats: see it grow with each iteration
+		// DEBUG: In Debug Console, type: rowNum
+		// DEBUG: In Debug Console, type: len(stats)
+
+		// ====================================================================
+		// ROW READING: Get next CSV record
+		// ====================================================================
+		// BREAKPOINT 14: Set here BEFORE reading record
+		// Step Into (F11) to see csv.Reader.Read() parse the CSV
+		// BREAKPOINT 15: Set here AFTER reading record
+		// DEBUG: In Variables panel, expand 'record' to see:
+		//   - record.len: should be 3 (id, category, amount)
+		//   - record[0], record[1], record[2]: field values
+		// DEBUG: In Debug Console, type: record
 		record, err := csvReader.Read()
 		if err == io.EOF {
+			// BREAKPOINT 16: Set here at EOF
+			// This is the normal loop exit condition
+			// DEBUG: In Variables panel, review 'stats' map
+			// All rows should be processed at this point
 			// End of file is the normal exit condition
 			break
 		}
 		if err != nil {
+			// BREAKPOINT 17: Set here at error
+			// DEBUG: In Variables panel, expand 'err'
+			// DEBUG: In Debug Console, type: err.Error()
 			// Unexpected error (e.g., malformed CSV, I/O failure)
 			return nil, fmt.Errorf("row %d: %w", rowNum, err)
 		}
 
+		// ====================================================================
+		// FIELD COUNT VALIDATION: Ensure correct number of columns
+		// ====================================================================
 		// Expect exactly 3 fields per row
-		// csv.Reader ensures this by default (FieldsPerRecord = 0 means "match header")
-		// but we check defensively
+		// csv.Reader ensures this by default but we check defensively
+		//
+		// BREAKPOINT 18: Set here BEFORE field count check
+		// DEBUG: In Debug Console, type: len(record)
+		// DEBUG: In Debug Console, type: len(record) != 3
 		if len(record) != 3 {
+			// BREAKPOINT 19: Set here if wrong field count
 			return nil, fmt.Errorf("row %d: expected 3 fields, got %d", rowNum, len(record))
 		}
 
+		// ====================================================================
+		// FIELD EXTRACTION: Get id, category, amount
+		// ====================================================================
 		// Extract fields
 		// We don't use the id field in this analysis, but could validate it's numeric
+		//
+		// BREAKPOINT 20: Set here BEFORE field extraction
+		// BREAKPOINT 21: Set here AFTER field extraction
+		// DEBUG: In Variables panel, watch:
+		//   - category: extracted category name
+		//   - amountStr: amount as string (needs parsing)
+		// DEBUG: In Debug Console, type: category
+		// DEBUG: In Debug Console, type: amountStr
 		// id := record[0]  // unused
 		category := record[1]
 		amountStr := record[2]
 
+		// ====================================================================
+		// CATEGORY VALIDATION: Ensure not empty
+		// ====================================================================
 		// Validate category is not empty
+		//
+		// BREAKPOINT 22: Set here BEFORE empty check
+		// DEBUG: In Debug Console, type: category == ""
 		if category == "" {
+			// BREAKPOINT 23: Set here if category empty
 			return nil, fmt.Errorf("row %d: empty category", rowNum)
 		}
 
+		// ====================================================================
+		// AMOUNT PARSING: Convert string to float64
+		// ====================================================================
 		// Parse amount as float64
 		// strconv.ParseFloat returns an error if the string is not a valid number
 		// The second argument (64) specifies float64 precision
+		//
+		// BREAKPOINT 24: Set here BEFORE parsing amount
+		// Step Into (F11) to see strconv.ParseFloat implementation
+		// BREAKPOINT 25: Set here AFTER parsing amount
+		// DEBUG: In Variables panel, watch:
+		//   - amountStr: original string value
+		//   - amount: parsed float64 value
+		// DEBUG: In Debug Console, type: amountStr
+		// DEBUG: In Debug Console, type: amount
 		amount, err := strconv.ParseFloat(amountStr, 64)
 		if err != nil {
+			// BREAKPOINT 26: Set here if parsing fails
+			// DEBUG: In Variables panel, expand 'err'
+			// DEBUG: In Debug Console, type: amountStr
+			// See what invalid amount caused the error
 			return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
 		}
 
@@ -173,46 +307,189 @@ func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 		// - Modifying s does NOT modify the map
 		// - We MUST write s back to update the map
 		//
-		// Memory:
-		// - stats is a map (reference type, points to hash table on heap)
-		// - stats[category] performs hash lookup, copies Stat from map to stack
-		// - s.Count++ and s.Sum += amount modify the stack copy
-		// - stats[category] = s copies s back into the map (overwrites old value)
-		//
 		// Why not stats[category].Count++?
 		// - Go prohibits this! Map elements are not addressable
 		// - You can't take address of stats[category] because the hash table
 		//   might resize and move elements to different memory locations
 		//
-		// Alternative: Use *Stat as map value type
-		// - stats := make(map[string]*Stat)
-		// - Stores pointers to Stat structs (heap allocated)
-		// - Can modify in-place: stats[category].Count++
-		// - Trade-off: More allocations, pointer indirection, nil checks
+		// BREAKPOINT 27: Set here BEFORE map lookup
+		// DEBUG: In Variables panel, expand 'stats' map
+		// See if category already exists in map
+		// DEBUG: In Debug Console, type: stats[category]
+		// If category doesn't exist, returns Stat{Count:0, Sum:0.0, Avg:0.0}
+		// BREAKPOINT 28: Set here AFTER map lookup
+		// DEBUG: In Variables panel, expand 's' to see:
+		//   - s.Count: current count (0 if first occurrence)
+		//   - s.Sum: current sum (0.0 if first occurrence)
+		// DEBUG: In Debug Console, type: s.Count
+		// DEBUG: In Debug Console, type: s.Sum
 		s := stats[category]
+
+		// BREAKPOINT 29: Set here BEFORE incrementing count
+		// DEBUG: In Debug Console, type: s.Count
+		// See current count before increment
 		s.Count++
+		// BREAKPOINT 30: Set here AFTER incrementing count
+		// DEBUG: In Debug Console, type: s.Count
+		// Verify count increased by 1
+
+		// BREAKPOINT 31: Set here BEFORE adding amount
+		// DEBUG: In Debug Console, type: s.Sum
+		// DEBUG: In Debug Console, type: amount
+		// See current sum and amount to add
 		s.Sum += amount
+		// BREAKPOINT 32: Set here AFTER adding amount
+		// DEBUG: In Debug Console, type: s.Sum
+		// Verify sum increased by amount
+
+		// BREAKPOINT 33: Set here BEFORE writing back to map
+		// DEBUG: In Variables panel, compare:
+		//   - s: modified struct (on stack)
+		//   - stats[category]: old value in map (if exists)
+		// BREAKPOINT 34: Set here AFTER writing back to map
+		// DEBUG: In Variables panel, expand 'stats' map
+		// See updated value for this category
+		// DEBUG: In Debug Console, type: stats[category]
+		// Verify it matches 's'
 		stats[category] = s
 
+		// BREAKPOINT 35: Set here BEFORE rowNum increment
+		// DEBUG: In Debug Console, type: rowNum
 		rowNum++
+		// BREAKPOINT 36: Set here AFTER rowNum increment
+		// DEBUG: In Debug Console, type: rowNum
+		// Verify it increased by 1
+		// Step Over (F10) to continue to next row
 	}
 
+	// BREAKPOINT 37: Set here AFTER loop completes
+	// DEBUG: In Variables panel, expand 'stats' map
+	// All categories should have Count and Sum, but Avg is still 0
+	// DEBUG: In Debug Console, type: stats
+	// DEBUG: In Debug Console, type: len(stats)
+
+	// ============================================================================
+	// AVERAGE COMPUTATION: Second pass to calculate averages
+	// ============================================================================
 	// Compute averages
 	// We do this in a separate pass to avoid redundant calculations
 	// (Average is Sum/Count, so we only need to compute it once per category)
+	//
+	// BREAKPOINT 38: Set here BEFORE average loop
+	// Step Over (F10) to iterate through each category
 	for category, s := range stats {
+		// BREAKPOINT 39: Set here at start of loop body
+		// DEBUG: In Variables panel, watch:
+		//   - category: current category name
+		//   - s: struct with Count and Sum (Avg still 0)
+		// DEBUG: In Debug Console, type: category
+		// DEBUG: In Debug Console, type: s.Count
+		// DEBUG: In Debug Console, type: s.Sum
+
 		if s.Count > 0 {
+			// BREAKPOINT 40: Set here BEFORE computing average
+			// DEBUG: In Debug Console, type: s.Sum
+			// DEBUG: In Debug Console, type: float64(s.Count)
+			// DEBUG: In Debug Console, type: s.Sum / float64(s.Count)
+			// See the computed average
 			s.Avg = s.Sum / float64(s.Count)
+
+			// BREAKPOINT 41: Set here AFTER computing average
+			// DEBUG: In Variables panel, watch 's.Avg'
+			// DEBUG: In Debug Console, type: s.Avg
+			// Verify average is correct (Sum / Count)
+
+			// BREAKPOINT 42: Set here BEFORE writing back to map
 			stats[category] = s
+			// BREAKPOINT 43: Set here AFTER writing back to map
+			// DEBUG: In Variables panel, expand 'stats' map
+			// Verify this category now has all three fields populated
+			// DEBUG: In Debug Console, type: stats[category].Avg
 		}
 		// If Count is 0 (shouldn't happen in this logic), Avg remains 0.0
+
+		// BREAKPOINT 44: Set here at end of loop iteration
+		// Step Over (F10) to continue to next category
 	}
 
+	// BREAKPOINT 45: Set here AFTER average loop completes
+	// DEBUG: In Variables panel, expand 'stats' map
+	// All categories should have Count, Sum, AND Avg now
+	// DEBUG: In Debug Console, type: stats
+	// Verify all statistics are complete
+
+	// ============================================================================
+	// RETURN: Final result
+	// ============================================================================
+	// BREAKPOINT 46: Set here at return statement
+	// DEBUG: In Variables panel, review 'stats' map one final time
+	// All categories should have complete statistics
+	// DEBUG: In Debug Console, type: len(stats)
+	// DEBUG: In Debug Console, type: stats
+	// Final verification before returning
 	return stats, nil
 }
 
 /*
+ADVANCED DEBUGGING TECHNIQUES:
+===============================
+
+1. CONDITIONAL BREAKPOINTS:
+   Right-click on any breakpoint and add conditions
+   Examples:
+   - In main loop: category == "groceries" (break only for specific category)
+   - In main loop: amount > 100.0 (break only for large amounts)
+   - In average loop: s.Count > 5 (break only for categories with many transactions)
+
+2. LOGPOINTS:
+   Right-click on line number → Add Logpoint
+   Examples:
+   - In main loop: Log "Row {rowNum}: {category} = ${amount}"
+   - In map update: Log "Category {category}: Count={s.Count}, Sum={s.Sum}"
+   - No need to modify code or add print statements!
+
+3. DEBUG CONSOLE EXPRESSIONS:
+   During debugging, try these in the Debug Console:
+   - Type: stats to see current statistics map
+   - Type: len(stats) to see number of categories
+   - Type: stats["groceries"] to check stats for specific category
+   - Type: amount to see current parsed amount
+   - Type: s.Sum / float64(s.Count) to manually compute average
+
+4. WATCH EXPRESSIONS:
+   Add these to the Watch panel for real-time monitoring:
+   - len(stats) - number of categories
+   - stats[category] - stats for current category
+   - s.Count - transaction count
+   - s.Sum - running sum
+   - s.Avg - computed average
+
+5. CALL STACK NAVIGATION:
+   In the Call Stack panel:
+   - Click different frames to see state at each level
+   - Observe how variables change across stack frames
+   - Use "Step Out" (Shift+F11) to return to caller
+
+6. MEMORY INSPECTION:
+   To see memory allocations:
+   - Watch how stats map grows with each category
+   - Notice struct values vs pointer values
+   - Compare memory addresses when structs are copied
+
+7. STEP COMMANDS:
+   - F10 (Step Over): Execute line, don't enter functions
+   - F11 (Step Into): Enter function calls (like ParseFloat) to see internals
+   - Shift+F11 (Step Out): Return to caller
+   - F5 (Continue): Run until next breakpoint
+
+8. DATA BREAKPOINTS:
+   Watch for when specific variables change:
+   - Right-click variable → Break When Value Changes
+   - Useful for tracking when stats map is modified
+   - Useful for tracking when rowNum increments
+
 Alternatives & Trade-offs:
+==========================
 
 1. Pointer values in map:
    stats := make(map[string]*Stat)
@@ -250,54 +527,54 @@ Alternatives & Trade-offs:
    Pros: Exact arithmetic; no rounding errors
    Cons: More code; still need float64 for display
 
-Go vs X:
+DEBUGGING EXERCISES:
+====================
 
-Go vs Python (pandas):
-  import pandas as pd
-  df = pd.read_csv('transactions.csv')
-  stats = df.groupby('category')['amount'].agg(['count','sum','mean'])
-  Pros: Concise; powerful analytics (median, std dev, etc.)
-  Cons: Loads entire file into memory; 100MB file = 500MB+ RAM
-        Slower for large files (pandas overhead)
-        Dynamic typing hides schema errors until runtime
-  Go: Constant memory usage; catches type errors at compile time
+Exercise 1: Trace SummarizeCSV execution
+- Input: CSV with 3 categories, 2 transactions each
+- Set breakpoints at: 94, 214, 326, 380
+- Watch: stats, rowNum, category
+- Question: How many times does the main loop iterate?
+- Question: What are the final values in the stats map?
 
-Go vs SQL:
-  SELECT category,
-         COUNT(*) as count,
-         SUM(amount) as sum,
-         AVG(amount) as avg
-  FROM transactions
-  GROUP BY category;
-  Pros: Declarative; optimized by query planner; scales to billions of rows
-  Cons: Requires database setup; less portable than CSV file
-  Go: Simpler deployment (single binary); good for <10M rows
+Exercise 2: Understand struct read-modify-write pattern
+- Input: CSV with "groceries" appearing twice
+- Set breakpoints at: 326, 354
+- In Debug Console at 326: stats["groceries"]
+- Question: What does stats["groceries"] return the first time vs second time?
+- Question: Why do we need to write back to the map?
 
-Go vs Rust:
-  use csv::ReaderBuilder;
-  let mut stats: HashMap<String, (usize, f64)> = HashMap::new();
-  for result in rdr.records() {
-      let record = result?;
-      let (count, sum) = stats.entry(record[1].to_string()).or_insert((0, 0.0));
-      *count += 1;
-      *sum += record[2].parse::<f64>()?;
-  }
-  Pros: Zero-copy parsing; faster execution; no GC pauses
-  Cons: More complex ownership rules; steeper learning curve
-  Go: Simpler code; "fast enough" for most use cases
+Exercise 3: Watch floating-point arithmetic
+- Input: CSV with amounts: 10.50, 20.25, 30.10
+- Set breakpoints at: 340, 395
+- Watch: s.Sum in Variables panel
+- Question: Is the sum exact or does it have rounding errors?
+- Question: How is the average computed?
 
-Go vs JavaScript (Node.js):
-  const csv = require('csv-parser');
-  const stats = {};
-  fs.createReadStream('transactions.csv')
-    .pipe(csv())
-    .on('data', (row) => {
-      if (!stats[row.category]) stats[row.category] = {count:0, sum:0};
-      stats[row.category].count++;
-      stats[row.category].sum += parseFloat(row.amount);
-    });
-  Pros: Streaming; widely known syntax
-  Cons: Async complexity (callbacks/promises); requires external library
-        Dynamic typing misses schema errors
-  Go: Synchronous code is simpler; built-in CSV parser
+Exercise 4: Empty CSV edge case
+- Input: CSV with only header row
+- Set breakpoints at: 94, 214, 365, 430
+- Question: Does the main loop execute? How many times?
+- Question: What does the function return?
+
+Exercise 5: Malformed CSV handling
+- Input: CSV with invalid amount in row 2
+- Set breakpoints at: 289, 291
+- Watch: amountStr, err in Variables panel
+- Question: When does the error occur?
+- Question: What information is in the error message?
+
+Exercise 6: Category validation
+- Input: CSV with empty category in row 3
+- Set breakpoints at: 269, 271
+- Watch: category in Variables panel
+- Question: What happens when category is empty?
+- Question: At what row number does the error occur?
+
+Exercise 7: Average computation
+- Input: CSV with "books" category: 10.00, 20.00, 30.00
+- Set breakpoints at: 365, 395, 420
+- Watch: stats["books"] at each breakpoint
+- Question: When is Avg set to 0? When is it computed?
+- Question: What is the final Avg value?
 */

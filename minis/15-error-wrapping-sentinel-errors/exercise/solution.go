@@ -1,6 +1,34 @@
 //go:build solution
 // +build solution
 
+/*
+Problem: Understanding Go's error handling patterns
+
+Requirements:
+1. Use sentinel errors for simple conditions
+2. Wrap errors with context using %w
+3. Check error identity with errors.Is
+4. Extract error types with errors.As
+5. Handle multiple errors
+
+Data Structure:
+- error: Interface with Error() string method
+- Sentinel error: Pre-declared error value
+- Wrapped error: Error chain with context
+- Custom error: Struct implementing error interface
+
+Algorithm: Error Chain Traversal
+- errors.Is: Walk chain, check identity
+- errors.As: Walk chain, extract type
+- Unwrap(): Return next error in chain
+
+Why error handling is critical:
+- Explicit error returns (no exceptions)
+- Error chains preserve context
+- Type-safe error inspection
+- Composable error handling
+*/
+
 package exercise
 
 import (
@@ -8,144 +36,142 @@ import (
 	"fmt"
 )
 
-// ============================================================================
-// TYPE DEFINITIONS (shared with exercise.go)
-// ============================================================================
-
-// ValidationError represents a validation failure with details.
 type ValidationError struct {
-	Field   string // The field that failed validation
-	Message string // Why it failed
+	Field   string
+	Message string
 }
 
-// DatabaseError wraps another error and adds database context.
 type DatabaseError struct {
-	Operation string // The operation that failed (e.g., "SELECT", "INSERT")
-	Table     string // The table involved
-	Err       error  // The underlying error
+	Operation string
+	Table     string
+	Err       error
 }
 
-// MultiError holds multiple errors.
 type MultiError struct {
 	Errors []error
 }
 
-// RetryableError indicates an error that can be retried.
 type RetryableError struct {
-	Err     error // The underlying error
-	Retries int   // How many retries have been attempted
+	Err     error
+	Retries int
 }
 
-// ============================================================================
-// EXERCISE 1: Sentinel Errors
-// ============================================================================
-
-// Sentinel errors for user management
 var (
 	ErrUserNotFound  = errors.New("user not found")
 	ErrUserExists    = errors.New("user already exists")
 	ErrInvalidUserID = errors.New("invalid user ID")
 )
 
-// FindUser simulates finding a user by ID.
+// FindUser simulates finding a user.
+// BREAKPOINT: Set breakpoint here to trace sentinel errors
+// DEBUG: Watch 'id' validation
+// DEBUG: Watch sentinel error returns
 func FindUser(id int) (string, error) {
-	// Check for invalid ID
+	// BREAKPOINT: Check invalid ID
+	// DEBUG: Watch 'id <= 0' condition
 	if id <= 0 {
 		return "", ErrInvalidUserID
 	}
 
-	// Check if user doesn't exist
+	// BREAKPOINT: Check not found
+	// DEBUG: Watch 'id > 1000' condition
 	if id > 1000 {
 		return "", ErrUserNotFound
 	}
 
-	// Return the user
+	// DEBUG: Success case
 	return fmt.Sprintf("user_%d", id), nil
 }
 
-// CreateUser simulates creating a new user.
+// CreateUser simulates creating a user.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch validation and conflict checks
 func CreateUser(username string) error {
-	// Check for empty username
+	// BREAKPOINT: Validate username
 	if username == "" {
 		return ErrInvalidUserID
 	}
 
-	// Check if user already exists
+	// BREAKPOINT: Check conflicts
+	// DEBUG: Watch reserved username check
 	if username == "admin" || username == "root" {
 		return ErrUserExists
 	}
 
-	// Success
 	return nil
 }
 
-// ============================================================================
-// EXERCISE 2: Error Wrapping with %w
-// ============================================================================
-
-// ReadConfig simulates reading a configuration file.
+// ReadConfig wraps FindUser error.
+// BREAKPOINT: Set breakpoint here to trace error wrapping
+// DEBUG: Watch error chain creation
 func ReadConfig(id int) (string, error) {
+	// BREAKPOINT: Call FindUser
 	username, err := FindUser(id)
 	if err != nil {
-		// Wrap the error with context using %w
+		// BREAKPOINT: Wrap error with %w
+		// DEBUG: Watch fmt.Errorf with %w create chain
 		return "", fmt.Errorf("read config for user %d: %w", id, err)
 	}
 	return username, nil
 }
 
-// LoadUserData simulates loading user data from multiple sources.
+// LoadUserData creates multi-level error chain.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch error chain grow
 func LoadUserData(id int) (string, error) {
 	username, err := ReadConfig(id)
 	if err != nil {
-		// Wrap again, creating a multi-level chain
+		// BREAKPOINT: Wrap again
+		// DEBUG: Watch second level of wrapping
 		return "", fmt.Errorf("load user data: %w", err)
 	}
 	return username, nil
 }
 
-// ============================================================================
-// EXERCISE 3: errors.Is (Checking Error Identity)
-// ============================================================================
-
-// IsNotFoundError checks if an error is (or wraps) ErrUserNotFound.
+// IsNotFoundError checks error identity.
+// BREAKPOINT: Set breakpoint here to trace errors.Is
+// DEBUG: Watch error chain traversal
 func IsNotFoundError(err error) bool {
-	// Handle nil
+	// BREAKPOINT: Check nil
 	if err == nil {
 		return false
 	}
 
-	// Use errors.Is to traverse the error chain
+	// BREAKPOINT: Use errors.Is
+	// DEBUG: Watch errors.Is traverse chain
+	// DEBUG: Returns true if any error in chain is ErrUserNotFound
 	return errors.Is(err, ErrUserNotFound)
 }
 
-// GetUserWithFallback attempts to get a user, falling back to a default if not found.
+// GetUserWithFallback handles not found gracefully.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch error handling with fallback
 func GetUserWithFallback(id int) (string, error) {
 	username, err := FindUser(id)
 	if err != nil {
-		// Check if it's specifically ErrUserNotFound
+		// BREAKPOINT: Check if not found
+		// DEBUG: Watch errors.Is check specific error
 		if errors.Is(err, ErrUserNotFound) {
-			// Use fallback
+			// DEBUG: Return fallback value
 			return "guest", nil
 		}
-		// Different error, return it
 		return "", err
 	}
-
-	// Success
 	return username, nil
 }
 
-// ============================================================================
-// EXERCISE 4: Custom Error Types
-// ============================================================================
-
-// Error implements the error interface for ValidationError.
+// Error implements error interface.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch error message formatting
 func (e ValidationError) Error() string {
 	return fmt.Sprintf("validation error: %s %s", e.Field, e.Message)
 }
 
-// ValidateUsername checks if a username is valid.
+// ValidateUsername validates username.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch custom error creation
 func ValidateUsername(username string) error {
+	// BREAKPOINT: Check empty
 	if username == "" {
 		return ValidationError{
 			Field:   "username",
@@ -153,6 +179,7 @@ func ValidateUsername(username string) error {
 		}
 	}
 
+	// BREAKPOINT: Check min length
 	if len(username) < 3 {
 		return ValidationError{
 			Field:   "username",
@@ -160,6 +187,7 @@ func ValidateUsername(username string) error {
 		}
 	}
 
+	// BREAKPOINT: Check max length
 	if len(username) > 20 {
 		return ValidationError{
 			Field:   "username",
@@ -170,45 +198,48 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
-// ============================================================================
-// EXERCISE 5: errors.As (Extracting Error Types)
-// ============================================================================
-
-// GetValidationField extracts the field name from a ValidationError.
+// GetValidationField extracts field from error.
+// BREAKPOINT: Set breakpoint here to trace errors.As
+// DEBUG: Watch type extraction from chain
 func GetValidationField(err error) (string, bool) {
-	// Handle nil
+	// BREAKPOINT: Check nil
 	if err == nil {
 		return "", false
 	}
 
-	// Use errors.As to extract the ValidationError
+	// BREAKPOINT: Use errors.As
+	// DEBUG: Watch errors.As extract ValidationError
 	var ve ValidationError
 	if errors.As(err, &ve) {
+		// DEBUG: Watch ve populated with error data
 		return ve.Field, true
 	}
 
 	return "", false
 }
 
-// ============================================================================
-// EXERCISE 6: Custom Error with Wrapping
-// ============================================================================
-
-// Error implements the error interface for DatabaseError.
+// Error implements error interface.
+// BREAKPOINT: Set breakpoint here
 func (e DatabaseError) Error() string {
 	return fmt.Sprintf("database error: %s on %s: %v", e.Operation, e.Table, e.Err)
 }
 
-// Unwrap returns the wrapped error.
+// Unwrap returns wrapped error.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch error chain unwrapping
 func (e DatabaseError) Unwrap() error {
+	// DEBUG: Return next error in chain
 	return e.Err
 }
 
-// QueryUser simulates a database query.
+// QueryUser wraps database operation.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch custom wrapper error creation
 func QueryUser(id int) (string, error) {
 	username, err := FindUser(id)
 	if err != nil {
-		// Wrap in DatabaseError
+		// BREAKPOINT: Wrap in DatabaseError
+		// DEBUG: Watch custom error wrap sentinel error
 		return "", DatabaseError{
 			Operation: "SELECT",
 			Table:     "users",
@@ -218,39 +249,43 @@ func QueryUser(id int) (string, error) {
 	return username, nil
 }
 
-// ============================================================================
-// EXERCISE 7: Multi-Error Handling
-// ============================================================================
-
-// Error implements the error interface for MultiError.
+// Error implements error interface.
+// BREAKPOINT: Set breakpoint here
 func (m MultiError) Error() string {
 	if len(m.Errors) == 0 {
 		return "no errors"
 	}
-
 	if len(m.Errors) == 1 {
 		return m.Errors[0].Error()
 	}
-
 	return fmt.Sprintf("multiple errors: %v (and %d more)",
 		m.Errors[0], len(m.Errors)-1)
 }
 
-// Unwrap returns all errors (Go 1.20+ multi-error support).
+// Unwrap returns all errors.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch multi-error unwrap
 func (m MultiError) Unwrap() []error {
+	// DEBUG: Return slice of errors (Go 1.20+)
 	return m.Errors
 }
 
 // ValidateUsers validates multiple usernames.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch error collection
 func ValidateUsers(usernames []string) error {
 	var multi MultiError
 
+	// BREAKPOINT: Loop through usernames
 	for _, username := range usernames {
 		if err := ValidateUsername(username); err != nil {
+			// BREAKPOINT: Collect error
+			// DEBUG: Watch multi.Errors grow
 			multi.Errors = append(multi.Errors, err)
 		}
 	}
 
+	// BREAKPOINT: Return multi-error
 	if len(multi.Errors) > 0 {
 		return multi
 	}
@@ -258,23 +293,24 @@ func ValidateUsers(usernames []string) error {
 	return nil
 }
 
-// ============================================================================
-// EXERCISE 8: Error Handling Patterns
-// ============================================================================
-
-// ProcessUser demonstrates guard clauses and error handling patterns.
+// ProcessUser demonstrates guard clauses.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch early returns (guard clauses)
 func ProcessUser(username string) error {
-	// Guard clause 1: Validate username
+	// BREAKPOINT: Guard clause 1
+	// DEBUG: Watch validation guard
 	if err := ValidateUsername(username); err != nil {
 		return fmt.Errorf("validate username: %w", err)
 	}
 
-	// Guard clause 2: Check for banned users
+	// BREAKPOINT: Guard clause 2
+	// DEBUG: Watch banned user guard
 	if username == "banned" {
 		return errors.New("user is banned")
 	}
 
-	// Guard clause 3: Create user
+	// BREAKPOINT: Guard clause 3
+	// DEBUG: Watch create user guard
 	if err := CreateUser(username); err != nil {
 		return fmt.Errorf("create user: %w", err)
 	}
@@ -282,28 +318,30 @@ func ProcessUser(username string) error {
 	return nil
 }
 
-// ============================================================================
-// EXERCISE 9: Optional - Advanced Error Chain
-// ============================================================================
-
-// Error implements the error interface for RetryableError.
+// Error implements error interface.
+// BREAKPOINT: Set breakpoint here
 func (e RetryableError) Error() string {
 	return fmt.Sprintf("retryable error (attempt %d): %v", e.Retries, e.Err)
 }
 
-// Unwrap returns the wrapped error.
+// Unwrap returns wrapped error.
+// BREAKPOINT: Set breakpoint here
 func (e RetryableError) Unwrap() error {
 	return e.Err
 }
 
-// IsRetryable checks if an error is retryable.
+// IsRetryable checks if error is retryable.
+// BREAKPOINT: Set breakpoint here
+// DEBUG: Watch retry logic
 func IsRetryable(err error) bool {
 	if err == nil {
 		return false
 	}
 
+	// BREAKPOINT: Extract RetryableError
 	var re RetryableError
 	if errors.As(err, &re) {
+		// DEBUG: Watch retry count check
 		return re.Retries < 3
 	}
 

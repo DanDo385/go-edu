@@ -3,38 +3,48 @@
 
 package exercise
 
+import (
+	"bufio"
+	"io"
+	"strings"
+)
+
 /*
 Core Logic Without Error Handling
 ==================================
 
-This file demonstrates the core algorithm without error handling complexity.
-It's designed to help you understand the fundamental logic flow.
+This file demonstrates the core frequency counting algorithm without
+error handling complexity. It's designed to help you understand the
+fundamental logic flow.
 
 KEY CONCEPTS:
-- Focus on the algorithm, not error handling
-- Simplified implementations for learning
-- Use this to understand core logic before adding error handling
-
-DEBUGGING:
-- Set breakpoints at function entry points
-- Step through the pure logic without error handling distractions
-- Focus on understanding the algorithm
-- Watch Variables panel to see data transformations
-
-See /RUN_DEBUG.md for comprehensive debugging guide.
+- Working with maps and their properties
+- Iterating through collections
+- Finding maximum values
+- Building up aggregated results
 */
 
-// TODO: Implement core logic functions here
-// These should mirror the logic in exercise.go but without error handling
-// Focus on the algorithm, assume all operations succeed
+// CoreFreqFromReader demonstrates frequency counting without error handling
+//
+// Algorithm steps:
+// 1. Create frequency map to track word counts
+// 2. Create scanner to read lines from reader
+// 3. For each line, normalize it (trim, lowercase)
+// 4. Increment count for each word in the frequency map
+// 5. Find the most common word by iterating the map
+// 6. Return both the frequency map and the most common word
+func CoreFreqFromReader(r io.Reader) (map[string]int, string) {
+	// TODO: Step 1 - Create frequency map
 
-// Example:
-// func CoreFunctionName(input string) string {
-//     // BREAKPOINT: Set breakpoint here to step through algorithm
-//     // DEBUG: Watch Variables panel to see transformations
-//
-//     // Core logic without error handling
-//     result := processInput(input)
-//
-//     return result
-// }
+	// TODO: Step 2 - Create scanner for reading
+
+	// TODO: Step 3 - Loop through lines and normalize each word
+
+	// TODO: Step 4 - Increment word counts in map
+
+	// TODO: Step 5 - Iterate map to find most common word
+
+	// TODO: Step 6 - Return frequency map and most common word
+
+	return nil, ""
+}
