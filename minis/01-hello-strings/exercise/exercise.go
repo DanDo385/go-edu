@@ -39,7 +39,6 @@ func TitleCase(s string) string {
 
 	return ""
 }
-
 // Reverse returns the string reversed character-by-character (UTF-8 aware).
 // This correctly handles multi-byte characters like emoji.
 // Example: "Hello 👋" → "👋 olleH"

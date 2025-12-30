@@ -1,8 +1,8 @@
 package exercise
 
 import (
-	"testing"
-	"time"
+	"testing" // Testing framework (t.Error, t.Errorf, etc.)
+	"time"    // Time durations for TTL testing
 )
 
 func TestCache_BasicOperations(t *testing.T) {
@@ -43,7 +43,7 @@ func TestCache_LRUOrder(t *testing.T) {
 
 	cache.Set("a", 1)
 	cache.Set("b", 2)
-	cache.Get("a") // Access "a", making it most recent
+	cache.Get("a")    // Access "a", making it most recent
 	cache.Set("c", 3) // Should evict "b", not "a"
 
 	if val, ok := cache.Get("a"); !ok || val != 1 {
@@ -84,7 +84,7 @@ func TestCache_CustomTTL(t *testing.T) {
 	cache := New[string, int](3, 1*time.Hour) // Default: 1 hour
 
 	cache.SetWithTTL("a", 1, 100*time.Millisecond) // Custom: 100ms
-	cache.Set("b", 2) // Uses default TTL
+	cache.Set("b", 2)                              // Uses default TTL
 
 	time.Sleep(150 * time.Millisecond)
 
