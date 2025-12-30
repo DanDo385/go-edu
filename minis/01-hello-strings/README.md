@@ -268,21 +268,143 @@ The `for range` loop over a string automatically decodes UTF-8 and gives you run
 ## How to Run
 
 ```bash
-# Prepare the project (rename solution so it doesn't conflict with your code)
-cd minis/01-hello-strings/exercise
-mv solution.go solution.go.reference
+# Navigate to the project directory
+cd minis/01-hello-strings
 
 # Run tests to see what's expected
-go test
+go test ./internal/exercise
 
-# Implement your solution in exercise.go, then test again
-# Edit exercise.go...
-go test
+# Implement your solution in internal/exercise/exercise.go, then test again
+# Edit internal/exercise/exercise.go...
+go test ./internal/exercise
 
-# Run the demo program
-cd ../..
-make run P=01-hello-strings
+# Run the demo program (cmd/app/main.go)
+go run ./cmd/app/main.go
+go run ./cmd/app/main.go "hello world"
+go run ./cmd/app/main.go "café" reverse
+go run ./cmd/app/main.go "Hello 👋 World" runelen
+
+# Debug your functions (cmd/debug/main.go)
+# Just press F5 in VS Code - defaults work great!
+go run ./cmd/debug/main.go
 ```
+
+## Implementing CLI Arguments in Go
+
+This project demonstrates how to handle command-line arguments in Go using `os.Args`. Here's how it works:
+
+### Understanding os.Args
+
+`os.Args` is a slice of strings that contains all command-line arguments:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    // os.Args[0] is always the program name
+    // os.Args[1] is the first argument
+    // os.Args[2] is the second argument
+    // etc.
+    
+    fmt.Println("Program name:", os.Args[0])
+    
+    if len(os.Args) > 1 {
+        fmt.Println("First argument:", os.Args[1])
+    }
+    
+    if len(os.Args) > 2 {
+        fmt.Println("Second argument:", os.Args[2])
+    }
+}
+```
+
+### Pattern: Default Values with Override
+
+The most common pattern is to provide defaults, then override if arguments are provided:
+
+```go
+func main() {
+    // Set default values
+    input := "hello world"
+    function := "all"
+    
+    // Override defaults if arguments provided
+    if len(os.Args) > 1 {
+        input = os.Args[1]  // First argument
+    }
+    
+    if len(os.Args) > 2 {
+        function = os.Args[2]  // Second argument
+    }
+    
+    // Use the values
+    fmt.Printf("Input: %q, Function: %s\n", input, function)
+}
+```
+
+### Example: cmd/app/main.go
+
+Look at `cmd/app/main.go` to see a complete example:
+
+1. **Default values**: Provides sensible defaults if no arguments given
+2. **Argument parsing**: Checks `len(os.Args)` before accessing arguments
+3. **Error handling**: Gracefully handles missing arguments
+4. **Usage**: Simple positional arguments (no flags needed)
+
+### Example: cmd/debug/main.go
+
+The debug version uses the same pattern but with defaults optimized for debugging:
+
+```go
+// Defaults work great for debugging - no arguments needed!
+function := "titlecase"
+input := "hello world"
+
+// Override if you want to test different inputs
+if len(os.Args) > 1 {
+    function = os.Args[1]
+}
+if len(os.Args) > 2 {
+    input = os.Args[2]
+}
+```
+
+### When to Use os.Args vs flag Package
+
+**Use `os.Args` (simple arguments):**
+- Simple programs with 1-3 arguments
+- Debug/test scripts
+- When you want minimal code
+- When arguments are positional
+
+**Use `flag` package (complex arguments):**
+- Programs with many options
+- When you need help text (`-help`)
+- When arguments can be in any order
+- Production applications with complex configuration
+
+### VS Code Debug Configuration
+
+You can pass arguments in VS Code's launch.json:
+
+```json
+{
+    "name": "Debug: Hello Strings",
+    "type": "go",
+    "request": "launch",
+    "mode": "debug",
+    "program": "${workspaceFolder}/minis/01-hello-strings/cmd/app",
+    "args": ["hello world", "titlecase"],
+    "showLog": true
+}
+```
+
+The `args` array becomes `os.Args[1:]` in your program.
 
 ## Common Mistakes to Avoid
 

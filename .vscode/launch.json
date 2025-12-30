@@ -5,15 +5,22 @@
             "name": "Debug Current Package",
             "type": "go",
             "request": "launch",
-            "mode": "debug",
-            "program": "${fileDirname}"
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "showLog": true,
+            "comment": "Debugs the current package. Automatically detects if it's a program or test. Use when debugging from within a package directory (e.g., minis/07-generic-lru-cache/cmd/... or exercise/)."
         },
         {
             "name": "Debug Tests (Current Package)",
             "type": "go",
             "request": "launch",
             "mode": "test",
-            "program": "${fileDirname}"
+            "program": "${fileDirname}",
+            "args": [
+                "-test.v"
+            ],
+            "showLog": true,
+            "comment": "Runs tests in the current package. Use when debugging from within an exercise/ or test directory."
         }
     ]
 }
