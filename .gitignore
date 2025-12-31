@@ -6,6 +6,9 @@
 *.dylib
 bin/
 dist/
+/app
+/debug
+/worker-pool-wordcount
 
 # Test and coverage
 *.test
