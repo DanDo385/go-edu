@@ -7,7 +7,7 @@ import (
 	"sort"   // Sorting utilities
 
 	// Import the exercise package from parent directory
-	"github.com/example/go-10x-minis/minis/03-csv-stats/internal/exercise"
+	"github.com/example/go-10x-minis/minis/03-csv-stats/internal/csvstats"
 )
 
 /*
@@ -38,14 +38,14 @@ Examples:
 DEBUGGING:
 - Set breakpoints at "// BREAKPOINT:" comments
 - Use F5 to start debugging (select "Debug: Run main.go")
-- Step Into (F11) to enter exercise.SummarizeCSV function
+- Step Into (F11) to enter csvstats.SummarizeCSV function
 - Watch Variables panel to see map[category]Stats transformations
 - See /RUN_DEBUG.md for comprehensive debugging guide
 
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- csvstats.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -97,7 +97,7 @@ func main() {
 
 	// BREAKPOINT: Set breakpoint here before parsing CSV
 	// DEBUG: File is now open and ready to read
-	// DEBUG: Step Into (F11) on exercise.SummarizeCSV() to see CSV parsing
+	// DEBUG: Step Into (F11) on csvstats.SummarizeCSV() to see CSV parsing
 
 	fmt.Printf("Processing CSV file: %s\n", filePath)
 	fmt.Println()
@@ -109,7 +109,7 @@ func main() {
 	// DEBUG: Step Into (F11) to see how CSV is parsed line by line
 	// DEBUG: Watch how map[string]Stats is built incrementally
 
-	stats, err := exercise.SummarizeCSV(file)
+	stats, err := csvstats.SummarizeCSV(file)
 
 	// BREAKPOINT: Set breakpoint here after computing statistics
 	// DEBUG: Inspect 'stats' map - expand to see all categories
@@ -130,7 +130,7 @@ func main() {
 	// Convert map to slice for sorting
 	type CategoryStats struct {
 		Category string
-		Stats    exercise.Stats
+		Stats    csvstats.Stats
 	}
 
 	// BREAKPOINT: Set breakpoint here before building slice
@@ -259,7 +259,7 @@ func main() {
 	// 1. Set breakpoints at "// BREAKPOINT:" comments
 	// 2. Press F5 to start debugging
 	// 3. Use F10 (Step Over) to execute line by line
-	// 4. Use F11 (Step Into) to enter exercise.SummarizeCSV function
+	// 4. Use F11 (Step Into) to enter csvstats.SummarizeCSV function
 	// 5. Watch Variables panel to see map[string]Stats build up
 	// 6. Add watch expressions: len(stats), stats["Food"], totalSum
 	// 7. Use Debug Console to inspect: stats["category"].Sum
@@ -277,7 +277,7 @@ func main() {
 	// - Watch indices 'i' and 'j' as QuickSort proceeds
 	//
 	// CSV PARSING:
-	// - Step Into (F11) exercise.SummarizeCSV to see csv.Reader
+	// - Step Into (F11) csvstats.SummarizeCSV to see csv.Reader
 	// - Watch how each row is parsed into fields
 	// - See how amounts are converted from string to float64
 	// - Notice error handling for malformed CSV

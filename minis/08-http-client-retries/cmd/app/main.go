@@ -9,7 +9,7 @@ import (
 	"strconv" // String to int conversion
 	"time"   // Time operations
 
-	"github.com/example/go-10x-minis/minis/08-http-client-retries/internal/exercise"
+	"github.com/example/go-10x-minis/minis/08-http-client-retries/internal/httpclientretries"
 )
 
 /*
@@ -103,7 +103,7 @@ func main() {
 	// DEBUG: Watch how the Client struct is configured
 	// DEBUG: Note the timeout, maxRetries, and baseDelay settings
 
-	client := &exercise.Client{
+	client := &httpclientretries.Client{
 		HTTP:       &http.Client{Timeout: timeout},
 		MaxRetries: maxRetries,
 		BaseDelay:  baseDelay,
@@ -144,7 +144,7 @@ func main() {
 	// STEP 4: Make HTTP Request with Automatic Retries
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before HTTP request
-	// DEBUG: Step Into (F11) on exercise.GetJSON() to see retry logic
+	// DEBUG: Step Into (F11) on httpclientretries.GetJSON() to see retry logic
 	// DEBUG: Watch how the function handles failures and retries
 
 	fmt.Println("Fetching from URL...")
@@ -156,7 +156,7 @@ func main() {
 	// DEBUG: Observe exponential backoff delays between retries
 
 	var result map[string]interface{}
-	result, err := exercise.GetJSON[map[string]interface{}](ctx, client, url)
+	result, err := httpclientretries.GetJSON[map[string]interface{}](ctx, client, url)
 
 	// BREAKPOINT: Set breakpoint here after GetJSON returns
 	// DEBUG: Inspect 'err' - nil on success, error on failure
@@ -231,7 +231,7 @@ func main() {
 
 		startTime := time.Now()
 		var testResult map[string]interface{}
-		testResult, err := exercise.GetJSON[map[string]interface{}](ctx, client, test.url)
+		testResult, err := httpclientretries.GetJSON[map[string]interface{}](ctx, client, test.url)
 		elapsed := time.Since(startTime)
 
 		// BREAKPOINT: Set breakpoint here after each test request
@@ -276,7 +276,7 @@ func main() {
 	// 7. Use Call Stack panel to see function hierarchy
 	//
 	// HTTP CLIENT DEBUGGING:
-	// - Step Into exercise.GetJSON() to see retry loop
+	// - Step Into httpclientretries.GetJSON() to see retry loop
 	// - Watch retry counter increment on failures
 	// - Observe exponential backoff: delay doubles each retry
 	// - Check context for cancellation/timeout

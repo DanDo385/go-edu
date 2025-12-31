@@ -9,7 +9,7 @@ import (
 	"time"    // Time operations
 
 	// Import our exercise package containing the Cache type and New function
-	"github.com/example/go-10x-minis/minis/07-generic-lru-cache/internal/exercise"
+	"github.com/example/go-10x-minis/minis/07-generic-lru-cache/internal/genericlrucache"
 )
 
 /*
@@ -82,10 +82,10 @@ func main() {
 	// STEP 2: Create Cache Instance
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before cache creation
-	// DEBUG: Step Into (F11) on exercise.New() to see cache initialization
+	// DEBUG: Step Into (F11) on genericlrucache.New() to see cache initialization
 	// DEBUG: Watch how the cache struct is allocated and initialized
 
-	cache := exercise.New[string, int](capacity, ttl)
+	cache := genericlrucache.New[string, int](capacity, ttl)
 
 	// BREAKPOINT: Set breakpoint here after cache creation
 	// DEBUG: Inspect 'cache' variable in Variables panel
@@ -235,7 +235,7 @@ func main() {
 		fmt.Println("\n--- Advanced Demo: Mixed Operations ---")
 
 		// Reset cache for clean demo
-		cache = exercise.New[string, int](capacity, ttl)
+		cache = genericlrucache.New[string, int](capacity, ttl)
 
 		operations := []struct {
 			op    string
