@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/18-reorgs/internal/reorgs"
+	// "github.com/example/go-10x-minis/geth/18-reorgs/internal/reorgs" // TODO: Uncomment when implementing
 )
 
 func main() {

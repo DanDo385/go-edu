@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/17-indexer/internal/indexer"
+	// "github.com/example/go-10x-minis/geth/17-indexer/internal/indexer" // TODO: Uncomment when implementing
 )
 
 func main() {

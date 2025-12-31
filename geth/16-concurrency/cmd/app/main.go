@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/16-concurrency/internal/concurrency"
+	// "github.com/example/go-10x-minis/geth/16-concurrency/internal/concurrency" // TODO: Uncomment when implementing
 )
 
 func main() {

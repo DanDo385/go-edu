@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/12-proofs/internal/proofs"
+	// "github.com/example/go-10x-minis/geth/12-proofs/internal/proofs" // TODO: Uncomment when implementing
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/example/go-10x-minis/geth/06-eip1559/internal/eip1559"
+	// "github.com/example/go-10x-minis/geth/06-eip1559/internal/eip1559" // TODO: Uncomment when implementing
 )
 
 // Debug harness with fixed, deterministic inputs for stepping through with debugger

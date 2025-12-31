@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/22-peers/internal/peers"
+	// "github.com/example/go-10x-minis/geth/22-peers/internal/peers" // TODO: Uncomment when implementing
 )
 
 func main() {

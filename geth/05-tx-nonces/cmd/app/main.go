@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/05-tx-nonces/internal/txnonces"
+	// "github.com/example/go-10x-minis/geth/05-tx-nonces/internal/txnonces" // TODO: Uncomment when implementing
 )
 
 func main() {

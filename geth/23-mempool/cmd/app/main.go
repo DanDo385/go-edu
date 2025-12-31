@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/23-mempool/internal/mempool"
+	// "github.com/example/go-10x-minis/geth/23-mempool/internal/mempool" // TODO: Uncomment when implementing
 )
 
 func main() {

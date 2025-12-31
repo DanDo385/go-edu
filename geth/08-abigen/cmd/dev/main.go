@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/example/go-10x-minis/geth/08-abigen/internal/abigen"
+	// "github.com/example/go-10x-minis/geth/08-abigen/internal/abigen" // TODO: Uncomment when implementing
 )
 
 // Debug harness with fixed, deterministic inputs for stepping through with debugger

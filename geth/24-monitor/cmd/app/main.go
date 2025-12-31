@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/24-monitor/internal/monitor"
+	// "github.com/example/go-10x-minis/geth/24-monitor/internal/monitor" // TODO: Uncomment when implementing
 )
 
 func main() {

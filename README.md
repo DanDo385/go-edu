@@ -119,7 +119,7 @@ Reference files include:
 
 ```bash
 # Clone the repository
-git clone https://github.com/example/go-10x-minis.git go-edu
+git clone <repository-url> go-edu
 cd go-edu
 
 # Run tests for a specific project

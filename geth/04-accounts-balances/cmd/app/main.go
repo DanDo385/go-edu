@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/04-accounts-balances/internal/accountsbalances"
+	// "github.com/example/go-10x-minis/geth/04-accounts-balances/internal/accountsbalances" // TODO: Uncomment when implementing
 )
 
 func main() {
