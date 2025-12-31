@@ -146,9 +146,11 @@ func RetryWithTimeout(
 	maxRetries int,
 	timeout time.Duration,
 ) error {
-	// TODO: implement
-	return nil
+	// TODO: Implement RetryWithTimeout
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 2: FetchAll
@@ -233,9 +235,11 @@ func RetryWithTimeout(
 // }
 
 func FetchAll(ctx context.Context, urls []string, timeout time.Duration) ([]string, error) {
-	// TODO: implement
-	return nil, nil
+	// TODO: Implement FetchAll
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 3: WorkerPool
@@ -342,9 +346,11 @@ type Result struct {
 // }
 
 func WorkerPool(ctx context.Context, numWorkers int, jobs <-chan Job) <-chan Result {
-	// TODO: implement
-	return nil
+	// TODO: Implement WorkerPool
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 4: CacheWithTTL
@@ -383,9 +389,11 @@ type cacheEntry struct {
 // }
 
 func NewCache() *Cache {
-	// TODO: implement
-	return &Cache{}
+	// TODO: Implement NewCache
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Set stores a key-value pair with a time-to-live.
 // TODO: Implement thread-safe cache insertion with expiration.
@@ -548,9 +556,11 @@ type RateLimiter struct {
 // }
 
 func NewRateLimiter(rate int) *RateLimiter {
-	// TODO: implement
-	return &RateLimiter{}
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Wait blocks until an operation is allowed.
 // TODO: Implement context-aware rate limiting.

@@ -30,25 +30,11 @@ Computer science principles highlighted:
   - Resource management: Proper cleanup of subscriptions and channels
 */
 func Run(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
-	// TODO: Validate input parameters
-	// - Check if ctx is nil and provide a default context if needed
-	// - Check if client is nil and return an appropriate error
-	// - These patterns repeat from all previous modules
-
-	// TODO: Apply default configuration values
-	// - If cfg.MaxHeads <= 0, use defaultMaxHeads (5 headers)
-	// - If cfg.PollInterval <= 0, use defaultPollInterval (1 second)
-	// - Why defaults? Make common cases easy, allow customization for advanced uses
-	// - This is the "sensible defaults" pattern
-
-	// TODO: Route to appropriate monitoring strategy
-	// - If cfg.PollMode is true, call pollHeads (HTTP polling strategy)
-	// - Otherwise, call subscribeHeads (WebSocket subscription strategy)
-	// - Why two strategies? WebSocket is better but not always available
-	// - HTTP polling is a fallback that works everywhere
-
-	return nil, errors.New("not implemented")
+	// TODO: Implement Run
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func subscribeHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 	// TODO: Create channel for receiving headers

@@ -14,11 +14,11 @@ type Counter struct {
 }
 
 func NewCounter() *Counter {
-	// TODO: Implement this function.
-	// - Return a new instance of the `Counter` struct.
-	// - The zero value of a struct is usable here, as `sync.Mutex` is ready to use and `int` defaults to 0.
-	return &Counter{}
+	// TODO: Implement NewCounter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (c *Counter) Increment() {
 	// TODO: Implement this function.
@@ -65,13 +65,11 @@ type Cache[K comparable, V any] struct {
 }
 
 func NewCache[K comparable, V any]() *Cache[K, V] {
-	// TODO: Implement this function.
-	// - Initialize the `Cache` struct.
-	// - The `data` map must be initialized with `make()` before it can be used. A `nil` map will cause a panic on write.
-	return &Cache[K, V]{
-		data: make(map[K]V),
-	}
+	// TODO: Implement Function
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (c *Cache[K, V]) Get(key K) (V, bool) {
 	// TODO: Implement this function.
@@ -137,14 +135,11 @@ type cacheEntry[V any] struct {
 }
 
 func NewExpiringCache[K comparable, V any]() *ExpiringCache[K, V] {
-	// TODO: Implement this function.
-	// - Initialize the `ExpiringCache` struct.
-	// - The `data` map should be initialized.
-	// - `stopCh` will be used to signal the cleanup goroutine to stop.
-	return &ExpiringCache[K, V]{
-		data: make(map[K]*cacheEntry[V]),
-	}
+	// TODO: Implement Function
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (c *ExpiringCache[K, V]) Set(key K, value V, ttl time.Duration) {
 	// TODO: Implement this function.
@@ -222,19 +217,11 @@ type shard[K comparable, V any] struct {
 const numShards = 16
 
 func NewShardedMap[K comparable, V any]() *ShardedMap[K, V] {
-	// TODO: Implement this function.
-	// - Initialize the `ShardedMap`.
-	// - The `shards` field is an array of pointers to `shard`.
-	// - You must loop `numShards` times and initialize each shard in the array.
-	// - Each `shard` should have its own `map` initialized.
-	sm := &ShardedMap[K, V]{}
-	for i := 0; i < numShards; i++ {
-		sm.shards[i] = &shard[K, V]{
-			data: make(map[K]V),
-		}
-	}
-	return sm
+	// TODO: Implement Function
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (sm *ShardedMap[K, V]) getShard(key K) *shard[K, V] {
 	// TODO: Implement this function.
@@ -290,12 +277,11 @@ type Metrics struct {
 }
 
 func NewMetrics() *Metrics {
-	// TODO: Implement this function.
-	// - Initialize the `Metrics` struct with an empty map.
-	return &Metrics{
-		metrics: make(map[string]int64),
-	}
+	// TODO: Implement NewMetrics
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (m *Metrics) IncrementCounter(name string) {
 	// TODO: Implement this function.
@@ -351,21 +337,11 @@ type RateLimiter struct {
 }
 
 func NewRateLimiter(rate float64, burst int) *RateLimiter {
-	// TODO: Implement this function.
-
-	// This is an alternative implementation of a token bucket rate limiter that uses a mutex and time calculations instead of a channel.
-
-	// Step 1: Initialize the `RateLimiter` struct.
-	// - `rate`: tokens per second.
-	// - `burst`: the maximum number of tokens the bucket can hold.
-	// - `tokens`: start with a full bucket, so set to `float64(burst)`.
-	// - `lastRefill`: set to `time.Now()`.
-
-	// Step 2: Start the background refill goroutine.
-	// - Launch a goroutine that calls a `refill` method periodically.
-
-	return nil
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (rl *RateLimiter) Allow() bool {
 	// TODO: Implement this function.

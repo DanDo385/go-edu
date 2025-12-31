@@ -100,30 +100,11 @@ func (l *Level) UnmarshalJSON(data []byte) error {
 // - Partial Success: Returning both valid results and error information
 // - Buffered I/O: Reading large files efficiently without loading all into memory
 func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
-	// TODO: Step 1 - Create entries slice and skipped counter
-
-	// TODO: Step 2 - Create scanner for reading lines
-
-	// TODO: Step 3 - Loop through each line
-
-	// TODO: Step 4 - Skip empty lines
-
-	// TODO: Step 5 - Parse JSON line into Entry
-
-	// TODO: Step 6 - Handle parsing errors (skip and count)
-
-	// TODO: Step 7 - Filter by minimum level
-
-	// TODO: Step 8 - Append matching entries
-
-	// TODO: Step 9 - Check for scanner I/O errors
-
-	// TODO: Step 10 - Sort entries by timestamp
-
-	// TODO: Step 11 - Return with error if any lines were skipped
-
-	return nil, nil
+	// TODO: Implement FilterLogs
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // After implementing all functions:
 // - Run: go test ./...

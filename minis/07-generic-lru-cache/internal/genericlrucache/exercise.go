@@ -65,14 +65,11 @@ type entry[K comparable, V any] struct {
 // 2. Initialize items map
 // 3. Initialize evictList with list.New()
 func New[K comparable, V any](capacity int, defaultTTL time.Duration) *Cache[K, V] {
-	// TODO: Implement this function
-	return &Cache[K, V]{
-		capacity:   capacity,
-		defaultTTL: defaultTTL,
-		items:      make(map[K]*list.Element),
-		evictList:  list.New(),
-	}
+	// TODO: Implement Function
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // TODO: Implement Get(key K) (V, bool)
 // Algorithm:

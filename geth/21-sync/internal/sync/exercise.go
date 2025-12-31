@@ -22,34 +22,8 @@ Computer science principles highlighted:
   - State inspection without mutation (read-only health check)
 */
 func Run(ctx context.Context, client SyncClient, cfg Config) (*Result, error) {
-	// TODO: Validate input parameters
-	// - Check if ctx is nil and provide a default context if needed
-	// - Check if client is nil and return an appropriate error
-	// - Why: Defensive programming prevents panics from nil pointer dereferences
-
-	// TODO: Call SyncProgress RPC method
-	// - Call client.SyncProgress(ctx) to check sync status
-	// - Handle potential errors from the RPC call
-	// - Key concept: nil response means the node is fully synced
-	// - Non-nil response contains sync progress details (current vs highest block)
-	// - Why: This is the primary way to check if a node is ready for production use
-
-	// TODO: Interpret the SyncProgress result
-	// - If progress is nil, the node is fully synced (IsSyncing = false)
-	// - If progress is non-nil, the node is still syncing (IsSyncing = true)
-	// - Important fields in SyncProgress:
-	//   * CurrentBlock: The current block number the node has processed
-	//   * HighestBlock: The highest known block number in the network
-	//   * StartingBlock: The block number where syncing started
-	//   * PulledStates/KnownStates: State sync counters (for snap sync mode)
-	// - Why: Understanding these fields helps diagnose sync issues and estimate time remaining
-
-	// TODO: Construct and return the Result struct
-	// - Set IsSyncing based on whether progress is nil or not
-	// - Include the progress object for detailed information
-	// - Return the result with nil error on success
-	// - Note: We can safely return the progress pointer here because SyncProgress
-	//   is a read-only operation and the data represents a point-in-time snapshot
-
-	return nil, errors.New("not implemented")
+	// TODO: Implement Run
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+

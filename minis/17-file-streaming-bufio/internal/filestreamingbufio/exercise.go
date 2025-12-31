@@ -112,9 +112,11 @@ package filestreamingbufio
 // }
 
 func CountLines(reader io.Reader) (int, error) {
-	// TODO: implement using bufio.Scanner
-	return 0, nil
+	// TODO: Implement CountLines
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 2: FilterLines
@@ -183,9 +185,11 @@ func CountLines(reader io.Reader) (int, error) {
 // }
 
 func FilterLines(input io.Reader, output io.Writer, predicate func(string) bool) (int, error) {
-	// TODO: implement using bufio.Scanner and bufio.Writer
-	return 0, nil
+	// TODO: Implement FilterLines
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 3: WordFrequency
@@ -252,9 +256,11 @@ func FilterLines(input io.Reader, output io.Writer, predicate func(string) bool)
 // }
 
 func WordFrequency(reader io.Reader) (map[string]int, error) {
-	// TODO: implement using bufio.Scanner with ScanWords
-	return nil, nil
+	// TODO: Implement WordFrequency
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 4: TransformFile
@@ -304,9 +310,11 @@ func WordFrequency(reader io.Reader) (map[string]int, error) {
 // }
 
 func TransformFile(input io.Reader, output io.Writer, transform func(string) string) error {
-	// TODO: implement using bufio.Scanner and bufio.Writer
-	return nil
+	// TODO: Implement TransformFile
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 5: ReadChunks
@@ -399,9 +407,11 @@ func TransformFile(input io.Reader, output io.Writer, transform func(string) str
 // }
 
 func ReadChunks(reader io.Reader, chunkSize int, callback func([]byte)) (int, error) {
-	// TODO: implement using reader.Read() or bufio.Reader
-	return 0, nil
+	// TODO: Implement ReadChunks
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // After implementing all functions:
 // - Run: go test -v ./...

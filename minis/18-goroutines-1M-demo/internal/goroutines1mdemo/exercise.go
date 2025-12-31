@@ -150,9 +150,11 @@ package goroutines1mdemo
 // }
 
 func ParallelSum(n int, numWorkers int) int64 {
-	// TODO: Implement parallel summation
-	return 0
+	// TODO: Implement ParallelSum
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 2: FanOut
@@ -210,9 +212,11 @@ func ParallelSum(n int, numWorkers int) int64 {
 // }
 
 func FanOut(input <-chan int, numWorkers int) []<-chan int {
-	// TODO: Implement fan-out pattern
-	return nil
+	// TODO: Implement FanOut
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 3: FanIn
@@ -264,9 +268,11 @@ func FanOut(input <-chan int, numWorkers int) []<-chan int {
 // }
 
 func FanIn(inputs ...<-chan int) <-chan int {
-	// TODO: Implement fan-in pattern
-	return nil
+	// TODO: Implement FanIn
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 4: WorkerPool
@@ -320,9 +326,11 @@ func FanIn(inputs ...<-chan int) <-chan int {
 // }
 
 func NewWorkerPool(numWorkers int) *WorkerPool {
-	// TODO: Implement worker pool creation
-	return nil
+	// TODO: Implement NewWorkerPool
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Submit adds a job to the worker pool.
 // TODO: Implement job submission with stopped check.
@@ -413,9 +421,11 @@ func (p *WorkerPool) Stop() {
 // }
 
 func NewRateLimiter(maxOps int) *RateLimiter {
-	// TODO: Implement rate limiter
-	return nil
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Wait blocks until an operation is allowed.
 // TODO: Implement blocking wait for token.
@@ -506,8 +516,11 @@ func (c *ConcurrentCounter) Value() int64 {
 // }
 
 func NewGracefulWorker(ctx context.Context) *GracefulWorker {
-	return &GracefulWorker{ctx: ctx}
+	// TODO: Implement NewGracefulWorker
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Start begins the worker's execution loop.
 // TODO: Implement worker loop with context cancellation.
@@ -599,9 +612,11 @@ func (w *GracefulWorker) WorkDone() int64 {
 // }
 
 func Pipeline(input <-chan int, stages ...func(<-chan int) <-chan int) <-chan int {
-	// TODO: Implement pipeline
-	return nil
+	// TODO: Implement Pipeline
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // Exercise 9: BoundedParallel
@@ -654,8 +669,11 @@ func Pipeline(input <-chan int, stages ...func(<-chan int) <-chan int) <-chan in
 // }
 
 func BoundedParallel(maxConcurrent int, fns ...func()) {
-	// TODO: Implement bounded parallelism
+	// TODO: Implement BoundedParallel
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // After implementing all functions:
 // - Run: go test -v ./...

@@ -125,16 +125,11 @@ func (c *Circle) Area() float64 {
 // - Sum the areas of all shapes in the slice
 // - This tests your understanding of which types satisfy the Shape interface
 func TotalArea(shapes []Shape) float64 {
-	// TODO: Implement the function.
-
-	// This function will work correctly if you've implemented the `Area` methods with the correct receiver types.
-	// You can pass a `Rectangle`, a `*Rectangle`, and a `*Circle` into a `[]Shape` slice.
-	// You *cannot* pass a `Circle` value.
-	//
-	// The loop will call the `Area()` method on each element. This is an example of polymorphism in Go.
-	// The Go runtime knows the concrete type of each element in the `shapes` slice and calls the correct `Area` method.
-	return 0.0
+	// TODO: Implement TotalArea
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // EXERCISE 3: Nil Receiver Safety
@@ -386,14 +381,11 @@ type SafeCounterMap struct {
 // - Return a SafeCounterMap with a non-nil map
 // - The map should be empty initially
 func NewSafeCounterMap() SafeCounterMap {
-	// TODO: Implement the function.
-
-	// Why initialize the map?
-	// - The zero value for a map is `nil`.
-	// - If you try to write to a `nil` map, your program will panic.
-	// - By initializing the map with `make(map[string]int)`, you ensure that it's ready to be used.
-	return SafeCounterMap{}
+	// TODO: Implement NewSafeCounterMap
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Increment increments the counter for a given key.
 //

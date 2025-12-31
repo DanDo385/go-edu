@@ -51,11 +51,11 @@ type fileStore struct {
 // 2. Initialize empty items slice
 // 3. Return the fileStore as a Store interface
 func NewFileStore(path string) Store {
-	// TODO: Step 1 - Create fileStore with path and empty items slice
-	// TODO: Step 2 - Return as Store interface
-
-	return nil
+	// TODO: Implement NewFileStore
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Load reads items from disk
 // TODO: Implement this function

@@ -58,8 +58,11 @@ type MemStore struct {
 }
 
 func NewMemStore() Store {
-	return &MemStore{data: make(map[string]string)}
+	// TODO: Implement NewMemStore
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (m *MemStore) Put(key, val string) error {
 	m.mu.Lock()
