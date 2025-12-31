@@ -11,7 +11,7 @@ import (
 	"time"              // Time operations
 
 	// Import the exercise package from parent directory
-	"github.com/example/go-10x-minis/minis/06-worker-pool-wordcount/internal/exercise"
+	"github.com/example/go-10x-minis/minis/06-worker-pool-wordcount/internal/workerpoolwordcount"
 )
 
 /*
@@ -43,14 +43,14 @@ Examples:
 DEBUGGING:
 - Set breakpoints at "// BREAKPOINT:" comments
 - Use F5 to start debugging (select "Debug: Run main.go")
-- Step Into (F11) to enter exercise.WordCount function
+- Step Into (F11) to enter workerpoolwordcount.WordCount function
 - Watch Variables panel to see goroutine coordination
 - See /RUN_DEBUG.md for comprehensive debugging guide
 
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- workerpoolwordcount.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -155,12 +155,12 @@ func main() {
 	// STEP 5: Run WordCount with Worker Pool
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before starting word count
-	// DEBUG: Step Into (F11) on exercise.WordCount() to see worker pool implementation
+	// DEBUG: Step Into (F11) on workerpoolwordcount.WordCount() to see worker pool implementation
 	// DEBUG: Watch how goroutines are created and coordinated with channels
 
 	start := time.Now()
 
-	counts, err := exercise.WordCount(ctx, urls, workers)
+	counts, err := workerpoolwordcount.WordCount(ctx, urls, workers)
 
 	// BREAKPOINT: Set breakpoint here after word count completes
 	// DEBUG: Inspect 'counts' map - expand to see word → count mappings
@@ -299,13 +299,13 @@ func main() {
 	// 1. Set breakpoints at "// BREAKPOINT:" comments
 	// 2. Press F5 to start debugging
 	// 3. Use F10 (Step Over) to execute line by line
-	// 4. Use F11 (Step Into) to enter exercise.WordCount function
+	// 4. Use F11 (Step Into) to enter workerpoolwordcount.WordCount function
 	// 5. Watch Variables panel to see goroutine coordination
 	// 6. Use Goroutines panel to see all running goroutines
 	// 7. Add watch expressions: len(counts), elapsed, *workers
 	//
 	// UNDERSTANDING GOROUTINES:
-	// - Step Into (F11) exercise.WordCount to see worker pool
+	// - Step Into (F11) workerpoolwordcount.WordCount to see worker pool
 	// - Watch Goroutines panel to see workers spawn
 	// - Each worker is a goroutine running concurrently
 	// - Channels coordinate communication between goroutines

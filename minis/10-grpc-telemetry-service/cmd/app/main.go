@@ -9,7 +9,7 @@ import (
 	"strconv" // String to int conversion
 	"time"   // Time operations
 
-	"github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/internal/exercise"
+	"github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/internal/grpctelemetryservice"
 	pb "github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/proto"
 )
 
@@ -99,10 +99,10 @@ func main() {
 	// STEP 2: Create Aggregator Instance
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before aggregator creation
-	// DEBUG: Step Into (F11) on exercise.NewAggregator() to see initialization
+	// DEBUG: Step Into (F11) on grpctelemetryservice.NewAggregator() to see initialization
 	// DEBUG: Watch how the aggregator struct is allocated
 
-	agg := exercise.NewAggregator(window)
+	agg := grpctelemetryservice.NewAggregator(window)
 
 	// BREAKPOINT: Set breakpoint here after aggregator creation
 	// DEBUG: Inspect 'agg' variable in Variables panel
@@ -322,7 +322,7 @@ func main() {
 	// 7. Use Call Stack panel to see function hierarchy
 	//
 	// AGGREGATOR DEBUGGING:
-	// - Step Into exercise.NewAggregator() to see initialization
+	// - Step Into grpctelemetryservice.NewAggregator() to see initialization
 	// - Step Into agg.PushPoint() to see how points are aggregated
 	// - Watch the metrics map grow as points are added
 	// - Inspect running totals: count, sum, min, max

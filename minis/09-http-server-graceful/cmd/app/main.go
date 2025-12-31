@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"   // Time operations
 
-	"github.com/example/go-10x-minis/minis/09-http-server-graceful/internal/exercise"
+	"github.com/example/go-10x-minis/minis/09-http-server-graceful/internal/httpservergraceful"
 )
 
 /*
@@ -91,10 +91,10 @@ func main() {
 	// STEP 2: Create In-Memory Store
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before store creation
-	// DEBUG: Step Into (F11) on exercise.NewMemStore() to see initialization
+	// DEBUG: Step Into (F11) on httpservergraceful.NewMemStore() to see initialization
 	// DEBUG: Watch how the store struct is allocated
 
-	store := exercise.NewMemStore()
+	store := httpservergraceful.NewMemStore()
 
 	// BREAKPOINT: Set breakpoint here after store creation
 	// DEBUG: Inspect 'store' variable in Variables panel
@@ -114,7 +114,7 @@ func main() {
 	// DEBUG: Inspect 'mux' - it's the HTTP request multiplexer
 	// DEBUG: Routes will be added to this mux
 
-	exercise.RegisterRoutes(mux, store)
+	httpservergraceful.RegisterRoutes(mux, store)
 
 	// BREAKPOINT: Set breakpoint here after route registration
 	// DEBUG: Routes are now registered (GET /items, POST /items, etc.)
@@ -127,7 +127,7 @@ func main() {
 	// DEBUG: Watch how the http.Server is configured
 	// DEBUG: Note the address and handler
 
-	srv := exercise.NewServer(port, mux)
+	srv := httpservergraceful.NewServer(port, mux)
 
 	// BREAKPOINT: Set breakpoint here after server creation
 	// DEBUG: Inspect 'srv' variable in Variables panel
@@ -228,11 +228,11 @@ func main() {
 	log.Printf("Graceful shutdown initiated (timeout: %v)...", shutdownTimeout)
 
 	// BREAKPOINT: Set breakpoint here before calling GracefulShutdown
-	// DEBUG: Step Into (F11) on exercise.GracefulShutdown() to see shutdown logic
+	// DEBUG: Step Into (F11) on httpservergraceful.GracefulShutdown() to see shutdown logic
 	// DEBUG: Watch how server stops accepting new connections
 	// DEBUG: Observe how in-flight requests are allowed to complete
 
-	if err := exercise.GracefulShutdown(ctx, srv); err != nil {
+	if err := httpservergraceful.GracefulShutdown(ctx, srv); err != nil {
 		// BREAKPOINT: Set breakpoint here on shutdown error
 		// DEBUG: Error could be: context deadline exceeded (timeout)
 		// DEBUG: Inspect 'err' to see what went wrong during shutdown

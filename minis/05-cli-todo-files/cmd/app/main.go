@@ -8,7 +8,7 @@ import (
 	"strings" // String manipulation
 
 	// Import the exercise package from parent directory
-	"github.com/example/go-10x-minis/minis/05-cli-todo-files/internal/exercise"
+	"github.com/example/go-10x-minis/minis/05-cli-todo-files/internal/clitodofiles"
 )
 
 /*
@@ -47,7 +47,7 @@ DEBUGGING:
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- clitodofiles.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -90,9 +90,9 @@ func main() {
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before creating store
 	// DEBUG: Watch 'filePath' - this is where todos will be persisted
-	// DEBUG: Step Into (F11) on exercise.NewFileStore() to see initialization
+	// DEBUG: Step Into (F11) on clitodofiles.NewFileStore() to see initialization
 
-	store := exercise.NewFileStore(filePath)
+	store := clitodofiles.NewFileStore(filePath)
 
 	// BREAKPOINT: Set breakpoint here after creating store
 	// DEBUG: Inspect 'store' variable - see its fields (filepath, items slice)

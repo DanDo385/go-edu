@@ -7,7 +7,7 @@ import (
 	"strings" // String manipulation
 
 	// Import the exercise package from parent directory
-	"github.com/example/go-10x-minis/minis/02-arrays-maps-basics/internal/exercise"
+	"github.com/example/go-10x-minis/minis/02-arrays-maps-basics/internal/arraysmapsbasics"
 )
 
 /*
@@ -44,7 +44,7 @@ DEBUGGING:
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- arraysmapsbasics.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -84,7 +84,7 @@ func main() {
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here to step through file reading
 	// DEBUG: This demonstrates io.Reader interface with os.File
-	// DEBUG: Step Into (F11) on exercise.FreqFromReader() to see buffered reading
+	// DEBUG: Step Into (F11) on arraysmapsbasics.FreqFromReader() to see buffered reading
 
 	if demo == "all" || demo == "file" {
 		fmt.Println("=== Demo 1: Reading from File ===")
@@ -104,7 +104,7 @@ func main() {
 			// BREAKPOINT: Set breakpoint here before function call
 			// DEBUG: Step Into (F11) to see how FreqFromReader processes the file
 			// DEBUG: Watch how it uses bufio.Scanner to read line by line
-			freq, mostCommon, err := exercise.FreqFromReader(file)
+			freq, mostCommon, err := arraysmapsbasics.FreqFromReader(file)
 
 			// BREAKPOINT: Set breakpoint here after function call
 			// DEBUG: Inspect 'freq' map - see word → count mappings
@@ -154,9 +154,9 @@ go`
 		reader := strings.NewReader(testInput)
 
 		// BREAKPOINT: Set breakpoint here before function call
-		// DEBUG: Step Into (F11) on exercise.FreqFromReader() to see implementation
+		// DEBUG: Step Into (F11) on arraysmapsbasics.FreqFromReader() to see implementation
 		// DEBUG: Notice it uses the same code for both file and string!
-		freq, mostCommon, err := exercise.FreqFromReader(reader)
+		freq, mostCommon, err := arraysmapsbasics.FreqFromReader(reader)
 
 		// BREAKPOINT: Set breakpoint here after function call
 		// DEBUG: Inspect 'freq' map - should show: go=3, is=1, awesome=1, rocks=1
@@ -190,7 +190,7 @@ go`
 
 		// BREAKPOINT: Set breakpoint here before function call
 		// DEBUG: Step Into (F11) to see the same algorithm process different input
-		freq, mostCommon, err := exercise.FreqFromReader(reader)
+		freq, mostCommon, err := arraysmapsbasics.FreqFromReader(reader)
 
 		// BREAKPOINT: Set breakpoint here after function call
 		// DEBUG: Inspect 'freq' map - see counts for your custom input
@@ -236,7 +236,7 @@ go`
 	// 1. Set breakpoints at "// BREAKPOINT:" comments
 	// 2. Press F5 to start debugging
 	// 3. Use F10 (Step Over) to execute line by line
-	// 4. Use F11 (Step Into) to enter exercise.FreqFromReader function
+	// 4. Use F11 (Step Into) to enter arraysmapsbasics.FreqFromReader function
 	// 5. Watch Variables panel to see map contents
 	// 6. Add watch expressions: len(freq), freq["go"], mostCommon
 	// 7. Use Debug Console to inspect: freq["word"], len(freq)

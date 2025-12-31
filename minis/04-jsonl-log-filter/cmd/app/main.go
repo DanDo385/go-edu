@@ -6,7 +6,7 @@ import (
 	"os"     // Operating system interface
 
 	// Import the exercise package from parent directory
-	"github.com/example/go-10x-minis/minis/04-jsonl-log-filter/internal/exercise"
+	"github.com/example/go-10x-minis/minis/04-jsonl-log-filter/internal/jsonllogfilter"
 )
 
 /*
@@ -38,14 +38,14 @@ Examples:
 DEBUGGING:
 - Set breakpoints at "// BREAKPOINT:" comments
 - Use F5 to start debugging (select "Debug: Run main.go")
-- Step Into (F11) to enter exercise.FilterLogs function
+- Step Into (F11) to enter jsonllogfilter.FilterLogs function
 - Watch Variables panel to see log entries being parsed
 - See /RUN_DEBUG.md for comprehensive debugging guide
 
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- jsonllogfilter.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -80,25 +80,25 @@ func main() {
 	// DEBUG: Watch 'filePath', 'levelStr', 'format', 'showTime'
 
 	// ============================================================================
-	// STEP 2: Convert Level String to exercise.Level Type
+	// STEP 2: Convert Level String to jsonllogfilter.Level Type
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here before level conversion
 	// DEBUG: Watch 'levelStr' - this is the user's input like "warn" or "error"
-	// DEBUG: We need to convert string to exercise.Level constant
+	// DEBUG: We need to convert string to jsonllogfilter.Level constant
 
-	var minLevel exercise.Level
+	var minLevel jsonllogfilter.Level
 	switch levelStr {
 		case "debug":
-			minLevel = exercise.Debug
+			minLevel = jsonllogfilter.Debug
 		case "info":
-			minLevel = exercise.Info
+			minLevel = jsonllogfilter.Info
 		case "warn":
-			minLevel = exercise.Warn
+			minLevel = jsonllogfilter.Warn
 		case "error":
-			minLevel = exercise.Error
+			minLevel = jsonllogfilter.Error
 		default:
 			log.Printf("Invalid level %q, using 'warn'\n", levelStr)
-			minLevel = exercise.Warn
+			minLevel = jsonllogfilter.Warn
 		}
 
 	// BREAKPOINT: Set breakpoint here after level conversion
@@ -133,7 +133,7 @@ func main() {
 	// DEBUG: Step Into (F11) to see how JSONL is parsed line by line
 	// DEBUG: Watch how each line is decoded from JSON to LogEntry struct
 
-	entries, err := exercise.FilterLogs(file, minLevel)
+	entries, err := jsonllogfilter.FilterLogs(file, minLevel)
 
 	// BREAKPOINT: Set breakpoint here after filtering
 	// DEBUG: Inspect 'entries' slice - expand to see all filtered log entries
@@ -215,7 +215,7 @@ func main() {
 	// DEBUG: We'll count how many entries at each level
 	// DEBUG: Watch 'levelCounts' map build up
 
-	levelCounts := make(map[exercise.Level]int)
+	levelCounts := make(map[jsonllogfilter.Level]int)
 	for _, entry := range entries {
 		// BREAKPOINT: Set breakpoint here inside count loop
 		// DEBUG: Watch 'entry.Level' and see how map is incremented
@@ -226,22 +226,22 @@ func main() {
 
 	// BREAKPOINT: Set breakpoint here after computing counts
 	// DEBUG: Inspect 'levelCounts' map - expand to see counts per level
-	// DEBUG: Keys are exercise.Level constants, values are counts
+	// DEBUG: Keys are jsonllogfilter.Level constants, values are counts
 
 	if len(entries) > 0 && format == "text" {
 		fmt.Println()
 		fmt.Println("=== Statistics ===")
-		if levelCounts[exercise.Debug] > 0 {
-			fmt.Printf("DEBUG entries: %d\n", levelCounts[exercise.Debug])
+		if levelCounts[jsonllogfilter.Debug] > 0 {
+			fmt.Printf("DEBUG entries: %d\n", levelCounts[jsonllogfilter.Debug])
 		}
-		if levelCounts[exercise.Info] > 0 {
-			fmt.Printf("INFO entries:  %d\n", levelCounts[exercise.Info])
+		if levelCounts[jsonllogfilter.Info] > 0 {
+			fmt.Printf("INFO entries:  %d\n", levelCounts[jsonllogfilter.Info])
 		}
-		if levelCounts[exercise.Warn] > 0 {
-			fmt.Printf("WARN entries:  %d\n", levelCounts[exercise.Warn])
+		if levelCounts[jsonllogfilter.Warn] > 0 {
+			fmt.Printf("WARN entries:  %d\n", levelCounts[jsonllogfilter.Warn])
 		}
-		if levelCounts[exercise.Error] > 0 {
-			fmt.Printf("ERROR entries: %d\n", levelCounts[exercise.Error])
+		if levelCounts[jsonllogfilter.Error] > 0 {
+			fmt.Printf("ERROR entries: %d\n", levelCounts[jsonllogfilter.Error])
 		}
 	}
 
@@ -265,14 +265,14 @@ func main() {
 	// 1. Set breakpoints at "// BREAKPOINT:" comments
 	// 2. Press F5 to start debugging
 	// 3. Use F10 (Step Over) to execute line by line
-	// 4. Use F11 (Step Into) to enter exercise.FilterLogs function
+	// 4. Use F11 (Step Into) to enter jsonllogfilter.FilterLogs function
 	// 5. Watch Variables panel to see []LogEntry slice build up
 	// 6. Add watch expressions: len(entries), entries[0].Msg, levelCounts
 	// 7. Use Debug Console to inspect: entries[0], entries[0].TS
 	//
 	// UNDERSTANDING JSONL FORMAT:
 	// - JSONL = JSON Lines: one JSON object per line
-	// - Step Into (F11) exercise.FilterLogs to see line-by-line parsing
+	// - Step Into (F11) jsonllogfilter.FilterLogs to see line-by-line parsing
 	// - Watch how json.Decoder reads and unmarshals each line
 	// - Each line becomes a LogEntry struct
 	//
@@ -291,20 +291,20 @@ func main() {
 	// See /RUN_DEBUG.md for comprehensive debugging guide
 }
 
-// levelString converts exercise.Level to string for display
-func levelString(l exercise.Level) string {
+// levelString converts jsonllogfilter.Level to string for display
+func levelString(l jsonllogfilter.Level) string {
 	// BREAKPOINT: Set breakpoint here to see level conversion
 	// DEBUG: Watch 'l' parameter - should be 0, 1, 2, or 3
 	// DEBUG: This maps numeric levels to human-readable strings
 
 	switch l {
-	case exercise.Debug:
+	case jsonllogfilter.Debug:
 		return "DEBUG"
-	case exercise.Info:
+	case jsonllogfilter.Info:
 		return "INFO"
-	case exercise.Warn:
+	case jsonllogfilter.Warn:
 		return "WARN"
-	case exercise.Error:
+	case jsonllogfilter.Error:
 		return "ERROR"
 	default:
 		return "UNKNOWN"

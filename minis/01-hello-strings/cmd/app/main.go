@@ -5,8 +5,8 @@ import (
 	"os"     // Operating system interface
 
 	// Import the exercise package from parent directory
-	// This allows main.go to call functions from exercise.go and solution.go
-	"github.com/example/go-10x-minis/minis/01-hello-strings/internal/exercise"
+	// This allows main.go to call functions from hellostrings.go and solution.go
+	"github.com/example/go-10x-minis/minis/01-hello-strings/internal/hellostrings"
 )
 
 /*
@@ -43,7 +43,7 @@ DEBUGGING:
 PACKAGE STRUCTURE:
 - This file (cmd/app/main.go) is package main
 - It imports the exercise package from internal/exercise
-- exercise.go, solution.go are in package exercise
+- hellostrings.go, solution.go are in package exercise
 - Functions must be exported (capitalized) to be called from main
 */
 
@@ -103,13 +103,13 @@ func main() {
 		for _, s := range testCases {
 			// BREAKPOINT: Set breakpoint here inside loop
 			// DEBUG: Watch 's' variable change with each iteration
-			// DEBUG: Step Into (F11) on exercise.TitleCase() to see implementation
+			// DEBUG: Step Into (F11) on hellostrings.TitleCase() to see implementation
 
 			// Call the TitleCase function from exercise package
 			// BREAKPOINT: Set breakpoint here before function call
-			// DEBUG: Step Into (F11) to enter exercise.TitleCase function
-			// DEBUG: You'll see the implementation in exercise.go or solution.go
-			result := exercise.TitleCase(s)
+			// DEBUG: Step Into (F11) to enter hellostrings.TitleCase function
+			// DEBUG: You'll see the implementation in hellostrings.go or solution.go
+			result := hellostrings.TitleCase(s)
 
 			// BREAKPOINT: Set breakpoint here after function call
 			// DEBUG: Inspect 'result' variable - see how string was transformed
@@ -125,7 +125,7 @@ func main() {
 	// ============================================================================
 	// BREAKPOINT: Set breakpoint here to step through intermediate example
 	// DEBUG: This shows more advanced features - working with runes
-	// DEBUG: Step Into (F11) on exercise.Reverse() to see rune manipulation
+	// DEBUG: Step Into (F11) on hellostrings.Reverse() to see rune manipulation
 
 	if demo == "all" || demo == "reverse" {
 		fmt.Println("=== Reverse Demo ===")
@@ -143,7 +143,7 @@ func main() {
 		for _, s := range testCases {
 			// BREAKPOINT: Set breakpoint here
 			// DEBUG: Step Into (F11) to see reverse algorithm
-			result := exercise.Reverse(s)
+			result := hellostrings.Reverse(s)
 
 			// BREAKPOINT: Set breakpoint here after function call
 			// DEBUG: Compare 's' and 'result' - string should be reversed
@@ -176,7 +176,7 @@ func main() {
 			// BREAKPOINT: Set breakpoint here
 			// DEBUG: Step Into (F11) to see rune counting implementation
 			byteLen := len(s)               // len() returns byte length
-			runeLen := exercise.RuneLen(s)  // Count actual characters
+			runeLen := hellostrings.RuneLen(s)  // Count actual characters
 
 			// BREAKPOINT: Set breakpoint here
 			// DEBUG: Compare byteLen vs runeLen
@@ -203,9 +203,9 @@ func main() {
 	// 7. Use Call Stack panel to see function hierarchy
 	//
 	// STEPPING INTO EXERCISE PACKAGE:
-	// - Set breakpoint at exercise.TitleCase(s) call
+	// - Set breakpoint at hellostrings.TitleCase(s) call
 	// - Press F11 (Step Into)
-	// - Debugger will jump to exercise.go or solution.go
+	// - Debugger will jump to hellostrings.go or solution.go
 	// - You can now see the implementation
 	// - Step through the implementation with F10
 	// - Press Shift+F11 (Step Out) to return to main.go
