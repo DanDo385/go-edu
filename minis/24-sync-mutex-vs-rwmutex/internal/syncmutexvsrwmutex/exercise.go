@@ -3,9 +3,9 @@
 
 package syncmutexvsrwmutex
 
-import (
-	"time"
-)
+// import (
+// 	"time"
+// )
 
 // Exercise 1: Thread-Safe Counter
 type Counter struct {

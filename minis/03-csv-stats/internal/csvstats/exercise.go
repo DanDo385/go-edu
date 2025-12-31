@@ -11,11 +11,11 @@ package csvstats
 //
 // Uncomment these imports when you implement the functions:
 /*
-import (
-	"encoding/csv"
-	"io"
-	"strconv"
-)
+// import (
+// 	"encoding/csv"
+// 	"io"
+// 	"strconv"
+// )
 */
 
 // Stat holds aggregated statistics for a category

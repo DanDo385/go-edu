@@ -11,11 +11,11 @@ package hellostrings
 //
 // Uncomment these imports when you implement the functions:
 
-import (
-	"strings"
-	"unicode"
-	"unicode/utf8"
-)
+// import (
+// 	"strings"
+// 	"unicode"
+// 	"unicode/utf8"
+// )
 
 
 // TitleCase converts the first letter of each word to uppercase.

@@ -3,9 +3,9 @@
 
 package selectfaninfanout
 
-import (
-	"time"
-)
+// import (
+// 	"time"
+// )
 
 // Exercise 1: SelectFirst
 func SelectFirst(ch1, ch2 <-chan string, timeout time.Duration) (string, bool) {

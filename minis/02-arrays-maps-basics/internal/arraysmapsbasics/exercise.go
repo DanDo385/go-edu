@@ -11,11 +11,11 @@ package arraysmapsbasics
 //
 // Uncomment these imports when you implement the functions:
 /*
-import (
-	"bufio"
-	"io"
-	"strings"
-)
+// import (
+// 	"bufio"
+// 	"io"
+// 	"strings"
+// )
 */
 
 // FreqFromReader reads words from r (one per line) and returns:
