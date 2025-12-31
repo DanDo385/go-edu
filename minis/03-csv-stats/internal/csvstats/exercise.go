@@ -11,11 +11,11 @@ package csvstats
 //
 // Uncomment these imports when you implement the functions:
 /*
-import (
-	"encoding/csv"
-	"io"
-	"strconv"
-)
+// import (
+// 	"encoding/csv"
+// 	"io"
+// 	"strconv"
+// )
 */
 
 // Stat holds aggregated statistics for a category
@@ -57,28 +57,11 @@ type Stat struct {
 // - Struct Modification: Value types require read-modify-write pattern when stored in maps
 // - Type Conversion: Implicit conversions (int to float) for arithmetic operations
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
-	// TODO: Step 1 - Create CSV reader
-
-	// TODO: Step 2 - Read and validate header row
-
-	// TODO: Step 3 - Create statistics map
-
-	// TODO: Step 4 - Initialize row counter
-
-	// TODO: Step 5 - Loop through data rows
-
-	// TODO: Step 6 - Extract category and amount
-
-	// TODO: Step 7 - Parse amount as float
-
-	// TODO: Step 8 - Read stat, update, and write back to map
-
-	// TODO: Step 9 - Calculate averages for all categories
-
-	// TODO: Step 10 - Return results
-
-	return nil, nil
+	// TODO: Implement SummarizeCSV
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // After implementing:
 // - Run: go test ./...

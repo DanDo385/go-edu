@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/09-events/internal/events"
+	// "github.com/example/go-10x-minis/geth/09-events/internal/events" // TODO: Uncomment when implementing
 )
 
 func main() {

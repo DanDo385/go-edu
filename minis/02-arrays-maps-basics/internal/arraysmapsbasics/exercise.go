@@ -11,11 +11,11 @@ package arraysmapsbasics
 //
 // Uncomment these imports when you implement the functions:
 /*
-import (
-	"bufio"
-	"io"
-	"strings"
-)
+// import (
+// 	"bufio"
+// 	"io"
+// 	"strings"
+// )
 */
 
 // FreqFromReader reads words from r (one per line) and returns:
@@ -40,26 +40,11 @@ import (
 // - Iteration Order: Maps have random iteration order (not guaranteed sequence)
 // - Reference Semantics: Maps are reference types; modifications are visible to caller
 func FreqFromReader(r io.Reader) (map[string]int, string, error) {
-	// TODO: Step 1 - Create frequency map
-
-	// TODO: Step 2 - Create scanner for line-by-line reading
-
-	// TODO: Step 3 - Loop through each line
-
-	// TODO: Step 4 - Normalize word (trim, lowercase)
-
-	// TODO: Step 5 - Skip empty lines
-
-	// TODO: Step 6 - Increment word count in map
-
-	// TODO: Step 7 - Check scanner errors after loop
-
-	// TODO: Step 8 - Find most common word by iterating map
-
-	// TODO: Step 9 - Return results (map, maxWord, error)
-
-	return nil, "", nil
+	// TODO: Implement FreqFromReader
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // After implementing:
 // - Run: go test ./...

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/03-keys-addresses/internal/keysaddresses"
+	// "github.com/example/go-10x-minis/geth/03-keys-addresses/internal/keysaddresses" // TODO: Uncomment when implementing
 )
 
 func main() {

@@ -23,50 +23,8 @@ Computer science principles highlighted:
   - Separation of concerns (building vs. signing vs. sending)
 */
 func Run(ctx context.Context, client TXClient, cfg Config) (*Result, error) {
-	// TODO: Validate input parameters
-	// - Check for nil context, client, and private key.
-	// - Provide default values for AmountWei (0) and GasLimit (21000).
-
-	// TODO: Determine the sender's address from the private key.
-	// - Use `crypto.PubkeyToAddress(cfg.PrivateKey.PublicKey)`.
-
-	// TODO: Determine the nonce to use for the transaction.
-	// - If `cfg.Nonce` is provided, use it.
-	// - Otherwise, fetch the pending nonce for the sender's address using
-	//   `client.PendingNonceAt(ctx, from)`.
-	// - Handle and wrap any errors.
-
-	// TODO: Get the chain ID for signing.
-	// - Use `client.ChainID(ctx)`.
-	// - Handle errors and check for a nil chain ID.
-
-	// TODO: Determine the gas price to use.
-	// - If `cfg.GasPrice` is provided, use it.
-	// - Otherwise, get the suggested gas price from the network using
-	//   `client.SuggestGasPrice(ctx)`.
-	// - Handle and wrap any errors.
-
-	// TODO: Create the legacy transaction object.
-	// - Use `types.NewTransaction` to assemble the nonce, recipient address,
-	//   amount, gas limit, gas price, and data.
-	// - Remember to create defensive copies of mutable types like `big.Int`
-	//   and byte slices.
-
-	// TODO: Sign the transaction.
-	// - Create a signer using `types.LatestSignerForChainID(chainID)`. This
-	//   signer implements EIP-155 replay protection.
-	// - Use `types.SignTx` to sign the transaction with the signer and the
-	//   private key.
-	// - Handle and wrap any errors.
-
-	// TODO: Send the transaction to the network.
-	// - If `cfg.NoSend` is false, use `client.SendTransaction(ctx, signedTx)`
-	//   to broadcast the transaction.
-	// - Handle and wrap any errors.
-
-	// TODO: Construct and return the Result struct.
-	// - The result should contain the sender's address, the nonce used, and
-	//   the signed transaction.
-
-	return nil, errors.New("not implemented")
+	// TODO: Implement Run
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+

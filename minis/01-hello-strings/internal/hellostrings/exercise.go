@@ -11,11 +11,11 @@ package hellostrings
 //
 // Uncomment these imports when you implement the functions:
 
-import (
-	"strings"
-	"unicode"
-	"unicode/utf8"
-)
+// import (
+// 	"strings"
+// 	"unicode"
+// 	"unicode/utf8"
+// )
 
 
 // TitleCase converts the first letter of each word to uppercase.
@@ -31,19 +31,12 @@ import (
 //
 // CS Concept: String immutability - since Go strings are immutable, you must convert to runes (mutable representation), modify, then convert back. This connects to the concept of data types and their properties.
 func TitleCase(s string) string {
-	// TODO: Step 1 - Split string into words using strings.Fields()
-	words := strings.Fields(s)
-	// TODO: Step 2 - Iterate over words with index and convert first character to uppercase using unicode.ToUpper()
-	for i, word := range words {
-		runes := []rune(word)
-		if len(runes) > 0 {
-			runes[0] = unicode.ToUpper(runes[0])
-		}
-		words[i] = string(runes)
-	}
-	// TODO: Step 3 - Join words back together with spaces
-	return strings.Join(words, " ")
+	// TODO: Implement TitleCase
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
+
 // Reverse returns the string reversed character-by-character (UTF-8 aware).
 // This correctly handles multi-byte characters like emoji.
 // Example: "Hello 👋" → "👋 olleH"
@@ -56,16 +49,12 @@ func TitleCase(s string) string {
 //
 // CS Concept: Character encoding - UTF-8 uses variable-length byte sequences. Runes represent Unicode code points. Reversing at the byte level would corrupt multi-byte characters, so we must work at the rune level.
 func Reverse(s string) string {
-	// TODO: Step 1 - Convert string to []rune slice
-	runes := []rune(s)
-	// TODO: Step 2 - Reverse in-place using two pointers (start and end)
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-	// TODO: Step 3 - Convert []rune back to string
-
-	return string(runes)
+	// TODO: Implement Reverse
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
+
 
 // RuneLen returns the number of UTF-8 runes (characters) in the string,
 // not the byte count. This is important for strings with non-ASCII characters.
@@ -78,9 +67,12 @@ func Reverse(s string) string {
 //
 // CS Concept: Encoding and character representation - The distinction between bytes (the physical storage unit) and runes (the logical character unit) is fundamental to understanding how text is represented in modern programming languages.
 func RuneLen(s string) int {
-	// TODO: Step 1 - Count runes using utf8.RuneCountInString() or by iterating with range
-	return utf8.RuneCountInString(s) // optimized implementation
+	// TODO: Implement RuneLen
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
+
 
 // After implementing all functions:
 // - Run: go test ./...

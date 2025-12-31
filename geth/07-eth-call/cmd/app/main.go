@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/07-eth-call/internal/ethcall"
+	// "github.com/example/go-10x-minis/geth/07-eth-call/internal/ethcall" // TODO: Uncomment when implementing
 )
 
 func main() {

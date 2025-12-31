@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/example/go-10x-minis/geth/22-peers/internal/peers"
+	// "github.com/example/go-10x-minis/geth/22-peers/internal/peers" // TODO: Uncomment when implementing
 )
 
 // Debug harness with fixed, deterministic inputs for stepping through with debugger

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/10-filters/internal/filters"
+	// "github.com/example/go-10x-minis/geth/10-filters/internal/filters" // TODO: Uncomment when implementing
 )
 
 func main() {

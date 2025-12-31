@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/25-toolbox/internal/toolbox"
+	// "github.com/example/go-10x-minis/geth/25-toolbox/internal/toolbox" // TODO: Uncomment when implementing
 )
 
 func main() {

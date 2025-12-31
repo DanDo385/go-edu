@@ -28,31 +28,8 @@ Computer science principles highlighted:
   - JSON as a universal interchange format for complex data
 */
 func Run(ctx context.Context, client TraceClient, cfg Config) (*Result, error) {
-	// TODO: Validate input parameters
-	// - Check if ctx is nil and provide a default context if needed
-	// - Check if client is nil and return an appropriate error
-	// - Validate that cfg.TxHash is not the zero hash (empty hash)
-	// Why validate? Tracing is expensive; fail fast on invalid inputs
-
-	// TODO: Call TraceTransaction to fetch execution trace
-	// - Call client.TraceTransaction(ctx, cfg.TxHash)
-	// - This calls debug_traceTransaction RPC method under the hood
-	// - Returns json.RawMessage containing trace data
-	// - The trace format depends on the tracer used (default: callTracer)
-	// - Handle potential errors from the RPC call
-	// - Validate that the trace response is not nil
-
-	// TODO: Copy the trace data for safe return
-	// - Create a new json.RawMessage with same length as raw
-	// - Use copy() to duplicate the bytes
-	// - Why? json.RawMessage is []byte (slice), which is a reference type
-	// - Without copying, caller mutations would affect our internal data
-
-	// TODO: Construct and return the Result
-	// - Create a Result struct with:
-	//   - TxHash: The transaction hash that was traced
-	//   - Trace: The copied trace data
-	// - Return the result and nil error on success
-
-	return nil, errors.New("not implemented")
+	// TODO: Implement Run
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+

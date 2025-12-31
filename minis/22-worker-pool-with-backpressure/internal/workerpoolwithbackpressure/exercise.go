@@ -127,13 +127,11 @@ type WorkerPool struct {
 }
 
 func NewWorkerPool(queueSize, numWorkers int) *WorkerPool {
-	// TODO: Implement this function.
-	// - Initialize and return a new `*WorkerPool`.
-	// - `jobs`: This should be a buffered channel of `Job` with a capacity of `queueSize`. This is the core of your bounded queue.
-	// - `results`: This should also be a buffered channel of `Result` with a capacity of `queueSize`. A buffer here is important so that workers don't block waiting for a consumer to read the result.
-	// - `numWorkers`: Store this for the `Start` method.
-	return nil
+	// TODO: Implement NewWorkerPool
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (p *WorkerPool) Start(ctx context.Context, process func(Job) Result) {
 	// TODO: Implement this function.
@@ -273,30 +271,11 @@ type RateLimiter struct {
 }
 
 func NewRateLimiter(requestsPerSecond int) *RateLimiter {
-	// TODO: Implement this function.
-
-	// This function creates a token bucket rate limiter.
-
-	// Step 1: Initialize the RateLimiter struct.
-	// - `tokens`: A buffered channel of `struct{}` with capacity `requestsPerSecond`. `struct{}` is used because it has zero size.
-	// - `rate`: The duration between token refills, calculated as `time.Second / time.Duration(requestsPerSecond)`.
-	// - `stop`: A channel for signaling the refill goroutine to stop.
-	// - Also store `capacity` and a `sync.WaitGroup`.
-
-	// Step 2: Fill the token bucket initially.
-	// - Loop `requestsPerSecond` times and send an empty struct to the `tokens` channel. This allows for an initial burst of requests.
-
-	// Step 3: Start the background refill goroutine.
-	// - `rl.wg.Add(1)`
-	// - `go func() { ... }()`
-	// - The goroutine should `defer rl.wg.Done()`.
-	// - Create a `time.Ticker` with the calculated `rate`. `defer ticker.Stop()`.
-	// - Loop forever with a `select` statement.
-	//   - `case <-rl.stop:` -> `return` to stop the goroutine.
-	//   - `case <-ticker.C:` -> Time to add a new token. Use a non-blocking send (`select` with `default`) to add a token to the `tokens` channel, but only if it's not already full.
-
-	return nil
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (rl *RateLimiter) Wait(ctx context.Context) error {
 	// TODO: Implement this function.

@@ -13,11 +13,11 @@ import "sync/atomic"
 
 // NewAtomicCounter creates a new atomic counter initialized to 0.
 func NewAtomicCounter() *AtomicCounter {
-	// TODO: Implement this function.
-	// - Return a new instance of `AtomicCounter`.
-	// - The zero value is fine, as int64 defaults to 0.
-	return &AtomicCounter{}
+	// TODO: Implement NewAtomicCounter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Increment atomically increments the counter by 1.
 func (c *AtomicCounter) Increment() {
@@ -60,11 +60,11 @@ func (c *AtomicCounter) Reset() int64 {
 
 // NewAtomicFlag creates a new atomic flag initialized to false.
 func NewAtomicFlag() *AtomicFlag {
-	// TODO: Implement this function.
-	// - Return a new `AtomicFlag`.
-	// - The zero value (0) will represent `false`.
-	return &AtomicFlag{}
+	// TODO: Implement NewAtomicFlag
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Set atomically sets the flag to true.
 func (f *AtomicFlag) Set() {
@@ -101,13 +101,11 @@ func (f *AtomicFlag) TestAndSet() bool {
 
 // NewRateLimiter creates a new rate limiter.
 func NewRateLimiter(capacity, tokensPerSecond int64) *RateLimiter {
-	// TODO: Implement this function.
-	// - Initialize and return a `RateLimiter`.
-	// - `tokens` and `maxTokens` should be set to `capacity`.
-	// - `refillRate` should be `tokensPerSecond`.
-	// - `lastRefill` should be the current Unix time (`time.Now().Unix()`).
-	return nil
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Allow attempts to consume one token.
 func (rl *RateLimiter) Allow() bool {
@@ -137,11 +135,11 @@ func (rl *RateLimiter) Allow() bool {
 
 // NewAtomicMax creates a new atomic max tracker.
 func NewAtomicMax() *AtomicMax {
-	// TODO: Implement this function.
-	// - To correctly track the maximum, the initial value should be the lowest possible value for an `int64`.
-	// - Use `math.MinInt64` from the `math` package.
-	return nil
+	// TODO: Implement NewAtomicMax
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Update atomically updates the maximum if value is greater.
 func (am *AtomicMax) Update(value int64) {
@@ -174,10 +172,11 @@ func (am *AtomicMax) Max() int64 {
 
 // NewSpinLock creates a new spinlock.
 func NewSpinLock() *SpinLock {
-	// TODO: Implement this function.
-	// - The zero value of `SpinLock` is a valid unlocked state (state = 0).
-	return &SpinLock{}
+	// TODO: Implement NewSpinLock
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Lock acquires the spinlock (busy-waits if locked).
 func (sl *SpinLock) Lock() {
@@ -207,10 +206,11 @@ func (sl *SpinLock) Unlock() {
 
 // NewAtomicState creates a new atomic state machine.
 func NewAtomicState() *AtomicState {
-	// TODO: Implement this function.
-	// - The state machine should start in `StateIdle`.
-	return &AtomicState{current: StateIdle}
+	// TODO: Implement NewAtomicState
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // CurrentState atomically reads the current state.
 func (as *AtomicState) CurrentState() int64 {
@@ -235,10 +235,11 @@ func (as *AtomicState) Transition(expectedCurrent, newState int64) bool {
 
 // NewReferenceCounter creates a new reference counter.
 func NewReferenceCounter() *ReferenceCounter {
-	// TODO: Implement this function.
-	// - Initialize the counter with a `count` of 0.
-	return &ReferenceCounter{}
+	// TODO: Implement NewReferenceCounter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Acquire increments the reference count.
 func (rc *ReferenceCounter) Acquire() {
@@ -270,18 +271,11 @@ func (rc *ReferenceCounter) Count() int64 {
 
 // NewConfigManager creates a new config manager.
 func NewConfigManager() *ConfigManager {
-	// TODO: Implement this function.
-
-	// `atomic.Value` is a special type for atomically storing and loading values of any type.
-	// It's especially useful for things like configuration that are read often and updated infrequently.
-
-	// Step 1: Create a `ConfigManager`.
-	// Step 2: Create an initial `Config` struct.
-	// Step 3: Store a pointer to this initial config in the `atomic.Value` field.
-	// - `cm.config.Store(&Config{...})`
-	// - You must store a pointer; `atomic.Value` cannot store `nil` directly after the first `Store`.
-	return nil
+	// TODO: Implement NewConfigManager
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Update atomically updates the configuration.
 func (cm *ConfigManager) Update(newConfig *Config) {
@@ -305,12 +299,11 @@ func (cm *ConfigManager) Get() *Config {
 
 // NewLoadBalancer creates a new load balancer.
 func NewLoadBalancer(numWorkers int) *LoadBalancer {
-	// TODO: Implement this function.
-	// - Initialize the `LoadBalancer` struct.
-	// - The `counter` should start at 0.
-	// - `workers` should be set to `numWorkers`.
-	return nil
+	// TODO: Implement NewLoadBalancer
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // NextWorker returns the ID of the next worker using round-robin.
 func (lb *LoadBalancer) NextWorker() int64 {
@@ -333,10 +326,11 @@ func (lb *LoadBalancer) NextWorker() int64 {
 
 // NewAtomicBitmap creates a new atomic bitmap.
 func NewAtomicBitmap() *AtomicBitmap {
-	// TODO: Implement this function.
-	// - The zero value of the struct is a valid, empty bitmap.
-	return &AtomicBitmap{}
+	// TODO: Implement NewAtomicBitmap
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // SetBit atomically sets a bit to 1.
 func (ab *AtomicBitmap) SetBit(bitIndex int) {
@@ -387,13 +381,19 @@ func (ab *AtomicBitmap) TestBit(bitIndex int) bool {
 // IncrementCounterNonAtomic is a BUGGY implementation for testing.
 // This will fail under concurrent access (race condition).
 func IncrementCounterNonAtomic(counter *int64) {
-	*counter++
+	// TODO: Implement IncrementCounterNonAtomic
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // IncrementCounterAtomic is the CORRECT implementation for testing.
 func IncrementCounterAtomic(counter *int64) {
-	atomic.AddInt64(counter, 1)
+	// TODO: Implement IncrementCounterAtomic
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // ============================================================================
 // BONUS EXERCISE: Circular Buffer
@@ -410,9 +410,11 @@ func IncrementCounterAtomic(counter *int64) {
 // NOTE: This is a challenging exercise! Lock-free circular buffers
 // require careful handling of head/tail indices and size.
 func NewCircularBuffer(capacity int) *CircularBuffer {
-	// TODO: Implement this
-	return nil
+	// TODO: Implement NewCircularBuffer
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Push adds a value to the buffer (returns false if full).
 //

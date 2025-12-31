@@ -14,16 +14,16 @@ package workerpoolwordcount
 // - "golang.org/x/sync/errgroup" for goroutine coordination
 //
 // Uncomment these imports when you implement the functions:
-import (
-	"context"
-	"fmt"
-	"io"
-	"net/http"
-	"strings"
-	"unicode"
+// import (
+// 	"context"
+// 	"fmt"
+// 	"io"
+// 	"net/http"
+// 	"strings"
+// 	"unicode"
 
-	"golang.org/x/sync/errgroup"
-)
+// 	"golang.org/x/sync/errgroup"
+// )
 
 // Keep imports available for implementation
 // These will be used when you implement the functions below
@@ -56,24 +56,11 @@ var (
 // - Graceful Shutdown: Proper cleanup when done or on error
 // TODO: Implement this function
 func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
-	// TODO: Step 1 - Create errgroup with context
-
-	// TODO: Step 2 - Create jobs and results channels with buffer size = workers
-
-	// TODO: Step 3 - Launch worker goroutines
-
-	// TODO: Step 4 - Create job sender goroutine
-
-	// TODO: Step 5 - Create results channel closer goroutine
-
-	// TODO: Step 6 - Aggregate results into final map
-
-	// TODO: Step 7 - Wait for workers to finish
-
-	// TODO: Step 8 - Return aggregated counts and any errors
-
-	return nil, nil
+	// TODO: Implement WordCount
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // fetchAndCount fetches a URL and returns word frequency counts
 // TODO: Implement this function

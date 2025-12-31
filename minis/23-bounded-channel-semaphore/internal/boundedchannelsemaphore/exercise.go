@@ -19,11 +19,11 @@
 
 package boundedchannelsemaphore
 
-import (
-	"context"
-	"fmt"
-	"time"
-)
+// import (
+// 	"context"
+// 	"fmt"
+// 	"time"
+// )
 
 // ============================================================================
 // EXERCISE 1: Basic Counting Semaphore
@@ -36,15 +36,11 @@ type Semaphore struct {
 
 // NewSemaphore creates a new counting semaphore.
 func NewSemaphore(maxPermits int) *Semaphore {
-	// TODO: Implement this function.
-	// - A counting semaphore can be implemented using a buffered channel.
-	// - The capacity of the channel represents the maximum number of available permits.
-	// - `sem := make(chan struct{}, maxPermits)`
-	// - `struct{}` is used because it has a size of zero; we only care about the blocking/unblocking behavior of the channel, not the values sent.
-	return &Semaphore{
-		sem: make(chan struct{}, maxPermits),
-	}
+	// TODO: Implement NewSemaphore
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Acquire acquires a permit, blocking if none available.
 func (s *Semaphore) Acquire() {
@@ -93,27 +89,11 @@ type RateLimiter struct {
 
 // NewRateLimiter creates a new rate limiter.
 func NewRateLimiter(maxBurst int, rate time.Duration) *RateLimiter {
-	// TODO: Implement this function.
-
-	// This function creates a token bucket rate limiter.
-
-	// Step 1: Initialize the RateLimiter struct.
-	// - `tokens`: A buffered channel of `struct{}` with capacity `maxBurst`.
-	// - `rate`: The duration between token refills.
-	// - `done`: A channel for signaling the refill goroutine to stop.
-
-	// Step 2: Fill the token bucket initially.
-	// - This allows for an initial burst of requests. Loop `maxBurst` times and send to the `tokens` channel.
-
-	// Step 3: Start the background refill goroutine.
-	// - Launch a goroutine that runs a `refill` method or function.
-	// - The refill logic should use a `time.Ticker` with the specified `rate`.
-	// - In a loop, `select` on the ticker's channel and the `done` channel.
-	//   - When the ticker fires, attempt a non-blocking send to the `tokens` channel (using `select` with `default`).
-	//   - When the `done` channel is closed, stop the ticker and return from the goroutine.
-
-	return nil
+	// TODO: Implement NewRateLimiter
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Wait blocks until a token is available.
 func (rl *RateLimiter) Wait() {
@@ -147,11 +127,11 @@ type WeightedSemaphore struct {
 
 // NewWeightedSemaphore creates a weighted semaphore.
 func NewWeightedSemaphore(maxWeight int) *WeightedSemaphore {
-	// TODO: Implement this function.
-	// - The implementation is very similar to the basic semaphore.
-	// - The capacity of the buffered channel should be `maxWeight`.
-	return nil
+	// TODO: Implement NewWeightedSemaphore
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Acquire acquires the specified weight of permits.
 func (ws *WeightedSemaphore) Acquire(weight int) {
@@ -205,14 +185,11 @@ type WorkerPool struct {
 
 // NewWorkerPool creates a worker pool.
 func NewWorkerPool(numWorkers int, processor func(Job) Result) *WorkerPool {
-	// TODO: Implement this function.
-	// - Initialize the `WorkerPool` struct.
-	// - `jobs`: A buffered channel for submitting work. A buffer of `numWorkers * 2` is a reasonable starting point.
-	// - `results`: A buffered channel for collecting results.
-	// - `sem`: A new `Semaphore` with a capacity of `numWorkers`. This is what will limit the concurrency.
-	// - `processor`: The user-supplied function to process a job.
-	return nil
+	// TODO: Implement NewWorkerPool
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 // Submit submits a job to the pool.
 func (wp *WorkerPool) Submit(job Job) {
@@ -264,9 +241,8 @@ func (wp *WorkerPool) Stop() {
 
 // DefaultProcessor is a simple job processor for testing.
 func DefaultProcessor(job Job) Result {
-	return Result{
-		JobID:  job.ID,
-		Output: fmt.Sprintf("Processed: %s", job.Data),
-		Err:    nil,
-	}
+	// TODO: Implement DefaultProcessor
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+

@@ -3,14 +3,14 @@
 
 package httpservergraceful
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"sync"
-	"sync/atomic"
-)
+// import (
+// 	"context"
+// 	"encoding/json"
+// 	"fmt"
+// 	"net/http"
+// 	"sync"
+// 	"sync/atomic"
+// )
 
 // Store defines key-value storage operations.
 type Store interface {
@@ -58,8 +58,11 @@ type MemStore struct {
 }
 
 func NewMemStore() Store {
-	return &MemStore{data: make(map[string]string)}
+	// TODO: Implement NewMemStore
+	// See solution.reference.go for reference implementation
+	panic("not implemented")
 }
+
 
 func (m *MemStore) Put(key, val string) error {
 	m.mu.Lock()

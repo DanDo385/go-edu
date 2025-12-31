@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/example/go-10x-minis/geth/01-stack/internal/stack"
+	// "github.com/example/go-10x-minis/geth/01-stack/internal/stack" // TODO: Uncomment when implementing
 )
 
 func main() {
