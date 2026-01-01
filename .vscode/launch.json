@@ -2,25 +2,47 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Current Package",
+            "name": "Debug: cmd/dev (Auto - from internal)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}/../../cmd/dev",
+            "showLog": true,
+            "comment": "Run this when you have an exercise file open in internal/pkg/ to run the debug harness"
+        },
+        {
+            "name": "Debug: cmd/app (Auto - from internal)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}/../../cmd/app",
+            "showLog": true,
+            "comment": "Run this when you have an exercise file open in internal/pkg/ to run the main app"
+        },
+        {
+            "name": "Debug: Current File/Package",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
             "showLog": true,
-            "comment": "Debugs the current package. Automatically detects if it's a program or test. Use when debugging from within a package directory (e.g., minis/07-generic-lru-cache/cmd/... or exercise/)."
+            "comment": "Debugs the current package or file"
         },
         {
-            "name": "Debug Tests (Current Package)",
+            "name": "Test: Current Package",
             "type": "go",
             "request": "launch",
             "mode": "test",
             "program": "${fileDirname}",
-            "args": [
-                "-test.v"
-            ],
-            "showLog": true,
-            "comment": "Runs tests in the current package. Use when debugging from within an exercise/ or test directory."
+            "showLog": true
+        },
+        {
+            "name": "Test: Run All Tests",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/...",
+            "showLog": true
         }
     ]
 }
