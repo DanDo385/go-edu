@@ -1,4 +1,4 @@
-.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help reset-exercises reset-exercises-minis reset-exercises-geth
+.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help todo lint check
 
 # Colors for output
 CYAN := \033[0;36m
@@ -151,21 +151,132 @@ clean:
 	rm -f coverage.out
 	@echo "$(GREEN)✓ Build cache cleaned$(NC)"
 
-# Reset exercises to TODO list format
-reset-exercises:
-	@echo "$(CYAN)Resetting all exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh
-	@echo "$(GREEN)✓ All exercises reset$(NC)"
+# Lint code using go vet (built-in) and optionally golangci-lint
+lint:
+	@if [ -z "$(P)" ]; then \
+		echo "$(CYAN)Running go vet on all packages...$(NC)"; \
+		go vet ./...; \
+		if command -v golangci-lint >/dev/null 2>&1; then \
+			echo "\n$(CYAN)Running golangci-lint...$(NC)"; \
+			golangci-lint run ./...; \
+		else \
+			echo "\n$(YELLOW)Note: golangci-lint not installed. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest$(NC)"; \
+		fi; \
+	else \
+		PROJECT_PATH="$(P)"; \
+		if [ ! -d "$$PROJECT_PATH" ] && [ -d "minis/$$PROJECT_PATH" ]; then \
+			PROJECT_PATH="minis/$$PROJECT_PATH"; \
+		fi; \
+		if [ ! -d "$$PROJECT_PATH" ]; then \
+			echo "$(YELLOW)Error: Project '$(P)' not found$(NC)"; \
+			echo "Run 'make list' to see available projects"; \
+			exit 1; \
+		fi; \
+		echo "$(CYAN)Linting $$PROJECT_PATH...$(NC)"; \
+		go vet ./$$PROJECT_PATH/...; \
+		if command -v golangci-lint >/dev/null 2>&1; then \
+			golangci-lint run ./$$PROJECT_PATH/...; \
+		fi; \
+	fi
 
-reset-exercises-minis:
-	@echo "$(CYAN)Resetting minis exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh minis
-	@echo "$(GREEN)✓ Minis exercises reset$(NC)"
+# Check code (vet + build) with optional project path
+check:
+	@if [ -z "$(P)" ]; then \
+		echo "$(CYAN)Running go vet...$(NC)"; \
+		go vet ./... || exit 1; \
+		echo "\n$(CYAN)Building all packages...$(NC)"; \
+		go build ./... || exit 1; \
+		echo "\n$(GREEN)✓ All checks passed$(NC)"; \
+	else \
+		PROJECT_PATH="$(P)"; \
+		if [ ! -d "$$PROJECT_PATH" ] && [ -d "minis/$$PROJECT_PATH" ]; then \
+			PROJECT_PATH="minis/$$PROJECT_PATH"; \
+		fi; \
+		if [ ! -d "$$PROJECT_PATH" ]; then \
+			echo "$(YELLOW)Error: Project '$(P)' not found$(NC)"; \
+			echo "Run 'make list' to see available projects"; \
+			exit 1; \
+		fi; \
+		echo "$(CYAN)Checking $$PROJECT_PATH...$(NC)"; \
+		go vet ./$$PROJECT_PATH/... || exit 1; \
+		go build ./$$PROJECT_PATH/... || exit 1; \
+		echo "\n$(GREEN)✓ Checks passed$(NC)"; \
+	fi
 
-reset-exercises-geth:
-	@echo "$(CYAN)Resetting geth exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh geth
-	@echo "$(GREEN)✓ Geth exercises reset$(NC)"
+# Contextual todo command - resets exercise.go files to TODO state
+# Usage:
+#   make todo all                    # Reset all exercises (from root)
+#   make todo all                    # Reset all in current directory (from geth/ or minis/)
+#   make todo all                    # Reset current project (from project directory)
+#   make todo <path>                 # Reset specific path (from any location)
+todo:
+	@if [ -z "$(filter-out todo,$(MAKECMDGOALS))" ]; then \
+		echo "$(YELLOW)Usage: make todo [all|<path>]$(NC)"; \
+		echo "Examples:"; \
+		echo "  make todo all                    # Reset all exercises (contextual)"; \
+		echo "  make todo geth/01-stack          # Reset specific path"; \
+		echo "  make todo minis/02-arrays-maps-basics"; \
+		exit 1; \
+	fi
+	@TARGET="$(filter-out todo,$(MAKECMDGOALS))"; \
+	CURRENT_DIR=$$(pwd); \
+	REPO_ROOT=$$(git rev-parse --show-toplevel 2>/dev/null || echo "$$(pwd)"); \
+	cd "$$REPO_ROOT"; \
+	if [ "$$TARGET" = "all" ]; then \
+		RELATIVE_PATH=$$(realpath --relative-to="$$REPO_ROOT" "$$CURRENT_DIR" 2>/dev/null || echo "$$CURRENT_DIR"); \
+		if [ "$$RELATIVE_PATH" = "." ] || [ "$$RELATIVE_PATH" = "$$REPO_ROOT" ]; then \
+			echo "$(CYAN)Resetting all exercises in both geth/ and minis/...$(NC)"; \
+			./scripts/reset-exercises.sh; \
+		elif [ "$$RELATIVE_PATH" = "geth" ]; then \
+			echo "$(CYAN)Resetting all exercises in geth/...$(NC)"; \
+			./scripts/reset-exercises.sh geth; \
+		elif [ "$$RELATIVE_PATH" = "minis" ]; then \
+			echo "$(CYAN)Resetting all exercises in minis/...$(NC)"; \
+			./scripts/reset-exercises.sh minis; \
+		elif echo "$$RELATIVE_PATH" | grep -q "^geth/"; then \
+			PROJECT_PATH=$$(echo "$$RELATIVE_PATH" | cut -d'/' -f1-2); \
+			if [ -d "$$PROJECT_PATH" ]; then \
+				echo "$(CYAN)Resetting exercise in $$PROJECT_PATH...$(NC)"; \
+				./scripts/reset-exercises.sh "$$PROJECT_PATH"; \
+			else \
+				echo "$(YELLOW)Error: Project directory not found: $$PROJECT_PATH$(NC)"; \
+				exit 1; \
+			fi; \
+		elif echo "$$RELATIVE_PATH" | grep -q "^minis/"; then \
+			PROJECT_PATH=$$(echo "$$RELATIVE_PATH" | cut -d'/' -f1-2); \
+			if [ -d "$$PROJECT_PATH" ]; then \
+				echo "$(CYAN)Resetting exercise in $$PROJECT_PATH...$(NC)"; \
+				./scripts/reset-exercises.sh "$$PROJECT_PATH"; \
+			else \
+				echo "$(YELLOW)Error: Project directory not found: $$PROJECT_PATH$(NC)"; \
+				exit 1; \
+			fi; \
+		else \
+			echo "$(YELLOW)Error: Could not determine context$(NC)"; \
+			echo "Current directory: $$CURRENT_DIR"; \
+			echo "Relative path: $$RELATIVE_PATH"; \
+			echo "Run from root, geth/, minis/, or a project directory"; \
+			exit 1; \
+		fi; \
+		echo "$(GREEN)✓ Exercises reset$(NC)"; \
+	else \
+		TARGET_PATH="$$TARGET"; \
+		if [ ! -d "$$TARGET_PATH" ] && [ -d "minis/$$TARGET_PATH" ]; then \
+			TARGET_PATH="minis/$$TARGET_PATH"; \
+		fi; \
+		if [ ! -d "$$TARGET_PATH" ]; then \
+			echo "$(YELLOW)Error: Path '$$TARGET' not found$(NC)"; \
+			echo "Run 'make list' to see available projects"; \
+			exit 1; \
+		fi; \
+		echo "$(CYAN)Resetting exercises in $$TARGET_PATH...$(NC)"; \
+		./scripts/reset-exercises.sh "$$TARGET_PATH"; \
+		echo "$(GREEN)✓ Exercises reset$(NC)"; \
+	fi
+
+# Prevent make from treating the todo argument as a target
+%:
+	@:
 
 help:
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
@@ -204,13 +315,25 @@ help:
 	@echo "  make bench P=<path>  Benchmark specific project"
 	@echo "                       Example: make bench P=minis/07-generic-lru-cache"
 	@echo ""
+	@echo "$(GREEN)Code Quality:$(NC)"
+	@echo "  make lint            Run linters (go vet + golangci-lint if available)"
+	@echo "  make lint P=<path>   Lint specific project"
+	@echo "  make check           Run vet + build checks"
+	@echo "  make check P=<path>  Check specific project"
+	@echo ""
 	@echo "$(GREEN)Cleanup:$(NC)"
 	@echo "  make clean           Clean build cache"
 	@echo ""
 	@echo "$(GREEN)Exercise Management:$(NC)"
-	@echo "  make reset-exercises       Reset all exercises to TODO format"
-	@echo "  make reset-exercises-minis Reset only minis exercises"
-	@echo "  make reset-exercises-geth  Reset only geth exercises"
+	@echo "  make todo all              Reset exercises (contextual - works from any directory)"
+	@echo "                             Examples:"
+	@echo "                               From root: make todo all  (resets all)"
+	@echo "                               From geth/: make todo all  (resets all geth)"
+	@echo "                               From project/: make todo all  (resets that project)"
+	@echo "  make todo <path>           Reset exercises in specific path"
+	@echo "                             Examples:"
+	@echo "                               make todo geth/01-stack"
+	@echo "                               make todo minis/02-arrays-maps-basics"
 	@echo ""
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
 	@echo "$(YELLOW)Quick Start:$(NC)"

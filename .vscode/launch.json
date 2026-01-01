@@ -8,7 +8,7 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "showLog": true,
-            "comment": "Debugs the current package. Automatically detects if it's a program or test. Use when debugging from within a package directory (e.g., minis/07-generic-lru-cache/cmd/... or exercise/)."
+            "comment": "Debugs the current package. Automatically detects if it's a program or test. Use when debugging from within a package directory (e.g., minis/07-generic-lru-cache/cmd/... or internal/...). This configuration works contextually - it will debug the package containing the currently open file."
         },
         {
             "name": "Debug Tests (Current Package)",
@@ -20,7 +20,7 @@
                 "-test.v"
             ],
             "showLog": true,
-            "comment": "Runs tests in the current package. Use when debugging from within an exercise/ or test directory."
+            "comment": "Runs tests in the current package with debugger support. Use when debugging tests from within an exercise package (e.g., internal/<pkg>/). Set breakpoints in test functions or exercise.go files, then use F10 (Step Over) and F11 (Step Into) to debug."
         }
     ]
 }
