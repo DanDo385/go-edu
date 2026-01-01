@@ -7,6 +7,11 @@
 bin/
 dist/
 
+# Root-level binaries (should not be tracked)
+/app
+/debug
+/worker-pool-wordcount
+
 # Test and coverage
 *.test
 *.out

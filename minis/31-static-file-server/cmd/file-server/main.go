@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/31-static-file-server/exercise"
+	"github.com/example/go-10x-minis/minis/31-static-file-server/internal/staticfileserver"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	// Create server configuration
-	config := exercise.FileServerConfig{
+	config := staticfileserver.FileServerConfig{
 		Root:              *root,
 		EnableETag:        *enableETag,
 		EnableRange:       *enableRange,
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Create file server
-	fileServer, err := exercise.NewFileServer(config)
+	fileServer, err := staticfileserver.NewFileServer(config)
 	if err != nil {
 		log.Fatalf("Failed to create file server: %v", err)
 	}

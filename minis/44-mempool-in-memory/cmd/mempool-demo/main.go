@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/44-mempool-in-memory/exercise"
+	"github.com/example/go-10x-minis/minis/44-mempool-in-memory/internal/mempoolinmemory"
 )
 
 func main() {
@@ -40,10 +40,10 @@ func demo1FIFOMempool() {
 	fmt.Println("Transactions are processed in arrival order (like a queue)")
 	fmt.Println()
 
-	mempool := exercise.NewFIFOMempool(5)
+	mempool := mempoolinmemory.NewFIFOMempool(5)
 
 	// Create transactions with different fees
-	txs := []*exercise.Transaction{
+	txs := []*mempoolinmemory.Transaction{
 		createTx("Alice", "Bob", 100, 10, 0),
 		createTx("Charlie", "Dave", 50, 50, 0),  // Higher fee but arrives later
 		createTx("Eve", "Frank", 200, 5, 0),
@@ -85,10 +85,10 @@ func demo2PriorityMempool() {
 	fmt.Println("Transactions are processed by priority (highest fee first)")
 	fmt.Println()
 
-	mempool := exercise.NewPriorityMempool(5)
+	mempool := mempoolinmemory.NewPriorityMempool(5)
 
 	// Create transactions with different fees
-	txs := []*exercise.Transaction{
+	txs := []*mempoolinmemory.Transaction{
 		createTx("Alice", "Bob", 100, 10, 0),
 		createTx("Charlie", "Dave", 50, 50, 0),   // Highest fee
 		createTx("Eve", "Frank", 200, 5, 0),      // Lowest fee
@@ -129,10 +129,10 @@ func demo3NonceMempool() {
 	fmt.Println("Transactions from same account must be processed in nonce order")
 	fmt.Println()
 
-	mempool := exercise.NewNonceMempool()
+	mempool := mempoolinmemory.NewNonceMempool()
 
 	// Alice sends multiple transactions (out of order)
-	aliceTxs := []*exercise.Transaction{
+	aliceTxs := []*mempoolinmemory.Transaction{
 		createTx("Alice", "Bob", 100, 10, 2),   // Nonce 2 (future)
 		createTx("Alice", "Carol", 50, 15, 0),  // Nonce 0 (ready)
 		createTx("Alice", "Dave", 75, 12, 1),   // Nonce 1 (next)
@@ -170,7 +170,7 @@ func demo4ConcurrentAccess() {
 	fmt.Println("Multiple goroutines safely accessing mempool concurrently")
 	fmt.Println()
 
-	mempool := exercise.NewPriorityMempool(100)
+	mempool := mempoolinmemory.NewPriorityMempool(100)
 
 	var wg sync.WaitGroup
 	numProducers := 5
@@ -229,7 +229,7 @@ func demo5EvictionPolicies() {
 	fmt.Println()
 
 	capacity := 5
-	mempool := exercise.NewPriorityMempool(capacity)
+	mempool := mempoolinmemory.NewPriorityMempool(capacity)
 
 	fmt.Printf("Mempool capacity: %d transactions\n\n", capacity)
 
@@ -270,8 +270,8 @@ func demo5EvictionPolicies() {
 
 // Helper functions
 
-func createTx(from, to string, value, fee, nonce uint64) *exercise.Transaction {
-	tx := &exercise.Transaction{
+func createTx(from, to string, value, fee, nonce uint64) *mempoolinmemory.Transaction {
+	tx := &mempoolinmemory.Transaction{
 		From:      from,
 		To:        to,
 		Value:     value,
@@ -283,7 +283,7 @@ func createTx(from, to string, value, fee, nonce uint64) *exercise.Transaction {
 	return tx
 }
 
-func hashTx(tx *exercise.Transaction) string {
+func hashTx(tx *mempoolinmemory.Transaction) string {
 	data := fmt.Sprintf("%s:%s:%d:%d:%d:%d",
 		tx.From, tx.To, tx.Value, tx.Fee, tx.Nonce, tx.Timestamp.UnixNano())
 	hash := sha256.Sum256([]byte(data))

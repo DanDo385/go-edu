@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/36-caching-reverse-proxy/exercise"
+	"github.com/example/go-10x-minis/minis/36-caching-reverse-proxy/internal/cachingreverseproxy"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	// Create cache
 	// maxSize: 100 entries, TTL: 5 minutes
-	cache := exercise.NewCache(100, 5*time.Minute)
+	cache := cachingreverseproxy.NewCache(100, 5*time.Minute)
 
 	// Create caching proxy
 	proxy := cache.NewCachingProxy(target)

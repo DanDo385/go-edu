@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Build an HTTP server with routes, middleware, and graceful shutdown

@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/34-rate-limiter-token-bucket/exercise"
+	"github.com/example/go-10x-minis/minis/34-rate-limiter-token-bucket/internal/ratelimitertokenbucket"
 )
 
 func main() {
 	// Create a rate limiter: 10 requests per second, burst capacity of 20
-	limiter := exercise.NewRateLimiter(20, 10.0)
+	limiter := ratelimitertokenbucket.NewRateLimiter(20, 10.0)
 
 	// Set up routes
 	mux := http.NewServeMux()
@@ -78,7 +78,7 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleStats returns statistics about the rate limiter
-func handleStats(limiter *exercise.RateLimiter) http.HandlerFunc {
+func handleStats(limiter *ratelimitertokenbucket.RateLimiter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		stats := limiter.Stats()
 
@@ -88,7 +88,7 @@ func handleStats(limiter *exercise.RateLimiter) http.HandlerFunc {
 }
 
 // selectiveRateLimit applies rate limiting to all routes except /health
-func selectiveRateLimit(limiter *exercise.RateLimiter, next http.Handler) http.Handler {
+func selectiveRateLimit(limiter *ratelimitertokenbucket.RateLimiter, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip rate limiting for health checks
 		if r.URL.Path == "/health" {
@@ -160,7 +160,7 @@ func (rec *responseRecorder) Write(b []byte) (int, error) {
 // Example of how to use rate limiter programmatically
 func exampleUsage() {
 	// Create rate limiter: 100 requests per minute (burst of 20)
-	limiter := exercise.NewRateLimiter(20, 100.0/60.0) // 100/60 = requests per second
+	limiter := ratelimitertokenbucket.NewRateLimiter(20, 100.0/60.0) // 100/60 = requests per second
 
 	clientIP := "192.168.1.1"
 

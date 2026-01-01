@@ -1,3 +1,5 @@
+//go:build reference
+
 // Package exercise provides complete solutions for semaphore exercises.
 //
 // This file contains reference implementations. Students should work in

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Build a persistent TODO list with JSON file storage

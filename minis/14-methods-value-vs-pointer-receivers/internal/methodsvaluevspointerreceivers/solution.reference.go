@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Understanding method receivers in Go (value vs pointer)

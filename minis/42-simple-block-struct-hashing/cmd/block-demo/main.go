@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/42-simple-block-struct-hashing/exercise"
+	"github.com/example/go-10x-minis/minis/42-simple-block-struct-hashing/internal/simpleblockstructhashing"
 )
 
 func main() {
@@ -13,15 +13,15 @@ func main() {
 
 	// Create genesis block
 	fmt.Println("Creating genesis block...")
-	genesis := exercise.NewGenesisBlock()
+	genesis := simpleblockstructhashing.NewGenesisBlock()
 	printBlock(genesis, 0)
 
 	// Build a chain
-	chain := []*exercise.Block{genesis}
+	chain := []*simpleblockstructhashing.Block{genesis}
 
 	// Add block 1
 	fmt.Println("\n--- Adding Block 1 ---")
-	block1 := exercise.NewBlock(chain[len(chain)-1], []string{
+	block1 := simpleblockstructhashing.NewBlock(chain[len(chain)-1], []string{
 		"Alice sends 10 BTC to Bob",
 		"Bob sends 5 BTC to Carol",
 	})
@@ -30,7 +30,7 @@ func main() {
 
 	// Add block 2
 	fmt.Println("\n--- Adding Block 2 ---")
-	block2 := exercise.NewBlock(chain[len(chain)-1], []string{
+	block2 := simpleblockstructhashing.NewBlock(chain[len(chain)-1], []string{
 		"Carol sends 3 BTC to Dave",
 		"Dave sends 1 BTC to Eve",
 		"Eve sends 2 BTC to Frank",
@@ -40,7 +40,7 @@ func main() {
 
 	// Add block 3
 	fmt.Println("\n--- Adding Block 3 ---")
-	block3 := exercise.NewBlock(chain[len(chain)-1], []string{
+	block3 := simpleblockstructhashing.NewBlock(chain[len(chain)-1], []string{
 		"Frank sends 1 BTC to Alice",
 	})
 	chain = append(chain, block3)
@@ -48,7 +48,7 @@ func main() {
 
 	// Validate the chain
 	fmt.Println("\n=== Validating Blockchain ===")
-	if err := exercise.ValidateChain(chain); err != nil {
+	if err := simpleblockstructhashing.ValidateChain(chain); err != nil {
 		fmt.Printf("❌ Chain validation FAILED: %v\n", err)
 	} else {
 		fmt.Println("✅ Chain validation PASSED - all blocks are valid")
@@ -71,10 +71,10 @@ func main() {
 	fmt.Println("Attempting to tamper with Block 1...")
 
 	// Create a tampered copy of the chain
-	tamperedChain := make([]*exercise.Block, len(chain))
+	tamperedChain := make([]*simpleblockstructhashing.Block, len(chain))
 	for i, block := range chain {
 		// Deep copy (simplified)
-		copied := &exercise.Block{
+		copied := &simpleblockstructhashing.Block{
 			Header:       block.Header,
 			Transactions: make([]string, len(block.Transactions)),
 			Hash:         block.Hash,
@@ -90,7 +90,7 @@ func main() {
 
 	// Try to validate tampered chain
 	fmt.Println("\nValidating tampered chain...")
-	if err := exercise.ValidateChain(tamperedChain); err != nil {
+	if err := simpleblockstructhashing.ValidateChain(tamperedChain); err != nil {
 		fmt.Printf("✅ Tampering detected: %v\n", err)
 		fmt.Println("   The blockchain successfully detected the fraudulent modification!")
 	} else {
@@ -124,7 +124,7 @@ func main() {
 	fmt.Println("  5. Merkle roots ensure transaction integrity within blocks")
 }
 
-func printBlock(block *exercise.Block, blockNum int) {
+func printBlock(block *simpleblockstructhashing.Block, blockNum int) {
 	fmt.Printf("Block %d created:\n", blockNum)
 	fmt.Printf("  Index:        %d\n", block.Header.Index)
 	fmt.Printf("  Timestamp:    %s\n", formatTimestamp(block.Header.Timestamp))
@@ -149,7 +149,7 @@ func formatTimestamp(timestamp int64) string {
 	return t.Format("2006-01-02 15:04:05")
 }
 
-func countTransactions(chain []*exercise.Block) int {
+func countTransactions(chain []*simpleblockstructhashing.Block) int {
 	total := 0
 	for _, block := range chain {
 		total += len(block.Transactions)
@@ -157,7 +157,7 @@ func countTransactions(chain []*exercise.Block) int {
 	return total
 }
 
-func averageBlockSize(chain []*exercise.Block) int {
+func averageBlockSize(chain []*simpleblockstructhashing.Block) int {
 	if len(chain) == 0 {
 		return 0
 	}
@@ -176,10 +176,10 @@ func demonstrateHashAvalanche() {
 	fmt.Println("Showing how small changes create completely different hashes:\n")
 
 	// Create two nearly identical blocks
-	genesis := exercise.NewGenesisBlock()
+	genesis := simpleblockstructhashing.NewGenesisBlock()
 
-	block1 := exercise.NewBlock(genesis, []string{"Alice sends 10 BTC to Bob"})
-	block2 := exercise.NewBlock(genesis, []string{"Alice sends 11 BTC to Bob"}) // Only 1 digit different
+	block1 := simpleblockstructhashing.NewBlock(genesis, []string{"Alice sends 10 BTC to Bob"})
+	block2 := simpleblockstructhashing.NewBlock(genesis, []string{"Alice sends 11 BTC to Bob"}) // Only 1 digit different
 
 	fmt.Println("Transaction 1:", block1.Transactions[0])
 	fmt.Println("Hash 1:       ", block1.Hash[:32]+"...")
@@ -206,8 +206,8 @@ func demonstrateHashAvalanche() {
 func demonstrateSerializationImportance() {
 	fmt.Println("\n=== Serialization Importance ===")
 
-	genesis := exercise.NewGenesisBlock()
-	block := exercise.NewBlock(genesis, []string{"Test transaction"})
+	genesis := simpleblockstructhashing.NewGenesisBlock()
+	block := simpleblockstructhashing.NewBlock(genesis, []string{"Test transaction"})
 
 	// Show serialized bytes (first 64 bytes)
 	serialized := block.Serialize()
@@ -234,7 +234,7 @@ func min(a, b int) int {
 }
 
 // Visualize the blockchain
-func visualizeChain(chain []*exercise.Block) {
+func visualizeChain(chain []*simpleblockstructhashing.Block) {
 	fmt.Println("\n=== Blockchain Visualization ===\n")
 
 	for i, block := range chain {

@@ -84,12 +84,16 @@ Reference implementations exist **only** for learning:
 
 ```go
 //go:build reference
-// +build reference
 
 package mypackage
 
 // This file is NEVER compiled during normal builds
 ```
+
+**Build Tag Rules:**
+- `exercise.go` files use: `//go:build !solution && !reference`
+- `*.reference.go` files use: `//go:build reference`
+- Legacy `// +build` tags are removed - only use `//go:build` syntax
 
 To view reference implementations:
 

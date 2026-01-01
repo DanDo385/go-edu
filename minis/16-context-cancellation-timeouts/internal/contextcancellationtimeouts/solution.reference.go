@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Project 16: Context Cancellation and Timeouts - Solutions

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/example/go-10x-minis/minis/49-state-machine-pattern/exercise"
+	"github.com/example/go-10x-minis/minis/49-state-machine-pattern/internal/statemachinepattern"
 )
 
 func main() {
@@ -45,28 +45,28 @@ func main() {
 func demoOrderProcessing() {
 	fmt.Println("Creating a new order...")
 
-	order := &exercise.Order{
+	order := &statemachinepattern.Order{
 		ID:            "ORDER-001",
 		CustomerEmail: "customer@example.com",
 		Amount:        99.99,
 		PaymentMethod: "credit_card",
 	}
 
-	sm := exercise.NewOrderStateMachine(order)
+	sm := statemachinepattern.NewOrderStateMachine(order)
 	ctx := context.Background()
 
 	fmt.Printf("Initial state: %s\n\n", sm.Current())
 
 	// Step 1: Process payment
 	fmt.Println("Step 1: Processing payment...")
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventPay)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay)); err != nil {
 		log.Fatalf("Payment failed: %v", err)
 	}
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
 	// Step 2: Ship the order
 	fmt.Println("Step 2: Shipping order...")
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventShip)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventShip)); err != nil {
 		log.Fatalf("Shipping failed: %v", err)
 	}
 	fmt.Printf("Current state: %s\n", sm.Current())
@@ -74,7 +74,7 @@ func demoOrderProcessing() {
 
 	// Step 3: Deliver the order
 	fmt.Println("Step 3: Delivering order...")
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventDeliver)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventDeliver)); err != nil {
 		log.Fatalf("Delivery failed: %v", err)
 	}
 	fmt.Printf("Current state: %s\n", sm.Current())
@@ -85,21 +85,21 @@ func demoOrderProcessing() {
 func demoAuthenticationFlow() {
 	fmt.Println("Scenario 1: User with MFA enabled\n")
 
-	user := &exercise.User{
+	user := &statemachinepattern.User{
 		ID:         "USER-001",
 		Email:      "user@example.com",
 		MFAEnabled: true,
 		MFASecret:  "secret123",
 	}
 
-	sm := exercise.NewAuthStateMachine(user)
+	sm := statemachinepattern.NewAuthStateMachine(user)
 	ctx := context.Background()
 
 	fmt.Printf("Initial state: %s\n\n", sm.Current())
 
 	// Attempt login with MFA enabled
 	fmt.Println("Step 1: User attempts login...")
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventLogin)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventLogin)); err != nil {
 		log.Fatalf("Login failed: %v", err)
 	}
 	fmt.Printf("Current state: %s (MFA required)\n\n", sm.Current())
@@ -107,7 +107,7 @@ func demoAuthenticationFlow() {
 	// Provide invalid MFA code
 	fmt.Println("Step 2: User provides invalid MFA code...")
 	user.MFACode = "wrong_code"
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventMFASuccess)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventMFASuccess)); err != nil {
 		fmt.Printf("MFA failed as expected: %v\n", err)
 		fmt.Printf("Current state: %s (still pending MFA)\n\n", sm.Current())
 	}
@@ -115,14 +115,14 @@ func demoAuthenticationFlow() {
 	// Provide correct MFA code
 	fmt.Println("Step 3: User provides correct MFA code...")
 	user.MFACode = "secret123" // Simplified: code matches secret
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventMFASuccess)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventMFASuccess)); err != nil {
 		log.Fatalf("MFA verification failed: %v", err)
 	}
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
 	// Logout
 	fmt.Println("Step 4: User logs out...")
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventLogout)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventLogout)); err != nil {
 		log.Fatalf("Logout failed: %v", err)
 	}
 	fmt.Printf("Current state: %s\n\n", sm.Current())
@@ -130,19 +130,19 @@ func demoAuthenticationFlow() {
 	// Scenario 2: User without MFA
 	fmt.Println("\nScenario 2: User without MFA enabled\n")
 
-	user2 := &exercise.User{
+	user2 := &statemachinepattern.User{
 		ID:         "USER-002",
 		Email:      "user2@example.com",
 		MFAEnabled: false,
 	}
 
-	sm2 := exercise.NewAuthStateMachine(user2)
+	sm2 := statemachinepattern.NewAuthStateMachine(user2)
 
 	fmt.Printf("Initial state: %s\n\n", sm2.Current())
 
 	// Login directly without MFA
 	fmt.Println("Step 1: User logs in (no MFA required)...")
-	if err := sm2.Transition(ctx, exercise.Event(exercise.EventLogin)); err != nil {
+	if err := sm2.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventLogin)); err != nil {
 		log.Fatalf("Login failed: %v", err)
 	}
 	fmt.Printf("Current state: %s (logged in directly)\n", sm2.Current())
@@ -152,20 +152,20 @@ func demoAuthenticationFlow() {
 func demoInvalidTransitions() {
 	fmt.Println("Attempt 1: Pay for order with $0 amount\n")
 
-	order := &exercise.Order{
+	order := &statemachinepattern.Order{
 		ID:            "ORDER-002",
 		CustomerEmail: "customer@example.com",
 		Amount:        0, // Invalid amount
 		PaymentMethod: "credit_card",
 	}
 
-	sm := exercise.NewOrderStateMachine(order)
+	sm := statemachinepattern.NewOrderStateMachine(order)
 	ctx := context.Background()
 
 	fmt.Printf("Order amount: $%.2f\n", order.Amount)
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventPay)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay)); err != nil {
 		fmt.Printf("Payment rejected: %v\n", err)
 		fmt.Printf("Current state: %s (unchanged)\n\n", sm.Current())
 	}
@@ -179,7 +179,7 @@ func demoInvalidTransitions() {
 	fmt.Printf("Payment method: '%s'\n", order.PaymentMethod)
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventPay)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay)); err != nil {
 		fmt.Printf("Payment rejected: %v\n", err)
 		fmt.Printf("Current state: %s (unchanged)\n\n", sm.Current())
 	}
@@ -189,14 +189,14 @@ func demoInvalidTransitions() {
 	order.PaymentMethod = "credit_card"
 
 	// Process order to delivered state
-	sm.Transition(ctx, exercise.Event(exercise.EventPay))
-	sm.Transition(ctx, exercise.Event(exercise.EventShip))
-	sm.Transition(ctx, exercise.Event(exercise.EventDeliver))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventShip))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventDeliver))
 
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
 	// Try to cancel
-	if err := sm.Transition(ctx, exercise.Event(exercise.EventCancel)); err != nil {
+	if err := sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventCancel)); err != nil {
 		fmt.Printf("Cancellation rejected: %v\n", err)
 		fmt.Printf("Current state: %s (cannot cancel delivered order)\n", sm.Current())
 	}
@@ -204,26 +204,26 @@ func demoInvalidTransitions() {
 
 // demoStateHistory shows complete history tracking
 func demoStateHistory() {
-	order := &exercise.Order{
+	order := &statemachinepattern.Order{
 		ID:            "ORDER-003",
 		CustomerEmail: "customer@example.com",
 		Amount:        149.99,
 		PaymentMethod: "paypal",
 	}
 
-	sm := exercise.NewOrderStateMachine(order)
+	sm := statemachinepattern.NewOrderStateMachine(order)
 	ctx := context.Background()
 
 	// Process order through lifecycle
 	fmt.Println("Processing order through complete lifecycle...\n")
 
-	sm.Transition(ctx, exercise.Event(exercise.EventPay))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay))
 	time.Sleep(100 * time.Millisecond) // Small delay to show distinct timestamps
 
-	sm.Transition(ctx, exercise.Event(exercise.EventShip))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventShip))
 	time.Sleep(100 * time.Millisecond)
 
-	sm.Transition(ctx, exercise.Event(exercise.EventDeliver))
+	sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventDeliver))
 
 	// Display history
 	fmt.Println("Order State History:")
@@ -249,7 +249,7 @@ func demoConcurrentStateMachines() {
 	ctx := context.Background()
 
 	// Create multiple orders
-	orders := []*exercise.Order{
+	orders := []*statemachinepattern.Order{
 		{
 			ID:            "ORDER-101",
 			CustomerEmail: "customer1@example.com",
@@ -271,32 +271,32 @@ func demoConcurrentStateMachines() {
 	}
 
 	// Create state machines for each order
-	stateMachines := make([]*exercise.StateMachine, len(orders))
+	stateMachines := make([]*statemachinepattern.StateMachine, len(orders))
 	for i, order := range orders {
-		stateMachines[i] = exercise.NewOrderStateMachine(order)
+		stateMachines[i] = statemachinepattern.NewOrderStateMachine(order)
 	}
 
 	fmt.Println("Processing multiple orders concurrently...\n")
 
 	// Process orders with different lifecycles
-	processOrder := func(sm *exercise.StateMachine, order *exercise.Order, scenario string) {
+	processOrder := func(sm *statemachinepattern.StateMachine, order *statemachinepattern.Order, scenario string) {
 		fmt.Printf("Order %s (%s): Starting\n", order.ID, scenario)
 
 		switch scenario {
 		case "complete":
-			sm.Transition(ctx, exercise.Event(exercise.EventPay))
-			sm.Transition(ctx, exercise.Event(exercise.EventShip))
-			sm.Transition(ctx, exercise.Event(exercise.EventDeliver))
-			fmt.Printf("Order %s: %s -> Delivered\n", order.ID, exercise.OrderPending)
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay))
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventShip))
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventDeliver))
+			fmt.Printf("Order %s: %s -> Delivered\n", order.ID, statemachinepattern.OrderPending)
 
 		case "cancelled":
-			sm.Transition(ctx, exercise.Event(exercise.EventCancel))
-			fmt.Printf("Order %s: %s -> Cancelled\n", order.ID, exercise.OrderPending)
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventCancel))
+			fmt.Printf("Order %s: %s -> Cancelled\n", order.ID, statemachinepattern.OrderPending)
 
 		case "in_progress":
-			sm.Transition(ctx, exercise.Event(exercise.EventPay))
-			sm.Transition(ctx, exercise.Event(exercise.EventShip))
-			fmt.Printf("Order %s: %s -> Shipped\n", order.ID, exercise.OrderPending)
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventPay))
+			sm.Transition(ctx, statemachinepattern.Event(statemachinepattern.EventShip))
+			fmt.Printf("Order %s: %s -> Shipped\n", order.ID, statemachinepattern.OrderPending)
 		}
 	}
 
@@ -319,27 +319,27 @@ func demoConcurrentStateMachines() {
 func demoCanCheck() {
 	fmt.Println("--- Demo: Checking Possible Transitions ---\n")
 
-	order := &exercise.Order{
+	order := &statemachinepattern.Order{
 		ID:            "ORDER-004",
 		CustomerEmail: "customer@example.com",
 		Amount:        99.99,
 		PaymentMethod: "credit_card",
 	}
 
-	sm := exercise.NewOrderStateMachine(order)
+	sm := statemachinepattern.NewOrderStateMachine(order)
 
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
-	events := []exercise.OrderEvent{
-		exercise.EventPay,
-		exercise.EventShip,
-		exercise.EventDeliver,
-		exercise.EventCancel,
+	events := []statemachinepattern.OrderEvent{
+		statemachinepattern.EventPay,
+		statemachinepattern.EventShip,
+		statemachinepattern.EventDeliver,
+		statemachinepattern.EventCancel,
 	}
 
 	fmt.Println("Checking which transitions are possible:")
 	for _, event := range events {
-		canTransition := sm.Can(exercise.Event(event))
+		canTransition := sm.Can(statemachinepattern.Event(event))
 		status := "✗"
 		if canTransition {
 			status = "✓"
@@ -349,12 +349,12 @@ func demoCanCheck() {
 
 	// Now transition to paid state
 	fmt.Println("\nTransitioning to 'paid' state...")
-	sm.Transition(context.Background(), exercise.Event(exercise.EventPay))
+	sm.Transition(context.Background(), statemachinepattern.Event(statemachinepattern.EventPay))
 	fmt.Printf("Current state: %s\n\n", sm.Current())
 
 	fmt.Println("Checking which transitions are now possible:")
 	for _, event := range events {
-		canTransition := sm.Can(exercise.Event(event))
+		canTransition := sm.Can(statemachinepattern.Event(event))
 		status := "✗"
 		if canTransition {
 			status = "✓"
@@ -367,27 +367,27 @@ func demoCanCheck() {
 func demoActionsDemo() {
 	fmt.Println("--- Demo: Entry and Exit Actions ---\n")
 
-	order := &exercise.Order{
+	order := &statemachinepattern.Order{
 		ID:            "ORDER-005",
 		CustomerEmail: "customer@example.com",
 		Amount:        199.99,
 		PaymentMethod: "credit_card",
 	}
 
-	sm := exercise.NewOrderStateMachine(order)
+	sm := statemachinepattern.NewOrderStateMachine(order)
 	ctx := context.Background()
 
 	fmt.Println("Watch for entry and exit actions as we transition...\n")
 
-	events := []exercise.OrderEvent{
-		exercise.EventPay,
-		exercise.EventShip,
-		exercise.EventDeliver,
+	events := []statemachinepattern.OrderEvent{
+		statemachinepattern.EventPay,
+		statemachinepattern.EventShip,
+		statemachinepattern.EventDeliver,
 	}
 
 	for _, event := range events {
 		fmt.Printf("Triggering event: %s\n", event)
-		if err := sm.Transition(ctx, exercise.Event(event)); err != nil {
+		if err := sm.Transition(ctx, statemachinepattern.Event(event)); err != nil {
 			log.Printf("Error: %v\n", err)
 		}
 		fmt.Printf("New state: %s\n\n", sm.Current())

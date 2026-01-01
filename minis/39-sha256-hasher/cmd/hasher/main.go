@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/example/go-10x-minis/minis/39-sha256-hasher/exercise"
+	"github.com/example/go-10x-minis/minis/39-sha256-hasher/internal/sha256hasher"
 )
 
 func main() {
@@ -113,7 +113,7 @@ func demo3_FileHashing() {
 			continue
 		}
 
-		hash, err := exercise.HashFile(path)
+		hash, err := sha256hasher.HashFile(path)
 		if err != nil {
 			fmt.Printf("Error hashing file %s: %v\n", tf.name, err)
 			continue

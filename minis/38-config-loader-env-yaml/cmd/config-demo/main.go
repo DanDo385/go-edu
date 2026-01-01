@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/example/go-10x-minis/minis/38-config-loader-env-yaml/exercise"
+	"github.com/example/go-10x-minis/minis/38-config-loader-env-yaml/internal/configloaderenvyaml"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	// Demo 1: Load basic configuration
 	fmt.Println("1. Loading basic configuration from YAML...")
 	fmt.Println("   File: testdata/basic.yaml")
-	basicConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "basic.yaml"))
+	basicConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "basic.yaml"))
 	if err != nil {
 		log.Printf("   Error: %v\n", err)
 	} else {
@@ -47,7 +47,7 @@ func main() {
 	fmt.Println("   - DB_HOST=postgres.example.com")
 	fmt.Println("   - DB_PASSWORD=super_secret_password")
 
-	envConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "with-env-vars.yaml"))
+	envConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "with-env-vars.yaml"))
 	if err != nil {
 		log.Printf("   Error: %v\n", err)
 	} else {
@@ -61,7 +61,7 @@ func main() {
 	fmt.Println("3. Testing default values...")
 	fmt.Println("   File: testdata/minimal.yaml (only required fields)")
 
-	minimalConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "minimal.yaml"))
+	minimalConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "minimal.yaml"))
 	if err != nil {
 		log.Printf("   Error: %v\n", err)
 	} else {
@@ -78,7 +78,7 @@ func main() {
 	fmt.Println("4. Testing validation (should fail)...")
 	fmt.Println("   File: testdata/invalid.yaml")
 
-	invalidConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "invalid.yaml"))
+	invalidConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "invalid.yaml"))
 	if err != nil {
 		fmt.Printf("   ✓ Validation caught errors as expected:\n")
 		fmt.Printf("   %v\n\n", err)
@@ -95,7 +95,7 @@ func main() {
 	os.Unsetenv("UNDEFINED_VAR")
 	fmt.Println("   UNDEFINED_VAR is not set, should use default value")
 
-	defaultEnvConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "env-with-defaults.yaml"))
+	defaultEnvConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "env-with-defaults.yaml"))
 	if err != nil {
 		log.Printf("   Error: %v\n", err)
 	} else {
@@ -113,7 +113,7 @@ func main() {
 	os.Setenv("PROD_DB_PASSWORD", "prod_secure_password_123")
 	os.Setenv("API_KEY", "sk_live_abc123def456")
 
-	prodConfig, err := exercise.LoadConfig(filepath.Join(testdataDir, "production.yaml"))
+	prodConfig, err := configloaderenvyaml.LoadConfig(filepath.Join(testdataDir, "production.yaml"))
 	if err != nil {
 		log.Printf("   Error: %v\n", err)
 	} else {

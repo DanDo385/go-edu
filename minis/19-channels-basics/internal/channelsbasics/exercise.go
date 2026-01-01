@@ -1,5 +1,4 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 // Package exercise contains hands-on exercises for channels.
 
