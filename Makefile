@@ -1,4 +1,4 @@
-.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help reset-exercises reset-exercises-minis reset-exercises-geth
+.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help todo lint check vet fmt
 
 # Colors for output
 CYAN := \033[0;36m
@@ -151,21 +151,79 @@ clean:
 	rm -f coverage.out
 	@echo "$(GREEN)✓ Build cache cleaned$(NC)"
 
-# Reset exercises to TODO list format
-reset-exercises:
-	@echo "$(CYAN)Resetting all exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh
-	@echo "$(GREEN)✓ All exercises reset$(NC)"
+# Code quality checks
+lint:
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		echo "$(CYAN)Running golangci-lint...$(NC)"; \
+		golangci-lint run ./...; \
+		echo "$(GREEN)✓ Linting complete$(NC)"; \
+	else \
+		echo "$(YELLOW)golangci-lint not installed$(NC)"; \
+		echo "Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
+		echo "Running basic checks instead..."; \
+		$(MAKE) vet; \
+	fi
 
-reset-exercises-minis:
-	@echo "$(CYAN)Resetting minis exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh minis
-	@echo "$(GREEN)✓ Minis exercises reset$(NC)"
+vet:
+	@echo "$(CYAN)Running go vet...$(NC)"
+	@go vet ./...
+	@echo "$(GREEN)✓ Vet checks passed$(NC)"
 
-reset-exercises-geth:
-	@echo "$(CYAN)Resetting geth exercises to TODO format...$(NC)"
-	@./scripts/reset-exercises.sh geth
-	@echo "$(GREEN)✓ Geth exercises reset$(NC)"
+fmt:
+	@echo "$(CYAN)Checking code formatting...$(NC)"
+	@if [ -n "$$(gofmt -l .)" ]; then \
+		echo "$(YELLOW)The following files need formatting:$(NC)"; \
+		gofmt -l .; \
+		echo "$(YELLOW)Run 'make fmt-fix' to auto-format$(NC)"; \
+		exit 1; \
+	else \
+		echo "$(GREEN)✓ All files properly formatted$(NC)"; \
+	fi
+
+fmt-fix:
+	@echo "$(CYAN)Formatting code...$(NC)"
+	@gofmt -w .
+	@echo "$(GREEN)✓ Code formatted$(NC)"
+
+check: vet fmt
+	@echo "$(GREEN)✓ All checks passed$(NC)"
+
+# Context-aware TODO reset command
+# Usage:
+#   make todo              # Context-aware: resets based on current directory
+#   make todo P=<path>     # Reset specific path (e.g., P=geth/01-stack or P=minis)
+todo:
+	@if [ -n "$(P)" ]; then \
+		./scripts/reset-exercises.sh "$(P)"; \
+	else \
+		CWD=$$(pwd); \
+		REPO_ROOT=$$(git rev-parse --show-toplevel 2>/dev/null || pwd); \
+		if [ "$$CWD" = "$$REPO_ROOT" ]; then \
+			echo "$(CYAN)Resetting all exercises (from repository root)...$(NC)"; \
+			./scripts/reset-exercises.sh; \
+		elif echo "$$CWD" | grep -q "$$REPO_ROOT/geth/[^/]*$$"; then \
+			PROJECT=$$(basename "$$CWD"); \
+			echo "$(CYAN)Resetting geth/$$PROJECT (from project directory)...$(NC)"; \
+			./scripts/reset-exercises.sh "geth/$$PROJECT"; \
+		elif echo "$$CWD" | grep -q "$$REPO_ROOT/minis/[^/]*$$"; then \
+			PROJECT=$$(basename "$$CWD"); \
+			echo "$(CYAN)Resetting minis/$$PROJECT (from project directory)...$(NC)"; \
+			./scripts/reset-exercises.sh "minis/$$PROJECT"; \
+		elif echo "$$CWD" | grep -q "$$REPO_ROOT/geth$$"; then \
+			echo "$(CYAN)Resetting all geth/ exercises (from geth directory)...$(NC)"; \
+			./scripts/reset-exercises.sh geth; \
+		elif echo "$$CWD" | grep -q "$$REPO_ROOT/minis$$"; then \
+			echo "$(CYAN)Resetting all minis/ exercises (from minis directory)...$(NC)"; \
+			./scripts/reset-exercises.sh minis; \
+		else \
+			echo "$(YELLOW)Cannot determine context. Use 'make todo P=<path>' to specify target.$(NC)"; \
+			echo "Examples:"; \
+			echo "  make todo P=minis              # Reset all minis"; \
+			echo "  make todo P=geth               # Reset all geth"; \
+			echo "  make todo P=geth/01-stack      # Reset specific project"; \
+			exit 1; \
+		fi; \
+	fi
 
 help:
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
@@ -204,13 +262,27 @@ help:
 	@echo "  make bench P=<path>  Benchmark specific project"
 	@echo "                       Example: make bench P=minis/07-generic-lru-cache"
 	@echo ""
+	@echo "$(GREEN)Code Quality:$(NC)"
+	@echo "  make lint            Run linter (golangci-lint or go vet)"
+	@echo "  make vet             Run go vet"
+	@echo "  make fmt             Check code formatting"
+	@echo "  make fmt-fix         Auto-format code"
+	@echo "  make check           Run vet + fmt checks"
+	@echo ""
 	@echo "$(GREEN)Cleanup:$(NC)"
 	@echo "  make clean           Clean build cache"
 	@echo ""
 	@echo "$(GREEN)Exercise Management:$(NC)"
-	@echo "  make reset-exercises       Reset all exercises to TODO format"
-	@echo "  make reset-exercises-minis Reset only minis exercises"
-	@echo "  make reset-exercises-geth  Reset only geth exercises"
+	@echo "  make todo            Context-aware reset to TODO format"
+	@echo "                       - From root: resets all exercises"
+	@echo "                       - From geth/: resets all geth exercises"
+	@echo "                       - From minis/: resets all minis exercises"
+	@echo "                       - From project dir: resets that project only"
+	@echo "  make todo P=<path>   Reset specific path"
+	@echo "                       Examples:"
+	@echo "                         make todo P=minis"
+	@echo "                         make todo P=geth"
+	@echo "                         make todo P=geth/01-stack"
 	@echo ""
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
 	@echo "$(YELLOW)Quick Start:$(NC)"

@@ -1,4 +1,4 @@
-.PHONY: help tidy test clean
+.PHONY: help tidy test clean todo
 
 help:
 	@echo "Ethereum Go Development Track"
@@ -6,12 +6,13 @@ help:
 	@echo "Exercises now live entirely inside each module's exercise/ package."
 	@echo "Use go test to execute your work or the reference implementation:"
 	@echo "  go test ./01-stack/...            # Run your code"
-	@echo "  go test -tags solution ./01-stack/...  # Run the reference solution"
+	@echo "  go test -tags=reference ./01-stack/...  # Run the reference solution"
 	@echo ""
 	@echo "Targets:"
 	@echo "  tidy  - Run go mod tidy to update dependencies"
 	@echo "  test  - Execute all module tests with the solution build tag"
 	@echo "  clean - Remove generated artifacts (databases, *.out, etc.)"
+	@echo "  todo  - Reset exercises to TODO format (context-aware)"
 
 tidy:
 	@echo "Running go mod tidy..."
@@ -31,3 +32,6 @@ clean:
 	@find . -name "*.db-shm" -delete
 	@find . -name "*.db-wal" -delete
 	@echo "✓ Clean complete"
+
+todo:
+	@cd .. && $(MAKE) todo P=geth
