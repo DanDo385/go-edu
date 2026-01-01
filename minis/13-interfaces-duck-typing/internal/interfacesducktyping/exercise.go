@@ -39,10 +39,8 @@ import (
 // DEBUG: Watch 'p' to see Person value
 // DEBUG: Watch return value formatting
 func (p Person) String() string {
-	// BREAKPOINT: Set breakpoint here before formatting
-	// DEBUG: Watch 'p.Name' and 'p.Age' fields
-	// DEBUG: Watch fmt.Sprintf create formatted string
-	return fmt.Sprintf("%s (%d years old)", p.Name, p.Age)
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // GetAge extracts the age from a Stringer if it's a Person.
@@ -50,19 +48,8 @@ func (p Person) String() string {
 // DEBUG: Watch 's' interface value
 // DEBUG: Watch 'ok' to see if assertion succeeds
 func GetAge(s Stringer) (int, bool) {
-	// BREAKPOINT: Set breakpoint here for type assertion
-	// DEBUG: Watch 'p, ok := s.(Person)' syntax
-	// DEBUG: Watch 'ok' = true if s contains Person
-	// DEBUG: Watch 'ok' = false if s contains different type
-	p, ok := s.(Person)
-	if !ok {
-		// DEBUG: Not a Person - return zero values
-		return 0, false
-	}
-
-	// BREAKPOINT: Set breakpoint here when assertion succeeds
-	// DEBUG: Watch 'p.Age' from extracted Person
-	return p.Age, true
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // DescribeType returns a description of the type of the value.
@@ -70,40 +57,8 @@ func GetAge(s Stringer) (int, bool) {
 // DEBUG: Watch 'i' interface value
 // DEBUG: Watch type determination in switch
 func DescribeType(i interface{}) string {
-	// BREAKPOINT: Set breakpoint here before type switch
-	// DEBUG: Watch 'v := i.(type)' syntax
-	switch v := i.(type) {
-	case int:
-		// BREAKPOINT: Hit when i contains int
-		// DEBUG: Watch 'v' has type int here
-		return fmt.Sprintf("Integer: %d", v)
-
-	case string:
-		// BREAKPOINT: Hit when i contains string
-		// DEBUG: Watch 'v' has type string here
-		return fmt.Sprintf("String: %s", v)
-
-	case bool:
-		// BREAKPOINT: Hit when i contains bool
-		// DEBUG: Watch 'v' has type bool here
-		return fmt.Sprintf("Boolean: %t", v)
-
-	case Person:
-		// BREAKPOINT: Hit when i contains Person
-		// DEBUG: Watch 'v' has type Person here
-		// DEBUG: Watch 'v.Name' field access
-		return fmt.Sprintf("Person: %s", v.Name)
-
-	case nil:
-		// BREAKPOINT: Hit when i is nil interface
-		// DEBUG: Both type and value are nil
-		return "Nil"
-
-	default:
-		// BREAKPOINT: Hit for unhandled types
-		// DEBUG: Watch unknown type fall through
-		return "Unknown"
-	}
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // IsValidEmail checks if a Validator is valid, handling nil correctly.
@@ -111,36 +66,8 @@ func DescribeType(i interface{}) string {
 // DEBUG: Watch 'v' interface value
 // DEBUG: Demonstrate the "nil interface vs nil pointer" gotcha
 func IsValidEmail(v Validator) bool {
-	// BREAKPOINT: Set breakpoint here for first nil check
-	// DEBUG: Watch 'v == nil' checks if BOTH type and value are nil
-	if v == nil {
-		// DEBUG: True nil interface - no type, no value
-		return false
-	}
-
-	// At this point, v != nil BUT it might contain a nil pointer!
-	// Example: var e *Email = nil; var v Validator = e
-	// Here v != nil (type is *Email) but the pointer is nil
-
-	// BREAKPOINT: Set breakpoint here for type assertion
-	// DEBUG: Watch 'e, ok := v.(*Email)' extract concrete type
-	e, ok := v.(*Email)
-	if !ok {
-		// BREAKPOINT: Not an *Email
-		// DEBUG: Different Validator implementation
-		return v.IsValid()
-	}
-
-	// BREAKPOINT: Set breakpoint here for pointer nil check
-	// DEBUG: Watch 'e == nil' checks if the *Email pointer is nil
-	if e == nil {
-		// DEBUG: Interface contains nil pointer!
-		return false
-	}
-
-	// BREAKPOINT: Set breakpoint here when Email is valid
-	// DEBUG: Watch e.IsValid() call on non-nil Email
-	return e.IsValid()
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Read returns the current data in the buffer.
@@ -148,8 +75,8 @@ func IsValidEmail(v Validator) bool {
 // DEBUG: Watch 'b' Buffer pointer
 // DEBUG: Watch 'b.data' field access
 func (b *Buffer) Read() string {
-	// DEBUG: Simple accessor - returns current data
-	return b.data
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Write appends data to the buffer.
@@ -158,11 +85,8 @@ func (b *Buffer) Read() string {
 // DEBUG: Watch 'data' parameter being appended
 // DEBUG: Watch 'b.data' after append
 func (b *Buffer) Write(data string) error {
-	// BREAKPOINT: Set breakpoint here before append
-	// DEBUG: Watch string concatenation
-	b.data += data
-	// DEBUG: In-memory buffer never fails
-	return nil
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // IsReadWriter checks if an interface value implements ReadWriter.
@@ -170,11 +94,8 @@ func (b *Buffer) Write(data string) error {
 // DEBUG: Watch 'i' interface value
 // DEBUG: Watch composite interface checking
 func IsReadWriter(i interface{}) bool {
-	// BREAKPOINT: Set breakpoint here for type assertion
-	// DEBUG: Watch '_, ok := i.(ReadWriter)' check both Read and Write
-	// DEBUG: ReadWriter requires BOTH Reader and Writer methods
-	_, ok := i.(ReadWriter)
-	return ok
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Increment increments the counter value.
@@ -182,10 +103,8 @@ func IsReadWriter(i interface{}) bool {
 // DEBUG: Watch 'c' pointer to Counter
 // DEBUG: Watch 'c.Value' before and after increment
 func (c *Counter) Increment() {
-	// BREAKPOINT: Set breakpoint here before increment
-	// DEBUG: Watch 'c.Value' increase by 1
-	c.Value++
-	// DEBUG: Pointer receiver required for mutation
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // CanIncrement checks if a value can be used as an Incrementer.
@@ -193,11 +112,8 @@ func (c *Counter) Increment() {
 // DEBUG: Watch 'i' interface value
 // DEBUG: Only *Counter satisfies Incrementer (not Counter)
 func CanIncrement(i interface{}) bool {
-	// BREAKPOINT: Set breakpoint here for type assertion
-	// DEBUG: Watch '_, ok := i.(Incrementer)'
-	// DEBUG: Remember: pointer receiver methods only on *T, not T
-	_, ok := i.(Incrementer)
-	return ok
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // CountTypes counts how many values of each type are in the slice.
@@ -205,45 +121,8 @@ func CanIncrement(i interface{}) bool {
 // DEBUG: Watch 'values' slice of interface{}
 // DEBUG: Watch 'counts' map build up
 func CountTypes(values []interface{}) map[string]int {
-	// BREAKPOINT: Set breakpoint here to create map
-	// DEBUG: Watch map initialization
-	counts := make(map[string]int)
-	localPkg := reflect.TypeOf(Person{}).PkgPath()
-
-	// BREAKPOINT: Set breakpoint here before loop
-	// DEBUG: Watch iteration through values
-	for _, v := range values {
-		if v == nil {
-			counts["nil"]++
-			continue
-		}
-
-		t := reflect.TypeOf(v)
-
-		// Unwrap pointers so *Person and Person count the same.
-		if t.Kind() == reflect.Ptr {
-			t = t.Elem()
-		}
-
-		// Builtins (int/string/bool) have empty PkgPath and match expected keys.
-		if t.PkgPath() == "" {
-			counts[t.String()]++
-			continue
-		}
-
-		// For types defined in this exercise package, keep the legacy key prefix
-		// expected by tests ("exercise.<Type>").
-		if t.PkgPath() == localPkg && t.Name() != "" {
-			counts[fmt.Sprintf("exercise.%s", t.Name())]++
-			continue
-		}
-
-		// Fallback: use Go's type string.
-		counts[t.String()]++
-	}
-
-	// DEBUG: Watch final 'counts' map
-	return counts
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Error implements the error interface for ValidationError.
@@ -251,9 +130,8 @@ func CountTypes(values []interface{}) map[string]int {
 // DEBUG: Watch 'e' ValidationError value
 // DEBUG: Watch error message construction
 func (e ValidationError) Error() string {
-	// BREAKPOINT: Set breakpoint here before formatting
-	// DEBUG: Watch 'e.Field' and 'e.Message' fields
-	return fmt.Sprintf("validation error on %s: %s", e.Field, e.Message)
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Area calculates the area of a rectangle.
@@ -261,9 +139,8 @@ func (e ValidationError) Error() string {
 // DEBUG: Watch 'r' Rectangle value
 // DEBUG: Watch 'r.Width' and 'r.Height' fields
 func (r Rectangle) Area() float64 {
-	// BREAKPOINT: Set breakpoint here before calculation
-	// DEBUG: Watch width * height calculation
-	return r.Width * r.Height
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Area calculates the area of a circle.
@@ -271,10 +148,8 @@ func (r Rectangle) Area() float64 {
 // DEBUG: Watch 'c' Circle pointer
 // DEBUG: Watch 'c.Radius' field
 func (c Circle) Area() float64 {
-	// BREAKPOINT: Set breakpoint here before calculation
-	// DEBUG: Watch π * r² calculation
-	// DEBUG: Using approximate π value
-	return 3.14159 * c.Radius * c.Radius
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // TotalArea calculates the total area of all shapes.
@@ -282,20 +157,6 @@ func (c Circle) Area() float64 {
 // DEBUG: Watch 'shapes' slice of Shape interface
 // DEBUG: Watch dynamic dispatch to correct Area() method
 func TotalArea(shapes []Shape) float64 {
-	// BREAKPOINT: Set breakpoint here to initialize total
-	// DEBUG: Watch 'total' accumulator
-	total := 0.0
-
-	// BREAKPOINT: Set breakpoint here before loop
-	// DEBUG: Watch iteration through shapes
-	for _, shape := range shapes {
-		// BREAKPOINT: Set breakpoint here for each shape
-		// DEBUG: Watch 'shape' (could be Rectangle or Circle)
-		// DEBUG: Watch 'shape.Area()' dynamically dispatch
-		// DEBUG: Runtime determines Rectangle.Area or Circle.Area
-		total += shape.Area()
-	}
-
-	// DEBUG: Watch final 'total' (sum of all areas)
-	return total
+	// TODO: Implement this function
+	panic("unimplemented")
 }

@@ -57,9 +57,8 @@ var reqCount atomic.Int64
 // BREAKPOINT: Set breakpoint here to trace route registration
 // DEBUG: Watch 's' to see store implementation
 func RegisterRoutes(mux *http.ServeMux, s Store) {
-	// DEBUG: Creating handler with store dependency
-	// BREAKPOINT: Set breakpoint here to see handler creation
-	mux.HandleFunc("/kv", withMiddleware(kvHandler(s)))
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // withMiddleware wraps a handler with request counting.
@@ -72,21 +71,8 @@ func RegisterRoutes(mux *http.ServeMux, s Store) {
 // BREAKPOINT: Set breakpoint here to trace middleware execution
 // DEBUG: Watch 'count' to see request counter
 func withMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// BREAKPOINT: Set breakpoint here to trace request counting
-		// DEBUG: Watch reqCount before and after increment
-		count := reqCount.Add(1)
-		// DEBUG: Current request number
-
-		// BREAKPOINT: Set breakpoint here to see header being set
-		// DEBUG: Watch 'count' to see what value is set
-		w.Header().Set("X-Req-Count", fmt.Sprintf("%d", count))
-
-		// DEBUG: Calling next handler
-		// BREAKPOINT: Set breakpoint here before calling wrapped handler
-		next(w, r)
-		// DEBUG: Handler completed
-	}
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // kvHandler creates a handler for key-value operations.
@@ -98,69 +84,8 @@ func withMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // BREAKPOINT: Set breakpoint in returned function to trace requests
 // DEBUG: Watch 'r.Method' to see HTTP method
 func kvHandler(s Store) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// BREAKPOINT: Set breakpoint here to trace request routing
-		// DEBUG: Watch 'r.Method' to see which case executes
-
-		switch r.Method {
-		case http.MethodPost:
-			// BREAKPOINT: Set breakpoint here to trace POST requests
-			// DEBUG: Watch 'req' to see decoded JSON
-			var req struct {
-				Key string `json:"key"`
-				Val string `json:"val"`
-			}
-
-			// BREAKPOINT: Set breakpoint here to trace JSON decoding
-			// DEBUG: Watch 'r.Body' before decode
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				// DEBUG: JSON decode failed
-				// BREAKPOINT: Set breakpoint here to inspect decode error
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			// DEBUG: Watch 'req.Key' and 'req.Val' to see decoded values
-
-			// BREAKPOINT: Set breakpoint here to trace storage
-			// DEBUG: Watch 's.Put' arguments
-			if err := s.Put(req.Key, req.Val); err != nil {
-				// DEBUG: Storage failed
-				// BREAKPOINT: Set breakpoint here to inspect storage error
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			// DEBUG: Request successful, returning 201
-			// BREAKPOINT: Set breakpoint here to see success response
-			w.WriteHeader(http.StatusCreated)
-
-		case http.MethodGet:
-			// BREAKPOINT: Set breakpoint here to trace GET requests
-			// DEBUG: Watch 'key' to see requested key
-			key := r.URL.Query().Get("k")
-			// DEBUG: Extracted key from query parameter
-
-			// BREAKPOINT: Set breakpoint here to trace retrieval
-			// DEBUG: Watch 's.Get' arguments and return values
-			val, ok := s.Get(key)
-			if !ok {
-				// DEBUG: Key not found
-				// BREAKPOINT: Set breakpoint here to trace 404 response
-				http.Error(w, "not found", http.StatusNotFound)
-				return
-			}
-
-			// DEBUG: Watch 'val' to see retrieved value
-			// BREAKPOINT: Set breakpoint here to trace JSON encoding
-			json.NewEncoder(w).Encode(map[string]string{"val": val})
-			// DEBUG: Response encoded and sent
-
-		default:
-			// DEBUG: Unsupported method
-			// BREAKPOINT: Set breakpoint here to trace unsupported methods
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		}
-	}
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // NewServer creates an HTTP server.
@@ -169,11 +94,8 @@ func kvHandler(s Store) http.HandlerFunc {
 // DEBUG: Watch 'addr' to see bind address
 // DEBUG: Watch 'mux' to see registered routes
 func NewServer(addr string, mux *http.ServeMux) *http.Server {
-	// DEBUG: Creating HTTP server with addr and mux
-	return &http.Server{
-		Addr:    addr,
-		Handler: mux,
-	}
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // GracefulShutdown shuts down the server gracefully.
@@ -188,10 +110,8 @@ func NewServer(addr string, mux *http.ServeMux) *http.Server {
 // DEBUG: Watch 'ctx' to see shutdown timeout
 // DEBUG: Watch return error to see if shutdown succeeded
 func GracefulShutdown(ctx context.Context, srv *http.Server) error {
-	// BREAKPOINT: Set breakpoint here before shutdown
-	// DEBUG: Step over to see shutdown complete
-	return srv.Shutdown(ctx)
-	// DEBUG: Shutdown complete or timed out
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // MemStore is an in-memory Store.
@@ -204,8 +124,8 @@ type MemStore struct {
 // NewMemStore creates a new in-memory store.
 // BREAKPOINT: Set breakpoint here to trace store creation
 func NewMemStore() Store {
-	// DEBUG: Creating new MemStore with empty map
-	return &MemStore{data: make(map[string]string)}
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Put stores a key-value pair.
@@ -213,15 +133,8 @@ func NewMemStore() Store {
 // BREAKPOINT: Set breakpoint here to trace writes
 // DEBUG: Watch 'key' and 'val' to see what's being stored
 func (m *MemStore) Put(key, val string) error {
-	// BREAKPOINT: Set breakpoint here before acquiring lock
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	// DEBUG: Watch 'm.data' before update
-	m.data[key] = val
-	// DEBUG: Watch 'm.data' after update to see new value
-
-	return nil
+	// TODO: Implement this function
+	panic("unimplemented")
 }
 
 // Get retrieves a value by key.
@@ -230,13 +143,6 @@ func (m *MemStore) Put(key, val string) error {
 // DEBUG: Watch 'key' to see lookup key
 // DEBUG: Watch 'val' and 'ok' to see result
 func (m *MemStore) Get(key string) (string, bool) {
-	// BREAKPOINT: Set breakpoint here before acquiring read lock
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	// DEBUG: Watch 'm.data[key]' to see lookup
-	val, ok := m.data[key]
-	// DEBUG: Watch 'ok' to see if key exists
-
-	return val, ok
+	// TODO: Implement this function
+	panic("unimplemented")
 }
