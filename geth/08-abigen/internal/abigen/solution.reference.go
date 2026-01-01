@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package abigen
 
@@ -301,12 +300,12 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 // callString is a helper that calls a contract method returning string.
 //
 // How it works:
-//   1. Calls contract.Call() with method name and parameters
-//   2. contract.Call encodes parameters using ABI
-//   3. Executes eth_call via backend
-//   4. Decodes return value using ABI
-//   5. Returns []interface{} of return values
-//   6. We convert first value to string type
+//  1. Calls contract.Call() with method name and parameters
+//  2. contract.Call encodes parameters using ABI
+//  3. Executes eth_call via backend
+//  4. Decodes return value using ABI
+//  5. Returns []interface{} of return values
+//  6. We convert first value to string type
 //
 // Why []interface{}? Solidity functions can return multiple values. The ABI
 // decoder returns a slice of interface{} values, one per return value. We

@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package genericlrucache
 
 /*
 Problem: Implement a thread-safe LRU cache with generics and TTL
@@ -33,8 +34,6 @@ Why doubly-linked list:
 - O(1) remove arbitrary element (for updates)
 */
 
-package genericlrucache
-
 import (
 	"container/list"
 	"sync"
@@ -44,11 +43,11 @@ import (
 // Cache is a generic LRU cache with TTL support.
 // BREAKPOINT: Set breakpoint here to inspect cache initialization
 type Cache[K comparable, V any] struct {
-	mu          sync.Mutex              // Protects all fields
-	capacity    int                     // Maximum number of items
-	defaultTTL  time.Duration           // Default expiration time
-	items       map[K]*list.Element     // Key → list element
-	evictList   *list.List              // Doubly-linked list (front = most recent)
+	mu         sync.Mutex          // Protects all fields
+	capacity   int                 // Maximum number of items
+	defaultTTL time.Duration       // Default expiration time
+	items      map[K]*list.Element // Key → list element
+	evictList  *list.List          // Doubly-linked list (front = most recent)
 }
 
 // entry holds the actual cached data.

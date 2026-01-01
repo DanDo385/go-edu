@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package goroutines1mdemo
 
 /*
 Project 18: Goroutines and Concurrency - Solutions
@@ -21,8 +22,6 @@ DEBUGGING GUIDE:
 - Watch panel shows variable values in real-time
 - Use runtime.NumGoroutine() to track goroutine count
 */
-
-package goroutines1mdemo
 
 import (
 	"context"

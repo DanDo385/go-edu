@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package httpservergraceful
 
 /*
 Problem: Build an HTTP server with routes, middleware, and graceful shutdown
@@ -27,8 +28,6 @@ Middleware Pattern:
 - Execute before/after main handler
 - Common uses: logging, metrics, authentication
 */
-
-package httpservergraceful
 
 import (
 	"context"

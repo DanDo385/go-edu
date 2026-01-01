@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package methodsvaluevspointerreceivers
 
 /*
 Problem: Understanding method receivers in Go (value vs pointer)
@@ -27,8 +28,6 @@ Why receiver type matters:
 - Pointer receiver: Can modify, more efficient for large types
 - Mixed receivers cause interface satisfaction issues
 */
-
-package methodsvaluevspointerreceivers
 
 // DepositSolution adds money to account.
 // BREAKPOINT: Set breakpoint here to trace mutation

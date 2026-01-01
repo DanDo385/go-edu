@@ -1,9 +1,8 @@
 //go:build reference
-// +build reference
-
-// Package exercise contains hands-on exercises for atomic operations.
 
 package atomiccountersvsmutex
+
+// Package exercise contains hands-on exercises for atomic operations.
 
 import (
 	"math"

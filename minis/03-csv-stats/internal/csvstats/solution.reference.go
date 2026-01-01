@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package csvstats
 
 /*
 Problem: Compute per-category statistics from a CSV of financial transactions
@@ -40,8 +41,6 @@ Key debugging concepts covered:
 6. Understanding streaming I/O and memory usage
 */
 
-package csvstats
-
 import (
 	"encoding/csv"
 	"fmt"
@@ -69,20 +68,23 @@ type Stat struct {
 // Three-Input Iteration Table:
 //
 // Input 1: Valid CSV (happy path)
-//   Row 1: "1,groceries,12.50" → groceries: {Count:1, Sum:12.50}
-//   Row 2: "2,groceries,7.50"  → groceries: {Count:2, Sum:20.00}
-//   Row 3: "3,books,10.00"     → books: {Count:1, Sum:10.00}
-//   Post-process → groceries: {Count:2, Sum:20.00, Avg:10.00}, books: {Count:1, Sum:10.00, Avg:10.00}
+//
+//	Row 1: "1,groceries,12.50" → groceries: {Count:1, Sum:12.50}
+//	Row 2: "2,groceries,7.50"  → groceries: {Count:2, Sum:20.00}
+//	Row 3: "3,books,10.00"     → books: {Count:1, Sum:10.00}
+//	Post-process → groceries: {Count:2, Sum:20.00, Avg:10.00}, books: {Count:1, Sum:10.00, Avg:10.00}
 //
 // Input 2: Empty CSV (edge case)
-//   Only header row: "id,category,amount"
-//   No data rows
-//   Result: empty map (valid)
+//
+//	Only header row: "id,category,amount"
+//	No data rows
+//	Result: empty map (valid)
 //
 // Input 3: Malformed amount (failure case)
-//   Row 1: "1,groceries,12.50" → groceries: {Count:1, Sum:12.50}
-//   Row 2: "2,books,invalid"   → Error: "row 3: invalid amount"
-//   Result: nil, error (fail-fast)
+//
+//	Row 1: "1,groceries,12.50" → groceries: {Count:1, Sum:12.50}
+//	Row 2: "2,books,invalid"   → Error: "row 3: invalid amount"
+//	Result: nil, error (fail-fast)
 //
 // DEBUGGING WORKFLOW:
 // ===================

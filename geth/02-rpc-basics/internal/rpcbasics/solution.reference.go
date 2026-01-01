@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package rpcbasics
 
@@ -101,9 +100,6 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	// We are again using defensive copying to ensure the caller cannot mutate
 	// the RPC client's internal data.
 	//
-	// `types.CopyBlock` is the equivalent of `types.CopyHeader` from module 01.
-	// It performs a deep copy of the block, including its header and transactions.
-	//
 	// Note that `blockNumber` is a `uint64`, which is a value type in Go.
 	// Value types are copied by default, so we don't need to do anything special.
 	// `networkID` is a `*big.Int`, which is a pointer to a mutable struct, so we
@@ -111,6 +107,6 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	return &Result{
 		NetworkID:   new(big.Int).Set(networkID),
 		BlockNumber: blockNumber,
-		Block:       types.CopyBlock(block),
+		Block:       block,
 	}, nil
 }

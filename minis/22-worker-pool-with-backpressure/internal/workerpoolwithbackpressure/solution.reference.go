@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package workerpoolwithbackpressure
 
 /*
 Problem: Worker pool with backpressure and rate limiting
@@ -36,8 +37,6 @@ Real-world applications:
 - Database connection pools (bounded connections)
 - API rate limiting (comply with third-party limits)
 */
-
-package workerpoolwithbackpressure
 
 import (
 	"context"
@@ -216,9 +215,10 @@ func (p *WorkerPool) SubmitWithTimeout(ctx context.Context, job Job, timeout tim
 //   - <-chan Result: Read-only channel of results
 //
 // Usage:
-//   for result := range pool.Results() {
-//       handleResult(result)
-//   }
+//
+//	for result := range pool.Results() {
+//	    handleResult(result)
+//	}
 func (p *WorkerPool) Results() <-chan Result {
 	return p.results
 }

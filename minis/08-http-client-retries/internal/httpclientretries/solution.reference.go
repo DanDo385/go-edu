@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package httpclientretries
 
 /*
 Problem: Build a resilient HTTP client with retries and exponential backoff
@@ -32,8 +33,6 @@ Why Jitter (Randomness):
 Time Complexity: O(retries * request_time)
 Space Complexity: O(1)
 */
-
-package httpclientretries
 
 import (
 	"context"

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/config"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/database"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/middleware"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/models"
 	"github.com/rs/zerolog"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/config"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/database"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/middleware"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/models"
 )
 
 // Login authenticates a user and returns a JWT token

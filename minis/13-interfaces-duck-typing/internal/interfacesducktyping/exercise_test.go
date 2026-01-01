@@ -158,29 +158,29 @@ func TestDescribeType(t *testing.T) {
 
 func TestIsValidEmail(t *testing.T) {
 	tests := []struct {
-		name     string
+		name      string
 		validator Validator
-		expected bool
+		expected  bool
 	}{
 		{
-			name:     "valid email",
+			name:      "valid email",
 			validator: &Email{Address: "test@example.com"},
-			expected: true,
+			expected:  true,
 		},
 		{
-			name:     "invalid email",
+			name:      "invalid email",
 			validator: &Email{Address: "invalid"},
-			expected: false,
+			expected:  false,
 		},
 		{
-			name:     "nil interface",
+			name:      "nil interface",
 			validator: nil,
-			expected: false,
+			expected:  false,
 		},
 		{
-			name:     "nil pointer in interface",
+			name:      "nil pointer in interface",
 			validator: (*Email)(nil),
-			expected: false,
+			expected:  false,
 		},
 	}
 
@@ -468,7 +468,7 @@ func TestShapes(t *testing.T) {
 		var _ Shape = c
 
 		area := c.Area()
-		expected := 78.53975  // π * 5²
+		expected := 78.53975 // π * 5²
 		if area < expected-0.01 || area > expected+0.01 {
 			t.Errorf("Expected area %.2f, got %.2f", expected, area)
 		}
@@ -484,9 +484,9 @@ func TestTotalArea(t *testing.T) {
 		{
 			name: "mixed shapes",
 			shapes: []Shape{
-				Rectangle{Width: 4, Height: 5},     // 20
-				Circle{Radius: 2},                  // ~12.56636
-				Rectangle{Width: 3, Height: 3},     // 9
+				Rectangle{Width: 4, Height: 5}, // 20
+				Circle{Radius: 2},              // ~12.56636
+				Rectangle{Width: 3, Height: 3}, // 9
 			},
 			expected: 41.56636,
 		},
@@ -498,8 +498,8 @@ func TestTotalArea(t *testing.T) {
 		{
 			name: "only rectangles",
 			shapes: []Shape{
-				Rectangle{Width: 2, Height: 3},  // 6
-				Rectangle{Width: 4, Height: 5},  // 20
+				Rectangle{Width: 2, Height: 3}, // 6
+				Rectangle{Width: 4, Height: 5}, // 20
 			},
 			expected: 26,
 		},

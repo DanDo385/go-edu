@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/config"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/config"
 	"golang.org/x/time/rate"
 )
 

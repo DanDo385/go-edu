@@ -1,12 +1,6 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 package indexer
 
 // Run currently acts as a placeholder; see module README for full implementation steps.
 func Run() {}
-	// TODO: Implement Run
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
-

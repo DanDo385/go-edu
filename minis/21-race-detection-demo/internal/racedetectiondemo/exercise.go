@@ -1,707 +1,694 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 package racedetectiondemo
 
-// TODO: Import required packages
-// You'll need:
-// - "fmt" for error formatting
-// - "sync" for Mutex, RWMutex, WaitGroup, Once
-// - "sync/atomic" for atomic operations (Go 1.19+)
-//
-// import (
-//     "fmt"
-//     "sync"
-//     "sync/atomic"  // For atomic.Int64
-// )
+// This file contains solutions to all the race detection exercises.
+// Students should implement these in exercise.go before looking at this file.
+
+import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+)
 
 // ============================================================================
-// RACE DETECTION: Understanding Data Races and Memory Visibility
-// ============================================================================
-//
-// A data race occurs when:
-// 1. Two or more goroutines access the same memory location
-// 2. At least one of them is writing
-// 3. The accesses are NOT synchronized
-//
-// Why races are dangerous:
-// - Unpredictable behavior (works sometimes, fails others)
-// - Memory corruption (partially written values)
-// - No compiler or runtime guarantees about what you'll read
-// - Can cause crashes, data loss, security vulnerabilities
-//
-// How to detect races:
-// - Run: go test -race
-// - The race detector instruments your code to track all memory accesses
-// - Reports races with full stack traces
-// - Only catches races that actually execute during the test
-//
-// How to fix races:
-// 1. Mutexes: sync.Mutex (exclusive access) or sync.RWMutex (reader/writer)
-// 2. Atomic operations: atomic.Int64, atomic.Bool (lock-free)
-// 3. Channels: Communicate by passing data, not sharing it
-// 4. sync.Once: Guarantee one-time initialization
-//
+// Solution 1: Safe Counter
 // ============================================================================
 
-// ============================================================================
-// Exercise 1: Fix the Counter Race
-// ============================================================================
+// Solution: Use atomic.Int64 for lock-free counter
+type SafeCounterSolution struct {
+	value atomic.Int64
+}
 
-// SafeCounter is a thread-safe counter.
-// TODO: Add fields needed for synchronization.
-//
-// Memory considerations:
-// - The counter value must be protected from concurrent access
-// - Option 1: Use sync.Mutex + int64 field
-//   * Mutex is a struct containing internal state (lock word + wait queue)
-//   * Size: ~16 bytes (platform dependent)
-//   * Always use as a field, not embedded (makes copying accidental)
-//
-// - Option 2: Use atomic.Int64 (preferred for simple counters)
-//   * Lock-free (uses CPU atomic instructions like LOCK XADD)
-//   * Size: 8 bytes (just the int64)
-//   * Much faster than mutex for uncontended access
-//   * Must be aligned to 8-byte boundary (Go handles this automatically)
-//
-// type SafeCounter struct {
-//     value atomic.Int64  // Preferred: lock-free atomic counter
-//     // OR
-//     value int64         // Alternative: regular int64
-//     mu    sync.Mutex    // protected by this mutex
-// }
+func NewSafeCounterSolution() *SafeCounterSolution {
+	return &SafeCounterSolution{}
+}
 
-// NewSafeCounter creates a new thread-safe counter.
-// TODO: Initialize the counter with necessary fields.
-//
-// Memory allocation:
-// - Returns a pointer (*SafeCounter) because:
-//   1. Counters are meant to be shared and modified
-//   2. Mutexes/atomics must not be copied (copying breaks synchronization)
-//   3. Returning *SafeCounter allows multiple goroutines to share same instance
-//
-// - The struct is allocated on the heap (escapes because we return a pointer)
-// - Caller receives a pointer to heap memory
-// - GC will clean up when all references are gone
-//
-// func NewSafeCounter() *SafeCounter {
-//     return &SafeCounter{}  // Zero value is valid for atomic.Int64
-// }
+func (c *SafeCounterSolution) Increment() {
+	c.value.Add(1)
+}
 
-// Increment safely increments the counter by 1.
-// TODO: Implement thread-safe increment.
-//
-// This function will be called concurrently from multiple goroutines.
-// Without synchronization, this would be a race:
-//   goroutine 1: reads value (100)
-//   goroutine 2: reads value (100)  <- both read same value!
-//   goroutine 1: writes 101
-//   goroutine 2: writes 101         <- lost update! should be 102
-//
-// Solution 1: Atomic operations (recommended for counters)
-// - Use: c.value.Add(1)
-// - This is a single atomic CPU instruction (LOCK XADD on x86)
-// - No locks, no contention, very fast
-// - Guarantees all goroutines see updates in consistent order
-//
-// Solution 2: Mutex-based
-// - Use: c.mu.Lock(); c.value++; c.mu.Unlock()
-// - Slower than atomic (needs to acquire/release lock)
-// - But works for complex updates (multiple fields)
-//
-// func (c *SafeCounter) Increment() {
-//     c.value.Add(1)  // Atomic: no lock needed
-// }
+func (c *SafeCounterSolution) Value() int64 {
+	return c.value.Load()
+}
 
-// Value safely returns the current counter value.
-// TODO: Implement thread-safe read.
-//
-// Reading is also a race if not synchronized!
-// Without protection:
-//   goroutine 1: writes value = 100 (bytes: 00 00 00 00 00 00 00 64)
-//   goroutine 2: reads value → might see partial write!
-//     (e.g., 00 00 00 00 00 00 00 00 if write isn't complete)
-//
-// Solution: Must synchronize with writes
-// - Atomic: c.value.Load()  (reads with memory fence)
-// - Mutex: c.mu.Lock(); v := c.value; c.mu.Unlock()
-//
-// func (c *SafeCounter) Value() int64 {
-//     return c.value.Load()  // Atomic read
-// }
+// Alternative solution: Use mutex
+type SafeCounterMutexSolution struct {
+	value int64
+	mu    sync.Mutex
+}
+
+func NewSafeCounterMutexSolution() *SafeCounterMutexSolution {
+	return &SafeCounterMutexSolution{}
+}
+
+func (c *SafeCounterMutexSolution) Increment() {
+	c.mu.Lock()
+	c.value++
+	c.mu.Unlock()
+}
+
+func (c *SafeCounterMutexSolution) Value() int64 {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.value
+}
 
 // ============================================================================
-// Exercise 2: Fix the Map Race
+// Solution 2: Safe Map
 // ============================================================================
 
-// SafeMap is a thread-safe map wrapper.
-// TODO: Add fields for map storage and synchronization.
-//
-// Memory considerations:
-// - Maps in Go are NOT thread-safe (concurrent access = crash or corruption)
-// - Must protect all map operations (read, write, iteration)
-// - Use sync.RWMutex for maps (many readers, few writers)
-//
-// type SafeMap struct {
-//     data map[string]int  // The actual map (reference type, points to hash table)
-//     mu   sync.RWMutex    // Protects data
-// }
-//
-// Why RWMutex instead of Mutex?
-// - RWMutex allows multiple concurrent readers (RLock)
-// - Only one writer at a time (Lock)
-// - Readers and writer are mutually exclusive
-// - Perfect for read-heavy workloads (like caches)
-//
-// Pointer vs value receiver:
-// - Methods use pointer receiver (*SafeMap) because:
-//   1. Maps are reference types, but the mutex must not be copied
-//   2. All methods must work on the same mutex instance
-//   3. Value receivers would copy the struct (and the mutex) = broken sync
+// Solution: Use sync.RWMutex to protect map access
+type SafeMapSolution struct {
+	data map[string]int
+	mu   sync.RWMutex
+}
 
-// NewSafeMap creates a new thread-safe map.
-// TODO: Initialize the map with necessary fields.
-//
-// CRITICAL: Must use make() to initialize the map!
-// - var m map[string]int creates a nil map (can read but NOT write)
-// - make(map[string]int) creates an empty map (can read and write)
-//
-// Memory allocation:
-// - make() allocates a hash table on the heap
-// - Initial capacity is small (grows as needed)
-// - Can specify initial capacity: make(map[string]int, 100)
-//
-// func NewSafeMap() *SafeMap {
-//     return &SafeMap{
-//         data: make(map[string]int),  // Initialize map!
-//     }
-// }
+func NewSafeMapSolution() *SafeMapSolution {
+	return &SafeMapSolution{
+		data: make(map[string]int),
+	}
+}
 
-// Set safely stores a key-value pair.
-// TODO: Implement thread-safe write to map.
-//
-// Map writes are NOT thread-safe:
-// - Concurrent writes can corrupt the hash table
-// - Go will crash with "fatal error: concurrent map writes"
-//
-// Solution: Use Lock (exclusive access)
-// - mu.Lock() acquires exclusive access (blocks other Lock/RLock)
-// - Modify map
-// - mu.Unlock() releases lock
-//
-// Pattern:
-//   m.mu.Lock()
-//   m.data[key] = value  // Only one goroutine can do this at a time
-//   m.mu.Unlock()
-//
-// func (m *SafeMap) Set(key string, value int) {
-//     m.mu.Lock()
-//     m.data[key] = value
-//     m.mu.Unlock()
-// }
+func (m *SafeMapSolution) Set(key string, value int) {
+	m.mu.Lock()
+	m.data[key] = value
+	m.mu.Unlock()
+}
 
-// Get safely retrieves a value by key.
-// TODO: Implement thread-safe read from map.
-//
-// Returns the value and a boolean indicating if the key exists.
-//
-// Map reads while writing = crash:
-// - Even reading a map during a write can crash
-// - Must synchronize reads with writes
-//
-// Solution: Use RLock (shared read access)
-// - mu.RLock() allows multiple readers (blocks writers)
-// - Read from map
-// - mu.RUnlock() releases read lock
-//
-// Why RLock instead of Lock?
-// - Multiple goroutines can read simultaneously (better performance)
-// - Writers are blocked while readers are active (correctness)
-//
-// func (m *SafeMap) Get(key string) (int, bool) {
-//     m.mu.RLock()
-//     value, ok := m.data[key]
-//     m.mu.RUnlock()
-//     return value, ok
-// }
+func (m *SafeMapSolution) Get(key string) (int, bool) {
+	m.mu.RLock()
+	value, ok := m.data[key]
+	m.mu.RUnlock()
+	return value, ok
+}
 
-// Len safely returns the number of entries in the map.
-// TODO: Implement thread-safe length check.
-//
-// Even len(map) needs synchronization!
-// - Reading map metadata during a write can give wrong results
-//
-// func (m *SafeMap) Len() int {
-//     m.mu.RLock()
-//     length := len(m.data)
-//     m.mu.RUnlock()
-//     return length
-// }
+func (m *SafeMapSolution) Len() int {
+	m.mu.RLock()
+	length := len(m.data)
+	m.mu.RUnlock()
+	return length
+}
+
+// Alternative solution: Use sync.Map (built-in concurrent map)
+type SafeMapSyncMapSolution struct {
+	data sync.Map
+}
+
+func NewSafeMapSyncMapSolution() *SafeMapSyncMapSolution {
+	return &SafeMapSyncMapSolution{}
+}
+
+func (m *SafeMapSyncMapSolution) Set(key string, value int) {
+	m.data.Store(key, value)
+}
+
+func (m *SafeMapSyncMapSolution) Get(key string) (int, bool) {
+	val, ok := m.data.Load(key)
+	if !ok {
+		return 0, false
+	}
+	return val.(int), true
+}
+
+func (m *SafeMapSyncMapSolution) Len() int {
+	count := 0
+	m.data.Range(func(key, value interface{}) bool {
+		count++
+		return true
+	})
+	return count
+}
 
 // ============================================================================
-// Exercise 3: Fix the Lazy Initialization Race
+// Solution 3: Lazy Initialization
 // ============================================================================
 
-// LazyInit demonstrates thread-safe lazy initialization.
-// TODO: Add fields for sync.Once and the value.
-//
-// Lazy initialization pattern:
-// - Create expensive resource only when first needed
-// - Common for singletons, database connections, config loading
-//
-// Problem without synchronization:
-//   goroutine 1: if value == nil { value = init() }
-//   goroutine 2: if value == nil { value = init() }  <- both see nil!
-//   Result: init() called twice, waste of resources, possible race
-//
-// Solution: sync.Once
-// - Guarantees the init function runs exactly once
-// - Other goroutines block until first call completes
-// - Subsequent calls return immediately (no lock contention)
-//
-// type LazyInit struct {
-//     once  sync.Once      // Coordinates one-time initialization
-//     value interface{}    // The lazily initialized value
-// }
-//
-// Memory:
-// - sync.Once contains: done uint32 + mutex
-// - After first call, done=1, subsequent calls just read done (fast path)
+// Solution: Use sync.Once for thread-safe lazy initialization
+type LazyInitSolution struct {
+	once  sync.Once
+	value interface{}
+}
 
-// NewLazyInit creates a new lazy initializer.
-// TODO: Initialize with necessary fields.
-//
-// func NewLazyInit() *LazyInit {
-//     return &LazyInit{}  // Zero values are valid
-// }
+func NewLazyInitSolution() *LazyInitSolution {
+	return &LazyInitSolution{}
+}
 
-// GetOrInit returns the initialized value, initializing it if needed.
-// TODO: Implement thread-safe lazy initialization.
-//
-// The init function should only be called ONCE, even when called concurrently.
-//
-// Pattern:
-//   l.once.Do(func() {
-//       l.value = init()
-//   })
-//   return l.value
-//
-// How sync.Once works:
-// 1. First caller: Execute the function, set done=1
-// 2. Concurrent callers: Block until first caller finishes
-// 3. Future callers: See done=1, return immediately
-//
-// Memory visibility:
-// - once.Do() includes memory barriers
-// - Guarantees l.value write is visible to all goroutines after Do() returns
-//
-// func (l *LazyInit) GetOrInit(init func() interface{}) interface{} {
-//     l.once.Do(func() {
-//         l.value = init()
-//     })
-//     return l.value
-// }
+func (l *LazyInitSolution) GetOrInit(init func() interface{}) interface{} {
+	l.once.Do(func() {
+		l.value = init()
+	})
+	return l.value
+}
 
 // ============================================================================
-// Exercise 4: Fix the Slice Append Race
+// Solution 4: Safe Slice
 // ============================================================================
 
-// SafeSlice is a thread-safe slice wrapper.
-// TODO: Add fields for slice storage and synchronization.
-//
-// Slices are NOT thread-safe:
-// - append() can reallocate the underlying array
-// - Concurrent appends can corrupt the slice or lose data
-//
-// Why append is racy:
-// - Slice is: {ptr *array, len int, cap int}
-// - append() reads len, writes to ptr[len], updates len
-// - Two goroutines appending:
-//   G1: reads len=5, writes ptr[5], sets len=6
-//   G2: reads len=5, writes ptr[5], sets len=6  <- overwrites G1's data!
-//
-// Solution: Protect with mutex
-// - Use sync.Mutex (or RWMutex if you have many reads)
-//
-// type SafeSlice struct {
-//     data []int        // The slice (header on stack, array on heap)
-//     mu   sync.RWMutex // Protects data
-// }
+// Solution: Use mutex to protect slice operations
+type SafeSliceSolution struct {
+	data []int
+	mu   sync.RWMutex
+}
 
-// NewSafeSlice creates a new thread-safe slice.
-// TODO: Initialize with necessary fields.
-//
-// Pre-allocate capacity if you know approximate size:
-// - make([]int, 0, 100) allocates array for 100 items
-// - Reduces allocations during append
-//
-// func NewSafeSlice() *SafeSlice {
-//     return &SafeSlice{
-//         data: make([]int, 0),  // Empty slice
-//     }
-// }
+func NewSafeSliceSolution() *SafeSliceSolution {
+	return &SafeSliceSolution{
+		data: make([]int, 0),
+	}
+}
 
-// Append safely appends a value to the slice.
-// TODO: Implement thread-safe append.
-//
-// Must protect: read length, append, update slice header
-//
-// func (s *SafeSlice) Append(value int) {
-//     s.mu.Lock()
-//     s.data = append(s.data, value)  // May reallocate array
-//     s.mu.Unlock()
-// }
+func (s *SafeSliceSolution) Append(value int) {
+	s.mu.Lock()
+	s.data = append(s.data, value)
+	s.mu.Unlock()
+}
 
-// Get safely retrieves a value by index.
-// TODO: Implement thread-safe indexed read.
-//
-// Returns the value and a boolean indicating if the index is valid.
-//
-// Race: Reading while another goroutine appends
-// - Might read past end of slice (panic)
-// - Might read from old array after reallocation (wrong data)
-//
-// func (s *SafeSlice) Get(index int) (int, bool) {
-//     s.mu.RLock()
-//     if index < 0 || index >= len(s.data) {
-//         s.mu.RUnlock()
-//         return 0, false
-//     }
-//     value := s.data[index]
-//     s.mu.RUnlock()
-//     return value, true
-// }
+func (s *SafeSliceSolution) Get(index int) (int, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-// Len safely returns the length of the slice.
-// TODO: Implement thread-safe length check.
-//
-// func (s *SafeSlice) Len() int {
-//     s.mu.RLock()
-//     length := len(s.data)
-//     s.mu.RUnlock()
-//     return length
-// }
+	if index < 0 || index >= len(s.data) {
+		return 0, false
+	}
+	return s.data[index], true
+}
+
+func (s *SafeSliceSolution) Len() int {
+	s.mu.RLock()
+	length := len(s.data)
+	s.mu.RUnlock()
+	return length
+}
 
 // ============================================================================
-// Exercise 5: Fix the Loop Variable Capture Race
+// Solution 5: Process IDs (Loop Variable Capture)
 // ============================================================================
 
-// ProcessIDs processes a list of IDs concurrently.
-// TODO: Fix the race condition where all goroutines see the same ID.
-//
-// Common gotcha: Loop variable capture
-// Problem:
-//   for i, id := range ids {
-//       go func() {
-//           process(id)  // BUG: id is shared by all goroutines!
-//       }()
-//   }
-//
-// What happens:
-// - Loop creates goroutines very fast
-// - By the time goroutines run, loop has finished
-// - All goroutines see the LAST value of id
-//
-// Solution 1: Pass as parameter (recommended)
-//   for i, id := range ids {
-//       go func(index int, value int) {
-//           results[index] = process(value)
-//       }(i, id)  // Pass as arguments
-//   }
-//
-// Solution 2: Shadow the variable
-//   for i, id := range ids {
-//       i := i   // Create new variable
-//       id := id // Create new variable
-//       go func() {
-//           results[i] = process(id)  // Now safe!
-//       }()
-//   }
-//
-// Note: Go 1.22+ does this shadowing automatically in for loops!
-//
-// Each goroutine should process a unique ID.
-// Returns a slice of results in the same order as input.
-//
-// func ProcessIDs(ids []int, process func(int) int) []int {
-//     var wg sync.WaitGroup
-//     results := make([]int, len(ids))
-//
-//     for i, id := range ids {
-//         wg.Add(1)
-//         go func(index int, value int) {  // Pass as parameters!
-//             defer wg.Done()
-//             results[index] = process(value)
-//         }(i, id)  // Arguments create copies
-//     }
-//
-//     wg.Wait()
-//     return results
-// }
+// Solution: Pass loop variables as arguments to goroutine
+func ProcessIDsSolution(ids []int, process func(int) int) []int {
+	var wg sync.WaitGroup
+	results := make([]int, len(ids))
+
+	for i, id := range ids {
+		wg.Add(1)
+		// Pass i and id as arguments to avoid capturing loop variables
+		go func(index int, value int) {
+			defer wg.Done()
+			results[index] = process(value)
+		}(i, id) // Pass as arguments
+	}
+
+	wg.Wait()
+	return results
+}
+
+// Alternative solution: Shadow the loop variables (Go 1.22+ does this automatically)
+func ProcessIDsSolutionShadow(ids []int, process func(int) int) []int {
+	var wg sync.WaitGroup
+	results := make([]int, len(ids))
+
+	for i, id := range ids {
+		// Shadow the loop variables
+		i := i
+		id := id
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			results[i] = process(id)
+		}()
+	}
+
+	wg.Wait()
+	return results
+}
 
 // ============================================================================
-// Exercise 6: Concurrent URL Cache
+// Solution 6: Concurrent URL Cache
 // ============================================================================
 
-// URLCache is a concurrent URL fetcher with caching.
-// (Type definition is in types.go)
+// Solution: Use RWMutex for cache access
+func (c *URLCache) FetchSolution(url string) (string, error) {
+	// First, try to read from cache (read lock)
+	c.mu.RLock()
+	if content, ok := c.cache[url]; ok {
+		c.mu.RUnlock()
+		return content, nil
+	}
+	c.mu.RUnlock()
 
-// Fetch fetches a URL's content, using cache if available.
-// TODO: Implement thread-safe caching.
-//
-// Multiple goroutines may call this simultaneously.
-// Each URL should only be fetched once (even if multiple goroutines request it simultaneously).
-//
-// Pattern (double-checked locking):
-// 1. RLock, check cache, RUnlock (fast path for cache hit)
-// 2. Lock, check cache again (another goroutine might have fetched it)
-// 3. Fetch and store, Unlock
-//
-// Why double-check?
-// - Many goroutines request same URL simultaneously
-// - First goroutine: cache miss, acquires Lock, fetches
-// - Other goroutines: wait for Lock, then see it's now in cache
-// - Without double-check: all waiting goroutines would re-fetch!
-//
-// func (c *URLCache) Fetch(url string) (string, error) {
-//     // Fast path: check cache with read lock
-//     c.mu.RLock()
-//     if content, ok := c.cache[url]; ok {
-//         c.mu.RUnlock()
-//         return content, nil
-//     }
-//     c.mu.RUnlock()
-//
-//     // Slow path: fetch with write lock
-//     c.mu.Lock()
-//     defer c.mu.Unlock()
-//
-//     // Double-check: another goroutine might have fetched it
-//     if content, ok := c.cache[url]; ok {
-//         return content, nil
-//     }
-//
-//     // Fetch and cache
-//     content, err := c.fetcher(url)
-//     if err != nil {
-//         return "", err
-//     }
-//     c.cache[url] = content
-//     return content, nil
-// }
+	// Not in cache, fetch it (write lock)
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-// ============================================================================
-// Exercise 7: Concurrent Metrics Tracking
-// ============================================================================
+	// Double-check: another goroutine might have fetched it while we waited for lock
+	if content, ok := c.cache[url]; ok {
+		return content, nil
+	}
 
-// Metrics tracks application metrics concurrently.
-// (Type definition is in types.go)
+	// Fetch and cache
+	content, err := c.fetcher(url)
+	if err != nil {
+		return "", err
+	}
 
-// IncrementRequests increments the request counter.
-// TODO: Implement thread-safe increment.
-//
-// Use atomic operations for maximum performance:
-// - m.requests.Add(1)
-//
-// func (m *Metrics) IncrementRequests() {
-//     m.requests.Add(1)
-// }
+	c.cache[url] = content
+	return content, nil
+}
 
-// IncrementErrors increments the error counter.
-// TODO: Implement thread-safe increment.
-//
-// func (m *Metrics) IncrementErrors() {
-//     m.errors.Add(1)
-// }
+// Advanced solution: Prevent duplicate fetches using a "flight group" pattern
+type URLCacheAdvanced struct {
+	cache   map[string]string
+	mu      sync.RWMutex
+	fetcher func(url string) (string, error)
+	// Track in-flight requests
+	inflight map[string]*sync.WaitGroup
+	inflmu   sync.Mutex
+}
 
-// GetStats returns the current request and error counts.
-// TODO: Implement thread-safe read of both counters.
-//
-// Note: Reading two atomic values separately is not atomic!
-// - Another goroutine might update between our two reads
-// - Result: Inconsistent snapshot (requests=100, errors=99, then errors increments)
-// - For this use case, it's acceptable (eventual consistency)
-// - For strict consistency, use mutex to protect both fields
-//
-// func (m *Metrics) GetStats() (requests int64, errors int64) {
-//     return m.requests.Load(), m.errors.Load()
-// }
+func NewURLCacheAdvanced(fetcher func(url string) (string, error)) *URLCacheAdvanced {
+	return &URLCacheAdvanced{
+		cache:    make(map[string]string),
+		fetcher:  fetcher,
+		inflight: make(map[string]*sync.WaitGroup),
+	}
+}
 
-// ============================================================================
-// Exercise 8: Bank Account (Deposits and Withdrawals)
-// ============================================================================
+func (c *URLCacheAdvanced) Fetch(url string) (string, error) {
+	// Check cache
+	c.mu.RLock()
+	if content, ok := c.cache[url]; ok {
+		c.mu.RUnlock()
+		return content, nil
+	}
+	c.mu.RUnlock()
 
-// BankAccount simulates a bank account with concurrent deposits/withdrawals.
-// (Type definition is in types.go)
+	// Check if another goroutine is already fetching this URL
+	c.inflmu.Lock()
+	if wg, ok := c.inflight[url]; ok {
+		// Wait for the other goroutine to finish
+		c.inflmu.Unlock()
+		wg.Wait()
 
-// Deposit adds money to the account.
-// TODO: Implement thread-safe deposit.
-//
-// func (b *BankAccount) Deposit(amount int64) {
-//     b.mu.Lock()
-//     b.balance += amount
-//     b.mu.Unlock()
-// }
+		// Now it should be in cache
+		c.mu.RLock()
+		content := c.cache[url]
+		c.mu.RUnlock()
+		return content, nil
+	}
 
-// Withdraw removes money from the account.
-// TODO: Implement thread-safe withdrawal.
-//
-// Returns true if successful, false if insufficient funds.
-//
-// Critical section must be atomic:
-// - Check balance >= amount
-// - Subtract amount
-// - Both operations under same lock!
-//
-// Bad (race):
-//   if b.Balance() >= amount {  // Read
-//       b.mu.Lock()
-//       b.balance -= amount       // Write
-//       b.mu.Unlock()
-//   }
-//   Problem: Another goroutine might withdraw between check and update
-//
-// Good:
-//   b.mu.Lock()
-//   if b.balance >= amount {
-//       b.balance -= amount
-//       b.mu.Unlock()
-//       return true
-//   }
-//   b.mu.Unlock()
-//   return false
-//
-// func (b *BankAccount) Withdraw(amount int64) bool {
-//     b.mu.Lock()
-//     defer b.mu.Unlock()
-//
-//     if b.balance >= amount {
-//         b.balance -= amount
-//         return true
-//     }
-//     return false
-// }
+	// We're the first, create a WaitGroup for others to wait on
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	c.inflight[url] = wg
+	c.inflmu.Unlock()
 
-// Balance returns the current balance.
-// TODO: Implement thread-safe read.
-//
-// func (b *BankAccount) Balance() int64 {
-//     b.mu.Lock()
-//     balance := b.balance
-//     b.mu.Unlock()
-//     return balance
-// }
+	// Fetch (outside of any locks)
+	content, err := c.fetcher(url)
+
+	// Store in cache
+	c.mu.Lock()
+	if err == nil {
+		c.cache[url] = content
+	}
+	c.mu.Unlock()
+
+	// Remove from inflight and signal waiters
+	c.inflmu.Lock()
+	delete(c.inflight, url)
+	c.inflmu.Unlock()
+	wg.Done()
+
+	return content, err
+}
 
 // ============================================================================
-// Exercise 9: Pipeline Pattern (Race-Free)
+// Solution 7: Concurrent Metrics
 // ============================================================================
 
-// Pipeline implements a concurrent pipeline: generate -> square -> sum
-// TODO: Implement a race-free pipeline using channels.
-//
-// Should process all numbers concurrently and return the sum of squares.
-//
-// Channels are Go's primary synchronization mechanism:
-// - Sending blocks if channel is full
-// - Receiving blocks if channel is empty
-// - Closing a channel signals "no more data"
-// - Range over channel receives until closed
-//
-// Pattern:
-// 1. Stage 1 (generator): Send numbers to channel, close when done
-// 2. Stage 2 (transformer): Receive, transform, send to next channel, close
-// 3. Stage 3 (collector): Receive and accumulate results
-//
-// func Pipeline(numbers []int) int {
-//     // Stage 1: Generate numbers
-//     gen := make(chan int)
-//     go func() {
-//         defer close(gen)  // Close when done sending
-//         for _, n := range numbers {
-//             gen <- n
-//         }
-//     }()
-//
-//     // Stage 2: Square numbers
-//     sq := make(chan int)
-//     go func() {
-//         defer close(sq)
-//         for n := range gen {  // Receive until gen is closed
-//             sq <- n * n
-//         }
-//     }()
-//
-//     // Stage 3: Sum all squared numbers
-//     sum := 0
-//     for n := range sq {  // Receive until sq is closed
-//         sum += n
-//     }
-//
-//     return sum
-// }
+// Solution: Use atomic counters
+type MetricsSolution struct {
+	requests atomic.Int64
+	errors   atomic.Int64
+}
+
+func NewMetricsSolution() *MetricsSolution {
+	return &MetricsSolution{}
+}
+
+func (m *MetricsSolution) IncrementRequests() {
+	m.requests.Add(1)
+}
+
+func (m *MetricsSolution) IncrementErrors() {
+	m.errors.Add(1)
+}
+
+func (m *MetricsSolution) GetStats() (requests int64, errors int64) {
+	return m.requests.Load(), m.errors.Load()
+}
 
 // ============================================================================
-// Exercise 10: Worker Pool (Race-Free)
+// Solution 8: Bank Account
 // ============================================================================
 
-// WorkerPool processes jobs using a fixed number of workers.
-// TODO: Implement a race-free worker pool.
-//
-// Parameters:
-//   - numWorkers: number of concurrent workers
-//   - jobs: slice of jobs to process
-//   - process: function to process each job
-//
-// Returns: slice of results (order doesn't matter)
-//
-// Pattern:
-// 1. Create jobs channel (buffered for all jobs)
-// 2. Create results channel (buffered for all results)
-// 3. Start numWorkers goroutines reading from jobs channel
-// 4. Send all jobs to jobs channel, close it
-// 5. Wait for workers to finish, close results channel
-// 6. Collect all results from results channel
-//
-// func WorkerPool(numWorkers int, jobs []int, process func(int) int) []int {
-//     jobsCh := make(chan int, len(jobs))
-//     resultsCh := make(chan int, len(jobs))
-//
-//     // Start workers
-//     var wg sync.WaitGroup
-//     for i := 0; i < numWorkers; i++ {
-//         wg.Add(1)
-//         go func() {
-//             defer wg.Done()
-//             for job := range jobsCh {  // Process until channel closed
-//                 resultsCh <- process(job)
-//             }
-//         }()
-//     }
-//
-//     // Send all jobs
-//     for _, job := range jobs {
-//         jobsCh <- job
-//     }
-//     close(jobsCh)  // Signal no more jobs
-//
-//     // Close results channel when all workers finish
-//     go func() {
-//         wg.Wait()
-//         close(resultsCh)
-//     }()
-//
-//     // Collect results
-//     results := make([]int, 0, len(jobs))
-//     for result := range resultsCh {
-//         results = append(results, result)
-//     }
-//
-//     return results
-// }
+// Solution: Use mutex to protect balance
+type BankAccountSolution struct {
+	balance int64
+	mu      sync.Mutex
+}
 
-// After implementing all functions:
-// - Run: go test -race ./...  (CRITICAL: always test with -race!)
-// - The race detector instruments your code to find data races
-// - Only catches races that execute during tests
-// - Check: go test -v for verbose output
-// - Compare with solution.go to see detailed explanations
+func NewBankAccountSolution(initialBalance int64) *BankAccountSolution {
+	return &BankAccountSolution{
+		balance: initialBalance,
+	}
+}
+
+func (b *BankAccountSolution) Deposit(amount int64) {
+	b.mu.Lock()
+	b.balance += amount
+	b.mu.Unlock()
+}
+
+func (b *BankAccountSolution) Withdraw(amount int64) bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.balance >= amount {
+		b.balance -= amount
+		return true
+	}
+	return false
+}
+
+func (b *BankAccountSolution) Balance() int64 {
+	b.mu.Lock()
+	balance := b.balance
+	b.mu.Unlock()
+	return balance
+}
+
+// ============================================================================
+// Solution 9: Pipeline Pattern
+// ============================================================================
+
+// Solution: Use channels to connect pipeline stages
+func PipelineSolution(numbers []int) int {
+	// Stage 1: Generate numbers
+	gen := make(chan int)
+	go func() {
+		defer close(gen)
+		for _, n := range numbers {
+			gen <- n
+		}
+	}()
+
+	// Stage 2: Square numbers
+	sq := make(chan int)
+	go func() {
+		defer close(sq)
+		for n := range gen {
+			sq <- n * n
+		}
+	}()
+
+	// Stage 3: Sum all squared numbers
+	sum := 0
+	for n := range sq {
+		sum += n
+	}
+
+	return sum
+}
+
+// Alternative: More functional/composable pipeline
+func PipelineSolutionComposable(numbers []int) int {
+	// Stage 1: Generate
+	generate := func(nums []int) <-chan int {
+		out := make(chan int)
+		go func() {
+			defer close(out)
+			for _, n := range nums {
+				out <- n
+			}
+		}()
+		return out
+	}
+
+	// Stage 2: Square
+	square := func(in <-chan int) <-chan int {
+		out := make(chan int)
+		go func() {
+			defer close(out)
+			for n := range in {
+				out <- n * n
+			}
+		}()
+		return out
+	}
+
+	// Stage 3: Sum
+	sumAll := func(in <-chan int) int {
+		sum := 0
+		for n := range in {
+			sum += n
+		}
+		return sum
+	}
+
+	// Compose pipeline
+	gen := generate(numbers)
+	sq := square(gen)
+	return sumAll(sq)
+}
+
+// ============================================================================
+// Solution 10: Worker Pool
+// ============================================================================
+
+// Solution: Use channels and WaitGroup for worker pool
+func WorkerPoolSolution(numWorkers int, jobs []int, process func(int) int) []int {
+	// Create channels
+	jobsCh := make(chan int, len(jobs))
+	resultsCh := make(chan int, len(jobs))
+
+	// Start workers
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			// Process jobs from channel until it's closed
+			for job := range jobsCh {
+				result := process(job)
+				resultsCh <- result
+			}
+		}()
+	}
+
+	// Send all jobs
+	for _, job := range jobs {
+		jobsCh <- job
+	}
+	close(jobsCh) // Signal no more jobs
+
+	// Close results channel when all workers finish
+	go func() {
+		wg.Wait()
+		close(resultsCh)
+	}()
+
+	// Collect results
+	results := make([]int, 0, len(jobs))
+	for result := range resultsCh {
+		results = append(results, result)
+	}
+
+	return results
+}
+
+// Alternative: Pre-allocated results slice (if order matters)
+func WorkerPoolSolutionOrdered(numWorkers int, jobs []int, process func(int) int) []int {
+	type result struct {
+		index int
+		value int
+	}
+
+	jobsCh := make(chan struct {
+		index int
+		value int
+	}, len(jobs))
+	resultsCh := make(chan result, len(jobs))
+
+	// Start workers
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for job := range jobsCh {
+				resultsCh <- result{
+					index: job.index,
+					value: process(job.value),
+				}
+			}
+		}()
+	}
+
+	// Send jobs
+	for i, job := range jobs {
+		jobsCh <- struct {
+			index int
+			value int
+		}{index: i, value: job}
+	}
+	close(jobsCh)
+
+	// Close results when done
+	go func() {
+		wg.Wait()
+		close(resultsCh)
+	}()
+
+	// Collect results in order
+	results := make([]int, len(jobs))
+	for res := range resultsCh {
+		results[res.index] = res.value
+	}
+
+	return results
+}
+
+// ============================================================================
+// Explanation: Why These Solutions Work
+// ============================================================================
+
+/*
+KEY PRINCIPLES FOR RACE-FREE CODE:
+
+1. **Mutual Exclusion (Locks)**
+   - Use sync.Mutex for exclusive access to shared state
+   - Use sync.RWMutex when you have many readers, few writers
+   - Always defer mu.Unlock() to ensure unlock happens even on panic
+
+2. **Atomic Operations**
+   - Use atomic.Int64, atomic.Bool, etc. for simple counters/flags
+   - Lock-free, very fast, but limited to simple types
+   - Perfect for counters, flags, and simple state
+
+3. **Single Ownership (Channels)**
+   - One goroutine owns the data, others send requests via channels
+   - No locks needed because there's no sharing
+   - Most idiomatic Go approach
+
+4. **Immutability**
+   - Data that never changes can be safely shared
+   - Use atomic.Value to swap immutable configs
+
+5. **Confinement**
+   - Each goroutine has its own data, no sharing
+   - Use channels to transfer ownership when needed
+
+6. **sync.Once**
+   - Guarantees a function runs exactly once, even with concurrent calls
+   - Perfect for lazy initialization
+
+COMMON RACE PATTERNS TO AVOID:
+
+1. **Unsynchronized counter++**
+   → Fix: Use atomic.Add() or mutex
+
+2. **Concurrent map access**
+   → Fix: Use sync.RWMutex or sync.Map
+
+3. **Loop variable capture in goroutines**
+   → Fix: Pass as argument or shadow the variable
+
+4. **Double-checked locking**
+   → Fix: Use sync.Once
+
+5. **Concurrent append to slice**
+   → Fix: Use mutex or use channel to collect results
+
+6. **Reading while writing struct fields**
+   → Fix: Protect entire struct with mutex or use atomic fields
+
+TESTING FOR RACES:
+
+1. Always run tests with: go test -race
+2. The race detector only finds races that actually execute
+3. Achieve high code coverage to maximize race detection
+4. Use stress tests with many goroutines
+5. Test with different GOMAXPROCS values
+
+PERFORMANCE CONSIDERATIONS:
+
+1. Atomic operations > Mutex > Channels (for simple counters)
+2. RWMutex > Mutex (for read-heavy workloads)
+3. Channels are best for complex coordination, not simple sharing
+4. Profile before optimizing (premature optimization is evil)
+
+Remember: "Don't communicate by sharing memory; share memory by communicating."
+*/
+
+// ============================================================================
+// Example: Complete Race-Free Server Metrics
+// ============================================================================
+
+// ServerMetrics demonstrates a complete race-free metrics system
+type ServerMetrics struct {
+	requests        atomic.Int64
+	errors          atomic.Int64
+	activeConns     atomic.Int64
+	responseTimes   []int64
+	responseTimesMu sync.Mutex
+}
+
+func NewServerMetrics() *ServerMetrics {
+	return &ServerMetrics{
+		responseTimes: make([]int64, 0),
+	}
+}
+
+func (m *ServerMetrics) RecordRequest() {
+	m.requests.Add(1)
+}
+
+func (m *ServerMetrics) RecordError() {
+	m.errors.Add(1)
+}
+
+func (m *ServerMetrics) RecordResponseTime(ms int64) {
+	m.responseTimesMu.Lock()
+	m.responseTimes = append(m.responseTimes, ms)
+	m.responseTimesMu.Unlock()
+}
+
+func (m *ServerMetrics) ConnOpened() {
+	m.activeConns.Add(1)
+}
+
+func (m *ServerMetrics) ConnClosed() {
+	m.activeConns.Add(-1)
+}
+
+func (m *ServerMetrics) Snapshot() string {
+	m.responseTimesMu.Lock()
+	avgResponseTime := int64(0)
+	if len(m.responseTimes) > 0 {
+		sum := int64(0)
+		for _, t := range m.responseTimes {
+			sum += t
+		}
+		avgResponseTime = sum / int64(len(m.responseTimes))
+	}
+	m.responseTimesMu.Unlock()
+
+	return fmt.Sprintf(
+		"Requests: %d, Errors: %d, Active: %d, Avg Response: %dms",
+		m.requests.Load(),
+		m.errors.Load(),
+		m.activeConns.Load(),
+		avgResponseTime,
+	)
+}

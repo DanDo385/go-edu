@@ -102,9 +102,9 @@ func TestCircleArea(t *testing.T) {
 
 func TestTotalArea(t *testing.T) {
 	shapes := []Shape{
-		&Rectangle{Width: 5, Height: 4},   // 20
-		&Rectangle{Width: 3, Height: 2},   // 6
-		&Circle{Radius: 1},                // π ≈ 3.14159
+		&Rectangle{Width: 5, Height: 4}, // 20
+		&Rectangle{Width: 3, Height: 2}, // 6
+		&Circle{Radius: 1},              // π ≈ 3.14159
 	}
 
 	total := TotalArea(shapes)
@@ -170,7 +170,7 @@ func TestStringListContains(t *testing.T) {
 }
 
 func TestStringListNilSafety(t *testing.T) {
-	var list *StringList  // nil
+	var list *StringList // nil
 
 	// These should not panic
 	if list.Contains("anything") {

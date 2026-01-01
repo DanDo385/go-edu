@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package clitodofiles
 
 /*
 Problem: Build a persistent TODO list with JSON file storage
@@ -41,8 +42,6 @@ Key debugging concepts covered:
 5. Using the Debug Console to evaluate expressions
 6. Understanding pointer receivers and mutability
 */
-
-package clitodofiles
 
 import (
 	"encoding/json"
@@ -104,18 +103,21 @@ func NewFileStore(path string) Store {
 // Three-Input Iteration Table:
 //
 // Input 1: File exists with valid JSON (happy path)
-//   os.ReadFile → []byte of JSON array
-//   json.Unmarshal → populates fs.items
-//   Result: nil error
+//
+//	os.ReadFile → []byte of JSON array
+//	json.Unmarshal → populates fs.items
+//	Result: nil error
 //
 // Input 2: File doesn't exist (edge case)
-//   os.ReadFile → error (os.IsNotExist)
-//   Result: return error (caller should handle gracefully)
+//
+//	os.ReadFile → error (os.IsNotExist)
+//	Result: return error (caller should handle gracefully)
 //
 // Input 3: File exists but malformed JSON (failure)
-//   os.ReadFile → []byte
-//   json.Unmarshal → error
-//   Result: return error with context
+//
+//	os.ReadFile → []byte
+//	json.Unmarshal → error
+//	Result: return error with context
 func (fs *fileStore) Load() error {
 	// Read entire file into memory
 	// For very large files (>100MB), consider streaming with json.Decoder

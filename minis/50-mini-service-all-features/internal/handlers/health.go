@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/database"
 	"github.com/rs/zerolog"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/database"
 )
 
 // Health returns a simple health check

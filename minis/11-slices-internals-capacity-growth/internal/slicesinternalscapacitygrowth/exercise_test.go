@@ -7,10 +7,10 @@ import (
 // TestGrowSlice verifies that GrowSlice correctly tracks capacity changes.
 func TestGrowSlice(t *testing.T) {
 	tests := []struct {
-		name        string
-		initial     []int
-		elem        int
-		expectGrow  bool // Whether we expect capacity to grow
+		name       string
+		initial    []int
+		elem       int
+		expectGrow bool // Whether we expect capacity to grow
 	}{
 		{
 			name:       "empty slice grows",

@@ -1,366 +1,169 @@
-# go-edu
+## go-edu
 
-**Learn Go by building real systems.**
+Go learning repo built as a collection of **self-contained projects** under `minis/` (Go fundamentals) and `geth/` (Ethereum/go-ethereum-flavored exercises).
 
-This repository is a comprehensive educational resource for mastering Go through hands-on projects that mirror real-world production patterns and Ethereum/blockchain tooling.
+### Project layout (every project)
 
-## 🎯 Philosophy
+Each project follows the same shape:
 
-**go-edu** teaches Go through two complementary tracks:
-
-1. **`minis/`** — Fundamental Go patterns, concurrency primitives, HTTP servers, crypto basics
-2. **`geth/`** — Ethereum-focused projects inspired by go-ethereum architecture and patterns
-
-Every project is self-contained, production-ready in structure, and designed for deep understanding through debugging and experimentation.
-
----
-
-## 📂 Repository Structure
-
-```
-go-edu/
-├── go.mod                    # Single module at root
-├── README.md                 # This file
-├── minis/                    # 50 mini-projects covering core Go
-│   ├── 01-hello-strings/
-│   │   ├── README.md
-│   │   ├── cmd/
-│   │   │   ├── app/          # Realistic CLI application
-│   │   │   │   └── main.go
-│   │   │   └── dev/          # Debug harness (fixed inputs)
-│   │   │       └── main.go
-│   │   └── internal/
-│   │       └── <pkg>/        # Self-contained package
-│   │           ├── exercise.go
-│   │           ├── exercise_test.go
-│   │           ├── solution.reference.go         # Reference (excluded from builds)
-│   │           └── solution_no_err.reference.go  # Alternative reference
-│   └── ...
-└── geth/                     # 25 Ethereum/Geth-focused projects
-    ├── 01-stack/
-    │   ├── README.md
-    │   ├── cmd/
-    │   │   ├── app/          # Realistic RPC client app
-    │   │   │   └── main.go
-    │   │   └── dev/          # Debug harness (fixed RPC endpoint)
-    │   │       └── main.go
-    │   └── internal/
-    │       └── <pkg>/
-    │           ├── exercise.go
-    │           ├── exercise_test.go
-    │           ├── types.go  # Geth-style type definitions
-    │           └── solution.reference.go
-    └── ...
+```text
+<project>/
+  .vscode/
+    launch.json
+    settings.json
+  cmd/
+    app/
+      main.go
+    dev/
+      main.go
+  internal/
+    <pkg>/
+      exercise.go
+      exercise_test.go
+      solution.reference.go
+      solution_no_err.reference.go
+      (optional: extra *_test.go, benchmarks, types.go, etc.)
 ```
 
----
+- **`internal/<pkg>`**: the exercise package and tests.
+- **`cmd/app`**: “real” entry point (CLI/server/demo).
+- **`cmd/dev`**: deterministic “debug harness” entry point.
+- **`.vscode/`**: per-project debug/run/test configurations.
 
-## 🏗️ Project Structure Explained
+### Getting started
 
-Every project follows the **self-contained layout**:
+- **Clone**:
 
-### Directory Layout
+```bash
+git clone <repo>
+cd <repo>
+```
 
-| Directory/File | Purpose |
-|----------------|---------|
-| `cmd/app/main.go` | **Realistic application** — accepts CLI arguments, simulates production usage |
-| `cmd/dev/main.go` | **Debug harness** — fixed, deterministic inputs for stepping through with a debugger |
-| `internal/<pkg>/exercise.go` | **The only buildable implementation** — all production logic lives here |
-| `internal/<pkg>/*_test.go` | Tests and benchmarks |
-| `internal/<pkg>/*.reference.go` | Reference solutions (excluded from normal builds via `//go:build reference`) |
-| `README.md` | Project-specific documentation and learning objectives |
+- **Pick a project**:
 
-### Build Tags and Implementation Model
+```bash
+cd minis/01-hello-strings
+# or: cd geth/01-stack
+```
 
-#### Core Invariant: One Buildable Implementation
+- **Run tests**:
 
-- `exercise.go` is the **only** non-test, non-reference file that participates in builds
-- All production logic must be consolidated into `exercise.go`
-- This enforces clarity: there is one source of truth for implementation
+```bash
+go test ./...
+```
 
-#### Reference Files Are Inert
+- **Run the program**:
 
-Reference implementations exist **only** for learning:
+```bash
+go run ./cmd/app
+```
+
+- **Debug in VS Code**:
+  - Open the project folder (e.g. `minis/01-hello-strings/`).
+  - Use:
+    - **“Debug: cmd/dev”** (debug harness)
+    - **“Run: cmd/app”** (no-debug run)
+    - **“Test: internal package”** (debug tests)
+
+### Build tags used in this repo
+
+- **Exercise implementation** (`internal/<pkg>/exercise.go`):
+
+```go
+//go:build !solution && !reference
+```
+
+- **Reference implementations** (`*.reference.go`):
 
 ```go
 //go:build reference
-// +build reference
-
-package mypackage
-
-// This file is NEVER compiled during normal builds
 ```
 
-To view reference implementations:
+To run tests using reference implementations:
 
 ```bash
-# Normal build: only compiles exercise.go
-go build ./...
-go test ./...
-
-# View reference (does not affect tests):
-go build -tags=reference ./...
+go test -tags=reference ./...
 ```
 
-Reference files include:
-- `solution.reference.go` — Complete, production-quality reference implementation
-- `solution_no_err.reference.go` — Alternative reference (e.g., simplified error handling)
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Go 1.24+** (or version specified in `go.mod`)
-- For `geth/` projects: access to an Ethereum RPC endpoint (e.g., [Infura](https://infura.io), [Alchemy](https://alchemy.com), or public endpoints like `https://eth.llamarpc.com`)
-
-### Quick Start
-
-```bash
-# Clone the repository
-git clone <repository-url> go-edu
-cd go-edu
-
-# Run tests for a specific project
-cd minis/01-hello-strings
-go test ./...
-
-# Run the debug harness (fixed inputs, great for setting breakpoints)
-go run ./cmd/dev
-
-# Run the application (realistic usage)
-go run ./cmd/app "your input here"
-
-# Run benchmarks
-go test -bench=. ./...
-
-# Build the application binary
-go build -o app ./cmd/app
-./app "test input"
-```
-
----
-
-## 📚 Learning Tracks
-
-### `minis/` — Core Go Fundamentals (50 Projects)
-
-| Range | Topics |
-|-------|--------|
-| **01-05** | Strings, arrays, maps, CSV, JSONL, file I/O |
-| **06-10** | Worker pools, generics, HTTP client/server, gRPC |
-| **11-17** | Slices internals, pointers, interfaces, methods, errors, context, bufio |
-| **18-27** | Goroutines, channels, select, race detection, sync primitives (mutex, RWMutex, Once, Pool, atomic) |
-| **28-30** | Profiling (pprof), escape analysis, build tags |
-| **31-38** | HTTP servers, WebSockets, TCP, rate limiting, JWT, proxies, middleware, config |
-| **39-45** | Cryptography (SHA256, Merkle trees, ed25519), blockchain basics (PoW, mempool, p2p gossip) |
-| **46-50** | Generics, plugins, reflection, state machines, full-featured mini-service |
-
-### `geth/` — Ethereum & Go-Ethereum Patterns (25 Projects)
-
-| Range | Topics |
-|-------|--------|
-| **01-06** | RPC stack, chain ID, keys/addresses, accounts, transaction nonces, EIP-1559 |
-| **07-12** | eth_call, abigen, events, filters, storage proofs, Merkle-Patricia tries |
-| **13-17** | Tracing, block explorer, receipts, concurrency patterns, indexers |
-| **18-25** | Reorgs, devnets, node setup, sync modes, peer management, mempool monitoring, toolbox utilities |
-
----
-
-## 🛠️ How to Use This Repository
-
-### 1. **Implement in `exercise.go`**
-
-All your code goes in `internal/<pkg>/exercise.go`. This is the **only** file that compiles during normal builds.
-
-### 2. **Run Tests**
-
-```bash
-go test ./...
-```
-
-Tests verify your implementation against expected behavior.
-
-### 3. **Use the Debug Harness (`cmd/dev`)**
-
-```bash
-go run ./cmd/dev
-```
-
-- Fixed, deterministic inputs
-- Perfect for setting breakpoints and stepping through logic
-- No command-line argument parsing needed
-
-### 4. **Use the Application (`cmd/app`)**
-
-```bash
-go run ./cmd/app <arguments>
-```
-
-- Mimics real-world usage
-- Accepts dynamic inputs via CLI
-- Demonstrates how your library would be consumed
-
-### 5. **Compare with Reference Implementations**
-
-Reference files (`.reference.go`) are **excluded** from normal builds. View them for guidance:
-
-```bash
-# View reference solution
-cat internal/<pkg>/solution.reference.go
-
-# Optionally build with reference code (for exploration only)
-go build -tags=reference ./...
-```
-
-**Important:** Reference files are for learning only. They do **not** participate in tests or builds unless you explicitly use `-tags=reference`.
-
----
-
-## 🧪 Testing and Verification
-
-### Run All Tests
-
-```bash
-# From repository root
-go test ./...
-```
-
-### Run Benchmarks
-
-```bash
-go test -bench=. ./...
-```
-
-### Run Tests for a Specific Project
-
-```bash
-cd minis/06-worker-pool-wordcount
-go test ./...
-```
-
-### Verify Reference Files Are Excluded
-
-```bash
-# This should compile only exercise.go (not solution.reference.go)
-go build ./...
-
-# Verify:
-go list -f '{{.GoFiles}}' ./minis/01-hello-strings/internal/hellostrings
-# Output should NOT include solution.reference.go
-```
-
----
-
-## 🐛 Debugging
-
-Every project includes:
-
-- **`cmd/dev/main.go`** — Fixed inputs for reproducible debugging
-- Inline comments marking good breakpoint locations
-- VS Code launch configurations (`.vscode/launch.json` where applicable)
-
-### Debugging Workflow
-
-1. Open project in your editor (e.g., VS Code)
-2. Set breakpoints in `internal/<pkg>/exercise.go`
-3. Run `cmd/dev/main.go` with debugger (F5 in VS Code)
-4. Step through code, inspect variables, explore execution flow
-
-See individual project `README.md` files for project-specific debugging tips.
-
----
-
-## 📖 Project-Specific READMEs
-
-Every project has a `README.md` with:
-
-- **Description** — What the project teaches
-- **Concepts Covered** — Go features, CS principles, production patterns
-- **How to Run** — Commands for tests, benchmarks, dev harness, app
-- **Learning Objectives** — What you'll master by completing the project
-- **Debugging Tips** — Suggested breakpoints and exploration strategies
-
-Navigate to any project and read its `README.md`:
-
-```bash
-cd minis/07-generic-lru-cache
-cat README.md
-```
-
----
-
-## 🎓 Educational Philosophy
-
-### Why This Structure?
-
-1. **Self-contained projects** — Each project is an isolated, complete system
-2. **cmd/app vs cmd/dev** — Separates "production usage" from "debugging harness"
-3. **One buildable implementation** — No confusion about which code is "active"
-4. **Reference files are inert** — Learn by comparing, not by accidentally compiling multiple implementations
-5. **Real-world patterns** — Every project mirrors production Go codebases (especially Geth and Ethereum tooling)
-
-### Who Is This For?
-
-- **New Go developers** transitioning from other languages
-- **Intermediate Go developers** wanting to master concurrency, interfaces, and production patterns
-- **Blockchain developers** learning go-ethereum internals and Ethereum RPC patterns
-- **Anyone** seeking hands-on, project-based Go education
-
----
-
-## 🔗 Additional Resources
-
-- [Official Go Documentation](https://go.dev/doc/)
-- [Effective Go](https://go.dev/doc/effective_go)
-- [Go by Example](https://gobyexample.com/)
-- [go-ethereum (Geth) Documentation](https://geth.ethereum.org/docs)
-- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
-
----
-
-## 🤝 Contributing
-
-This is an educational repository. If you find issues or have suggestions:
-
-1. Open an issue describing the problem or enhancement
-2. For typos or small fixes, submit a pull request
-3. For new projects or major changes, discuss in an issue first
-
----
-
-## 📄 License
-
-See `LICENSE` file for details.
-
----
-
-## 🌟 Learning Path Recommendation
-
-### Absolute Beginners
-
-1. Start with `minis/01-hello-strings` through `minis/05-cli-todo-files`
-2. Master basic syntax, slices, maps, file I/O
-3. Move to `minis/06-worker-pool-wordcount` to learn concurrency
-4. Progress through `minis/11-17` for deep language understanding
-
-### Intermediate Go Developers
-
-1. Jump to `minis/18-27` for concurrency patterns
-2. Explore `minis/28-30` for performance and profiling
-3. Try `geth/01-06` for Ethereum RPC basics
-4. Build `minis/31-38` for HTTP/network services
-
-### Blockchain/Ethereum Developers
-
-1. Start with `geth/01-stack` to understand RPC connectivity
-2. Progress through `geth/02-12` for core Ethereum concepts
-3. Dive into `geth/13-25` for advanced indexing, tracing, and node operations
-4. Complement with `minis/39-45` for crypto/blockchain fundamentals
-
----
-
-**Happy Learning! 🚀**
-
-Build real things. Understand deeply. Master Go.
+### Project index
+
+#### minis/
+
+- [minis/01-hello-strings](./minis/01-hello-strings/)
+- [minis/02-arrays-maps-basics](./minis/02-arrays-maps-basics/)
+- [minis/03-csv-stats](./minis/03-csv-stats/)
+- [minis/04-jsonl-log-filter](./minis/04-jsonl-log-filter/)
+- [minis/05-cli-todo-files](./minis/05-cli-todo-files/)
+- [minis/06-worker-pool-wordcount](./minis/06-worker-pool-wordcount/)
+- [minis/07-generic-lru-cache](./minis/07-generic-lru-cache/)
+- [minis/08-http-client-retries](./minis/08-http-client-retries/)
+- [minis/09-http-server-graceful](./minis/09-http-server-graceful/)
+- [minis/10-grpc-telemetry-service](./minis/10-grpc-telemetry-service/)
+- [minis/11-slices-internals-capacity-growth](./minis/11-slices-internals-capacity-growth/)
+- [minis/12-pointers-zero-values-nil-gotchas](./minis/12-pointers-zero-values-nil-gotchas/)
+- [minis/13-interfaces-duck-typing](./minis/13-interfaces-duck-typing/)
+- [minis/14-methods-value-vs-pointer-receivers](./minis/14-methods-value-vs-pointer-receivers/)
+- [minis/15-error-wrapping-sentinel-errors](./minis/15-error-wrapping-sentinel-errors/)
+- [minis/16-context-cancellation-timeouts](./minis/16-context-cancellation-timeouts/)
+- [minis/17-file-streaming-bufio](./minis/17-file-streaming-bufio/)
+- [minis/18-goroutines-1M-demo](./minis/18-goroutines-1M-demo/)
+- [minis/19-channels-basics](./minis/19-channels-basics/)
+- [minis/20-select-fanin-fanout](./minis/20-select-fanin-fanout/)
+- [minis/21-race-detection-demo](./minis/21-race-detection-demo/)
+- [minis/22-worker-pool-with-backpressure](./minis/22-worker-pool-with-backpressure/)
+- [minis/23-bounded-channel-semaphore](./minis/23-bounded-channel-semaphore/)
+- [minis/24-sync-mutex-vs-rwmutex](./minis/24-sync-mutex-vs-rwmutex/)
+- [minis/25-atomic-counters-vs-mutex](./minis/25-atomic-counters-vs-mutex/)
+- [minis/26-sync-once-singleton](./minis/26-sync-once-singleton/)
+- [minis/27-sync-pool-allocator](./minis/27-sync-pool-allocator/)
+- [minis/28-pprof-cpu-mem-benchmarks](./minis/28-pprof-cpu-mem-benchmarks/)
+- [minis/29-escape-analysis-inlining](./minis/29-escape-analysis-inlining/)
+- [minis/30-build-tags-conditional-compilation](./minis/30-build-tags-conditional-compilation/)
+- [minis/31-static-file-server](./minis/31-static-file-server/)
+- [minis/32-websocket-chatroom](./minis/32-websocket-chatroom/)
+- [minis/33-tcp-echo-server-client](./minis/33-tcp-echo-server-client/)
+- [minis/34-rate-limiter-token-bucket](./minis/34-rate-limiter-token-bucket/)
+- [minis/35-jwt-auth-middleware](./minis/35-jwt-auth-middleware/)
+- [minis/36-caching-reverse-proxy](./minis/36-caching-reverse-proxy/)
+- [minis/37-http-middleware-chain](./minis/37-http-middleware-chain/)
+- [minis/38-config-loader-env-yaml](./minis/38-config-loader-env-yaml/)
+- [minis/39-sha256-hasher](./minis/39-sha256-hasher/)
+- [minis/40-merkle-tree-basics](./minis/40-merkle-tree-basics/)
+- [minis/41-signed-transactions-ed25519](./minis/41-signed-transactions-ed25519/)
+- [minis/42-simple-block-struct-hashing](./minis/42-simple-block-struct-hashing/)
+- [minis/43-proof-of-work-demo](./minis/43-proof-of-work-demo/)
+- [minis/44-mempool-in-memory](./minis/44-mempool-in-memory/)
+- [minis/45-p2p-gossip-mock-network](./minis/45-p2p-gossip-mock-network/)
+- [minis/46-generics-map-reduce](./minis/46-generics-map-reduce/)
+- [minis/47-plugin-system-hot-reload](./minis/47-plugin-system-hot-reload/)
+- [minis/48-reflection-introspection](./minis/48-reflection-introspection/)
+- [minis/49-state-machine-pattern](./minis/49-state-machine-pattern/)
+- [minis/50-mini-service-all-features](./minis/50-mini-service-all-features/)
+
+#### geth/
+
+- [geth/01-stack](./geth/01-stack/)
+- [geth/02-rpc-basics](./geth/02-rpc-basics/)
+- [geth/03-keys-addresses](./geth/03-keys-addresses/)
+- [geth/04-accounts-balances](./geth/04-accounts-balances/)
+- [geth/05-tx-nonces](./geth/05-tx-nonces/)
+- [geth/06-eip1559](./geth/06-eip1559/)
+- [geth/07-eth-call](./geth/07-eth-call/)
+- [geth/08-abigen](./geth/08-abigen/)
+- [geth/09-events](./geth/09-events/)
+- [geth/10-filters](./geth/10-filters/)
+- [geth/11-storage](./geth/11-storage/)
+- [geth/12-proofs](./geth/12-proofs/)
+- [geth/13-trace](./geth/13-trace/)
+- [geth/14-explorer](./geth/14-explorer/)
+- [geth/15-receipts](./geth/15-receipts/)
+- [geth/16-concurrency](./geth/16-concurrency/)
+- [geth/17-indexer](./geth/17-indexer/)
+- [geth/18-reorgs](./geth/18-reorgs/)
+- [geth/19-devnets](./geth/19-devnets/)
+- [geth/20-node](./geth/20-node/)
+- [geth/21-sync](./geth/21-sync/)
+- [geth/22-peers](./geth/22-peers/)
+- [geth/23-mempool](./geth/23-mempool/)
+- [geth/24-monitor](./geth/24-monitor/)
+- [geth/25-toolbox](./geth/25-toolbox/)
