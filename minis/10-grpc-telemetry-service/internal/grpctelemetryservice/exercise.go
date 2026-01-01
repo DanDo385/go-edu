@@ -93,9 +93,9 @@ func (a *aggregator) PushPoint(ctx context.Context, p *pb.Point) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	// DEBUG: Converting Unix timestamp to time.Time
+	// DEBUG: Converting UnixNano timestamp to time.Time
 	// BREAKPOINT: Set breakpoint here to see timestamp conversion
-	ts := time.Unix(p.Timestamp, 0)
+	ts := time.Unix(0, p.Timestamp)
 	// DEBUG: Watch 'ts' to see converted time
 
 	// BREAKPOINT: Set breakpoint here to see point storage

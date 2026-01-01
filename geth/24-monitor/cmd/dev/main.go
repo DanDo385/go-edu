@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/ethereum/go-ethereum/ethclient"
+
+	"github.com/example/go-10x-minis/geth/24-monitor/internal/monitor"
+)
 
 func main() {
-	fmt.Println("geth/24-monitor: cmd/dev")
+	// BREAKPOINT
+	rpcURL := "https://eth.llamarpc.com"
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := ethclient.DialContext(ctx, rpcURL)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	out, err := monitor.Run(ctx, client, monitor.Config{MaxLagSeconds: 120})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(out.Status, out.LagSeconds)
 }

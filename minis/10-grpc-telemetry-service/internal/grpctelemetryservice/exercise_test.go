@@ -13,9 +13,9 @@ func TestAggregator_BasicStats(t *testing.T) {
 	ctx := context.Background()
 
 	points := []*pb.Point{
-		{Metric: "cpu", Value: 10.0, Timestamp: time.Now().Unix()},
-		{Metric: "cpu", Value: 20.0, Timestamp: time.Now().Unix()},
-		{Metric: "cpu", Value: 30.0, Timestamp: time.Now().Unix()},
+		{Metric: "cpu", Value: 10.0, Timestamp: time.Now().UnixNano()},
+		{Metric: "cpu", Value: 20.0, Timestamp: time.Now().UnixNano()},
+		{Metric: "cpu", Value: 30.0, Timestamp: time.Now().UnixNano()},
 	}
 
 	for _, p := range points {
@@ -50,7 +50,7 @@ func TestAggregator_TimeWindow(t *testing.T) {
 	oldPoint := &pb.Point{
 		Metric:    "cpu",
 		Value:     10.0,
-		Timestamp: time.Now().Add(-200 * time.Millisecond).Unix(),
+		Timestamp: time.Now().Add(-200 * time.Millisecond).UnixNano(),
 	}
 	agg.PushPoint(ctx, oldPoint)
 
@@ -58,7 +58,7 @@ func TestAggregator_TimeWindow(t *testing.T) {
 	newPoint := &pb.Point{
 		Metric:    "cpu",
 		Value:     20.0,
-		Timestamp: time.Now().Unix(),
+		Timestamp: time.Now().UnixNano(),
 	}
 	agg.PushPoint(ctx, newPoint)
 
@@ -77,8 +77,8 @@ func TestAggregator_MultipleMetrics(t *testing.T) {
 	agg := NewAggregator(1 * time.Hour)
 	ctx := context.Background()
 
-	agg.PushPoint(ctx, &pb.Point{Metric: "cpu", Value: 50.0, Timestamp: time.Now().Unix()})
-	agg.PushPoint(ctx, &pb.Point{Metric: "memory", Value: 1024.0, Timestamp: time.Now().Unix()})
+	agg.PushPoint(ctx, &pb.Point{Metric: "cpu", Value: 50.0, Timestamp: time.Now().UnixNano()})
+	agg.PushPoint(ctx, &pb.Point{Metric: "memory", Value: 1024.0, Timestamp: time.Now().UnixNano()})
 
 	report := agg.Summary(ctx)
 

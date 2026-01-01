@@ -2,30 +2,30 @@ package racedetectiondemo
 
 import (
 	"sync"
+	"sync/atomic"
 )
 
 // SafeCounter is a thread-safe counter that students need to implement.
 type SafeCounter struct {
-	// TODO: Add necessary fields for thread-safe counter
-	// Hint: You can use either sync.Mutex or atomic.Int64
+	value atomic.Int64
 }
 
 // SafeMap is a thread-safe map wrapper.
 type SafeMap struct {
-	// TODO: Add necessary fields for thread-safe map
-	// Hint: Use sync.RWMutex and a regular map
+	mu   sync.RWMutex
+	data map[string]int
 }
 
 // LazyInit demonstrates lazy initialization pattern.
 type LazyInit struct {
-	// TODO: Add necessary fields for thread-safe lazy initialization
-	// Hint: Use sync.Once
+	once  sync.Once
+	value any
 }
 
 // SafeSlice is a thread-safe slice wrapper.
 type SafeSlice struct {
-	// TODO: Add necessary fields for thread-safe slice
-	// Hint: Use sync.Mutex and a regular slice
+	mu   sync.RWMutex
+	data []int
 }
 
 // URLCache is a concurrent URL fetcher with caching.
@@ -37,12 +37,12 @@ type URLCache struct {
 
 // Metrics tracks application metrics concurrently.
 type Metrics struct {
-	// TODO: Add necessary fields for concurrent metrics
-	// Hint: Use atomic types for counters
+	requests atomic.Int64
+	errors   atomic.Int64
 }
 
 // BankAccount simulates a bank account with concurrent deposits/withdrawals.
 type BankAccount struct {
-	// TODO: Add necessary fields for thread-safe bank account
-	// Hint: Use sync.Mutex to protect balance
+	mu      sync.Mutex
+	balance int64
 }

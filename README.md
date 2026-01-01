@@ -85,6 +85,129 @@ To run tests using reference implementations:
 go test -tags=reference ./...
 ```
 
+### Testing and debugging guide
+
+#### Overview
+
+Each project provides two ways to test and debug your implementation:
+
+1. **`cmd/app/main.go`**: Application entry point with CLI arguments
+2. **`cmd/dev/main.go`**: Debug harness with fixed inputs
+
+#### Using `cmd/dev/main.go` (recommended for learning)
+
+The `cmd/dev/main.go` file is a debug harness designed for stepping through code with breakpoints.
+
+**Why use `cmd/dev/main.go`?**
+
+- **Fixed inputs**: No need to remember command-line arguments
+- **Deterministic**: Same inputs every time, making debugging predictable
+- **Focused**: Contains only the essential code to test your implementation
+- **Breakpoint-friendly**: Includes `// BREAKPOINT:` comments at key locations
+
+**How to use**
+
+1. Open `cmd/dev/main.go` in VS Code
+2. Set breakpoints at `// BREAKPOINT:` comments (or anywhere)
+3. Press **F5** and select **“Debug: cmd/dev (Debug Harness)”** (or the closest matching config in that project)
+4. Step through using **F10** (Step Over) and **F11** (Step Into)
+5. Watch variables in the Variables panel
+
+Example workflow:
+
+```bash
+# 1. Navigate to project
+cd minis/01-hello-strings
+
+# 2. Open cmd/dev/main.go in VS Code
+# 3. Set breakpoint in internal/hellostrings/exercise.go at TitleCase
+# 4. Press F5, select \"Debug: cmd/dev\"
+# 5. Debugger stops at breakpoint - step through implementation
+```
+
+#### Using `cmd/app/main.go` (CLI arguments)
+
+The `cmd/app/main.go` file is the application entry point that accepts command-line arguments.
+
+**Project-specific CLI arguments**
+
+Each project has different CLI arguments based on its purpose.
+
+Examples:
+
+- **minis/**:
+  - **01-hello-strings**: `[input_string] [function]`
+    - Example: `go run ./cmd/app/main.go "hello world" titlecase`
+  - **06-worker-pool-wordcount**: `[url1] [url2] ... [urlN]`
+    - Example: `go run ./cmd/app/main.go https://example.com https://example.org`
+  - **08-http-client-retries**: `[url] [max-retries]`
+    - Example: `go run ./cmd/app/main.go https://api.example.com 3`
+- **geth/**:
+  - **01-stack**: `<RPC_URL> [block_number]`
+    - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com`
+    - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 12345`
+  - **05-tx-nonces**: `<RPC_URL> <private_key> <to_address> <amount_wei> [--send]`
+    - Example (no send): `go run ./cmd/app/main.go https://eth.llamarpc.com 0x... 0x... 1000000000000000000`
+  - **06-smart-contracts**: (console-first)
+    - Note: This module is primarily console-based. See its `README.md` for console commands.
+  - **07-eth-call**: `<RPC_URL> <contract_address>`
+    - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`
+  - **09-events**: `<RPC_URL> <contract_address> [from_block] [to_block]`
+
+**Debugging `cmd/app/main.go`**
+
+1. Open `.vscode/launch.json`
+2. Find the **“Debug: cmd/app”** configuration
+3. Edit the `args` array to include your CLI arguments, e.g.:
+
+```json
+{
+  "args": ["https://eth.llamarpc.com", "12345"]
+}
+```
+
+4. Press **F5** and select **“Debug: cmd/app”**
+
+#### Testing with `go test`
+
+Running tests:
+
+```bash
+go test ./...
+go test -v ./...
+go test -v -run TestFunctionName ./...
+go test -tags=reference -v ./...
+```
+
+Debugging tests (VS Code):
+
+- Set a breakpoint in a test function or in your exercise code
+- Press **F5** and select either:
+  - **“Test: Run All Tests”**
+  - **“Test: Current Test Function”**
+
+#### Tips for effective debugging
+
+- Start with `cmd/dev/main.go` (it’s designed for learning)
+- Use breakpoints liberally (especially at function entry points)
+- Watch the Variables panel to see how data transforms
+- Use Call Stack to understand function call flow
+- Use Step Into (F11), Step Over (F10), Step Out (Shift+F11)
+
+#### Common issues
+
+- **“Cannot find package” / module errors**
+  - Run `go mod tidy` at repo root
+- **“Build constraints exclude all Go files”**
+  - Ensure you’re not building with conflicting tags
+  - Exercise files typically use `//go:build !solution && !reference`
+- **RPC connection failed** (geth projects)
+  - Check the RPC URL is correct and accessible
+  - Try a different public RPC endpoint
+- **Geth console not working** (`geth/06-smart-contracts`)
+  - Verify Geth install: `geth version`
+  - Ensure Geth is running: `geth attach` should connect
+
 ### Project index
 
 #### minis/
@@ -147,6 +270,7 @@ go test -tags=reference ./...
 - [geth/03-keys-addresses](./geth/03-keys-addresses/)
 - [geth/04-accounts-balances](./geth/04-accounts-balances/)
 - [geth/05-tx-nonces](./geth/05-tx-nonces/)
+- [geth/06-smart-contracts](./geth/06-smart-contracts/)
 - [geth/06-eip1559](./geth/06-eip1559/)
 - [geth/07-eth-call](./geth/07-eth-call/)
 - [geth/08-abigen](./geth/08-abigen/)
