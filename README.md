@@ -26,8 +26,8 @@ Each project follows the same shape:
 ```
 
 - **`internal/<pkg>`**: the exercise package and tests.
-- **`cmd/app`**: “real” entry point (CLI/server/demo).
-- **`cmd/dev`**: deterministic “debug harness” entry point.
+- **`cmd/app`**: "real" entry point (CLI/server/demo).
+- **`cmd/dev`**: deterministic "debug harness" entry point.
 - **`.vscode/`**: per-project debug/run/test configurations.
 
 ### Getting started
@@ -61,9 +61,169 @@ go run ./cmd/app
 - **Debug in VS Code**:
   - Open the project folder (e.g. `minis/01-hello-strings/`).
   - Use:
-    - **“Debug: cmd/dev”** (debug harness)
-    - **“Run: cmd/app”** (no-debug run)
-    - **“Test: internal package”** (debug tests)
+    - **"Debug: cmd/dev"** (debug harness)
+    - **"Run: cmd/app"** (no-debug run)
+    - **"Test: internal package"** (debug tests)
+
+---
+
+## Testing and Debugging Guide
+
+### Overview
+
+Each project provides two ways to test and debug your implementation:
+
+1. **cmd/app/main.go** - Application entry point with CLI arguments
+2. **cmd/dev/main.go** - Debug harness with fixed inputs
+
+### Using cmd/dev/main.go (Recommended for Learning)
+
+The `cmd/dev/main.go` file is a debug harness designed for stepping through code with breakpoints.
+
+#### Why Use cmd/dev/main.go?
+
+- **Fixed inputs**: No need to remember command-line arguments
+- **Deterministic**: Same inputs every time, making debugging predictable
+- **Focused**: Contains only the essential code to test your implementation
+- **Breakpoint-friendly**: Includes "// BREAKPOINT:" comments at key locations
+
+#### How to Use:
+
+1. **Open** `cmd/dev/main.go` in VS Code
+2. **Set breakpoints** at "// BREAKPOINT:" comments or anywhere in your code
+3. **Press F5** and select "Debug: cmd/dev (Debug Harness)"
+4. **Step through** using F10 (Step Over) and F11 (Step Into)
+5. **Watch variables** in the Variables panel
+
+#### Example Workflow:
+
+```bash
+# 1. Navigate to project
+cd minis/01-hello-strings
+
+# 2. Open cmd/dev/main.go in VS Code
+# 3. Set breakpoint in internal/hellostrings/exercise.go
+# 4. Press F5, select "Debug: cmd/dev"
+# 5. Debugger stops at breakpoint - step through implementation
+```
+
+### Using cmd/app/main.go (CLI Arguments)
+
+The `cmd/app/main.go` file is the application entry point that accepts command-line arguments.
+
+#### Project-Specific CLI Arguments
+
+Each project has different CLI arguments based on its purpose:
+
+##### minis/ Projects:
+
+- **01-hello-strings**: `[input_string]`
+  - Example: `go run ./cmd/app/main.go "hello world"`
+- **06-worker-pool-wordcount**: `[url1] [url2] ... [urlN]`
+  - Example: `go run ./cmd/app/main.go https://example.com https://example.org`
+- **08-http-client-retries**: `[url] [max-retries]`
+  - Example: `go run ./cmd/app/main.go https://api.example.com 3`
+
+##### geth/ Projects:
+
+- **01-stack**: `<RPC_URL> [block_number]`
+  - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com`
+  - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 12345`
+- **05-tx-nonces**: `<RPC_URL> <address>`
+  - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
+- **06-smart-contracts**: `[RPC_URL] [CONTRACT_ADDRESS]` (Optional - primarily console-based)
+  - Note: This module is primarily console-based. See README.md for Geth console tutorial.
+- **07-eth-call**: `<RPC_URL> <contract_address>`
+  - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`
+- **09-events**: `<RPC_URL> <contract_address>`
+  - Example: `go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`
+
+#### Debugging cmd/app/main.go:
+
+1. **Open** `.vscode/launch.json`
+2. **Find** "Debug: cmd/app" configuration
+3. **Edit** the `args` array to include your CLI arguments:
+
+```json
+"args": ["https://eth.llamarpc.com", "12345"]
+```
+
+4. **Press F5** and select "Debug: cmd/app"
+5. Set breakpoints and step through
+
+### Testing with go test
+
+#### Running Tests:
+
+```bash
+# Run all tests in current project
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run specific test function
+go test -v -run TestFunctionName ./...
+
+# Run with reference implementation
+go test -tags=reference -v ./...
+```
+
+#### Debugging Tests:
+
+1. Set breakpoint in test function or exercise code
+2. Press F5 and select "Test: Run All Tests" or "Test: Current Test Function"
+3. Step through test execution
+
+### VS Code Debug Configurations
+
+Each project includes `.vscode/launch.json` with these configurations:
+
+| Configuration | Description |
+|---------------|-------------|
+| **Debug: cmd/app** | Debug application with CLI arguments |
+| **Debug: cmd/dev** | Debug harness with fixed inputs (recommended) |
+| **Test: Run All Tests** | Run all tests with debugger |
+| **Test: Current Test Function** | Debug specific test (select test name first) |
+| **Test: View Reference Implementation** | Run tests with solution.reference.go |
+| **Debug: Current File** | Debug currently open file |
+
+### Tips for Effective Debugging
+
+1. **Start with cmd/dev/main.go** - It's designed for learning
+2. **Use breakpoints liberally** - Set them at function entry points
+3. **Watch the Variables panel** - See how data transforms
+4. **Use Call Stack panel** - Understand function call hierarchy
+5. **Step Into (F11)** - Enter function implementations
+6. **Step Over (F10)** - Execute line by line
+7. **Step Out (Shift+F11)** - Return to caller
+
+### Common Issues
+
+#### "Cannot find package"
+
+- Run `go mod tidy` in project directory
+- Ensure you're in the correct directory
+
+#### "Build constraints exclude all Go files"
+
+- Check build tags in exercise.go (should be `//go:build !solution && !reference`)
+- Ensure you're not building with conflicting tags
+
+#### "RPC connection failed" (geth projects)
+
+- Check RPC URL is correct and accessible
+- Try a different public RPC endpoint
+- Ensure network connectivity
+
+#### "Geth console not working" (geth/06-smart-contracts)
+
+- Ensure Geth is installed: `geth version`
+- Check Geth is running: `geth attach` should connect
+- Verify RPC endpoint is accessible
+- Check firewall settings
+
+---
 
 ### Build tags used in this repo
 
@@ -84,6 +244,8 @@ To run tests using reference implementations:
 ```bash
 go test -tags=reference ./...
 ```
+
+---
 
 ### Project index
 
@@ -147,6 +309,7 @@ go test -tags=reference ./...
 - [geth/03-keys-addresses](./geth/03-keys-addresses/)
 - [geth/04-accounts-balances](./geth/04-accounts-balances/)
 - [geth/05-tx-nonces](./geth/05-tx-nonces/)
+- [geth/06-smart-contracts](./geth/06-smart-contracts/) *(Console Tutorial - Smart Contract Fundamentals)*
 - [geth/06-eip1559](./geth/06-eip1559/)
 - [geth/07-eth-call](./geth/07-eth-call/)
 - [geth/08-abigen](./geth/08-abigen/)
@@ -167,3 +330,25 @@ go test -tags=reference ./...
 - [geth/23-mempool](./geth/23-mempool/)
 - [geth/24-monitor](./geth/24-monitor/)
 - [geth/25-toolbox](./geth/25-toolbox/)
+
+---
+
+### Learning Paths
+
+#### Go Fundamentals (minis/)
+
+Start with `minis/01-hello-strings` and progress sequentially. Each project builds on previous concepts.
+
+**Beginner**: 01-10 (basics, I/O, HTTP)
+**Intermediate**: 11-30 (concurrency, performance, internals)
+**Advanced**: 31-50 (networking, crypto, production patterns)
+
+#### Ethereum Development (geth/)
+
+Start with `geth/01-stack` and progress sequentially. Prerequisites are listed in each project's README.
+
+**Foundational**: 01-06 (connectivity, accounts, transactions, console basics)
+**Contracts**: 07-10 (manual calls, abigen, events, filters)
+**Advanced**: 11-25 (storage, proofs, tracing, indexing, networking)
+
+**Note**: For smart contract interaction, complete `geth/06-smart-contracts` (console tutorial) before `geth/07-eth-call` (Go implementation). The console experience provides essential conceptual foundation.
