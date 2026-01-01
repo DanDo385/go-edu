@@ -40,21 +40,6 @@
             "comment": "Run all tests with verbose output."
         },
         {
-            "name": "Test: Current Test Function",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/minis/26-sync-once-singleton/internal/synconcesingleton",
-            "args": [
-                "-test.v",
-                "-test.run",
-                "^${selectedText}$"
-            ],
-            "showLog": true,
-            "buildFlags": "-gcflags='-N -l'",
-            "comment": "Debug specific test - select test name in editor first."
-        },
-        {
             "name": "Test: View Reference Implementation",
             "type": "go",
             "request": "launch",

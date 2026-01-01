@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Understanding Go's pointer semantics and nil handling

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Build a resilient HTTP client with retries and exponential backoff

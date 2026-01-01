@@ -1,5 +1,4 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 package filestreamingbufio
 

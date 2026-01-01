@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Understanding Go slice internals and capacity growth patterns

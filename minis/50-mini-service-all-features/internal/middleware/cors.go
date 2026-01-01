@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/config"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/config"
 )
 
 // CORS adds Cross-Origin Resource Sharing headers
