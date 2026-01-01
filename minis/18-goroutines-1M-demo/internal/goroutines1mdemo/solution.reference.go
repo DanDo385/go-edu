@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Project 18: Goroutines and Concurrency - Solutions

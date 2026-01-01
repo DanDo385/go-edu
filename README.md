@@ -8,8 +8,8 @@ This repository is a comprehensive educational resource for mastering Go through
 
 **go-edu** teaches Go through two complementary tracks:
 
-1. **`minis/`** — Fundamental Go patterns, concurrency primitives, HTTP servers, crypto basics
-2. **`geth/`** — Ethereum-focused projects inspired by go-ethereum architecture and patterns
+1. **`minis/`** — 50 projects covering fundamental Go patterns, concurrency primitives, HTTP servers, and crypto basics
+2. **`geth/`** — 25 Ethereum-focused projects inspired by go-ethereum architecture and patterns
 
 Every project is self-contained, production-ready in structure, and designed for deep understanding through debugging and experimentation.
 
@@ -20,36 +20,42 @@ Every project is self-contained, production-ready in structure, and designed for
 ```
 go-edu/
 ├── go.mod                    # Single module at root
-├── README.md                 # This file
+├── go.sum                    # Dependencies
+├── .gitignore                # Build artifacts excluded
+├── LICENSE                   # Repository license
+├── README.md                 # This file (single source of truth)
 ├── minis/                    # 50 mini-projects covering core Go
 │   ├── 01-hello-strings/
-│   │   ├── README.md
+│   │   ├── .vscode/
+│   │   │   └── launch.json   # VS Code debug configurations
 │   │   ├── cmd/
 │   │   │   ├── app/          # Realistic CLI application
 │   │   │   │   └── main.go
 │   │   │   └── dev/          # Debug harness (fixed inputs)
 │   │   │       └── main.go
 │   │   └── internal/
-│   │       └── <pkg>/        # Self-contained package
-│   │           ├── exercise.go
-│   │           ├── exercise_test.go
-│   │           ├── solution.reference.go         # Reference (excluded from builds)
-│   │           └── solution_no_err.reference.go  # Alternative reference
+│   │       └── hellostrings/ # Self-contained package
+│   │           ├── exercise.go            # YOUR implementation
+│   │           ├── exercise_test.go       # Tests to verify
+│   │           ├── solution.reference.go  # Reference (excluded)
+│   │           └── solution_no_err.reference.go
 │   └── ...
 └── geth/                     # 25 Ethereum/Geth-focused projects
     ├── 01-stack/
-    │   ├── README.md
+    │   ├── .vscode/
+    │   │   └── launch.json
     │   ├── cmd/
     │   │   ├── app/          # Realistic RPC client app
     │   │   │   └── main.go
-    │   │   └── dev/          # Debug harness (fixed RPC endpoint)
+    │   │   └── dev/          # Debug harness
     │   │       └── main.go
     │   └── internal/
-    │       └── <pkg>/
+    │       └── stack/
     │           ├── exercise.go
     │           ├── exercise_test.go
-    │           ├── types.go  # Geth-style type definitions
-    │           └── solution.reference.go
+    │           ├── types.go              # Geth-style type definitions
+    │           ├── solution.reference.go
+    │           └── solution_no_err.reference.go
     └── ...
 ```
 
@@ -63,12 +69,12 @@ Every project follows the **self-contained layout**:
 
 | Directory/File | Purpose |
 |----------------|---------|
+| `.vscode/launch.json` | VS Code debug configurations for the project |
 | `cmd/app/main.go` | **Realistic application** — accepts CLI arguments, simulates production usage |
 | `cmd/dev/main.go` | **Debug harness** — fixed, deterministic inputs for stepping through with a debugger |
 | `internal/<pkg>/exercise.go` | **The only buildable implementation** — all production logic lives here |
 | `internal/<pkg>/*_test.go` | Tests and benchmarks |
-| `internal/<pkg>/*.reference.go` | Reference solutions (excluded from normal builds via `//go:build reference`) |
-| `README.md` | Project-specific documentation and learning objectives |
+| `internal/<pkg>/*.reference.go` | Reference solutions (excluded from normal builds) |
 
 ### Build Tags and Implementation Model
 
@@ -78,20 +84,27 @@ Every project follows the **self-contained layout**:
 - All production logic must be consolidated into `exercise.go`
 - This enforces clarity: there is one source of truth for implementation
 
+#### Build Tag Rules
+
+**exercise.go files:**
+```go
+//go:build !solution && !reference
+
+package mypackage
+```
+
+**Reference files (*.reference.go):**
+```go
+//go:build reference
+
+package mypackage
+```
+
+> **Note:** Only use `//go:build` (the modern syntax). Do NOT include the legacy `// +build` line.
+
 #### Reference Files Are Inert
 
 Reference implementations exist **only** for learning:
-
-```go
-//go:build reference
-// +build reference
-
-package mypackage
-
-// This file is NEVER compiled during normal builds
-```
-
-To view reference implementations:
 
 ```bash
 # Normal build: only compiles exercise.go
@@ -142,29 +155,140 @@ go build -o app ./cmd/app
 
 ---
 
-## 📚 Learning Tracks
+## 📚 Project Index
 
 ### `minis/` — Core Go Fundamentals (50 Projects)
 
-| Range | Topics |
-|-------|--------|
-| **01-05** | Strings, arrays, maps, CSV, JSONL, file I/O |
-| **06-10** | Worker pools, generics, HTTP client/server, gRPC |
-| **11-17** | Slices internals, pointers, interfaces, methods, errors, context, bufio |
-| **18-27** | Goroutines, channels, select, race detection, sync primitives (mutex, RWMutex, Once, Pool, atomic) |
-| **28-30** | Profiling (pprof), escape analysis, build tags |
-| **31-38** | HTTP servers, WebSockets, TCP, rate limiting, JWT, proxies, middleware, config |
-| **39-45** | Cryptography (SHA256, Merkle trees, ed25519), blockchain basics (PoW, mempool, p2p gossip) |
-| **46-50** | Generics, plugins, reflection, state machines, full-featured mini-service |
+#### Fundamentals (01-05)
+| Project | Description |
+|---------|-------------|
+| **01-hello-strings** | String manipulation, UTF-8, runes |
+| **02-arrays-maps-basics** | Arrays, slices, maps |
+| **03-csv-stats** | CSV parsing, file I/O |
+| **04-jsonl-log-filter** | JSONL parsing, filtering |
+| **05-cli-todo-files** | File operations, CLI |
+
+#### HTTP & Networking (06-10)
+| Project | Description |
+|---------|-------------|
+| **06-worker-pool-wordcount** | Concurrency, worker pools |
+| **07-generic-lru-cache** | Generics, LRU caching |
+| **08-http-client-retries** | HTTP client, retries |
+| **09-http-server-graceful** | HTTP server, graceful shutdown |
+| **10-grpc-telemetry-service** | gRPC, Protocol Buffers |
+
+#### Deep Dives (11-17)
+| Project | Description |
+|---------|-------------|
+| **11-slices-internals-capacity-growth** | Slice internals |
+| **12-pointers-zero-values-nil-gotchas** | Pointers, nil |
+| **13-interfaces-duck-typing** | Interfaces, duck typing |
+| **14-methods-value-vs-pointer-receivers** | Method receivers |
+| **15-error-wrapping-sentinel-errors** | Error handling |
+| **16-context-cancellation-timeouts** | Context, cancellation |
+| **17-file-streaming-bufio** | Streaming, bufio |
+
+#### Concurrency Patterns (18-27)
+| Project | Description |
+|---------|-------------|
+| **18-goroutines-1M-demo** | Goroutines at scale |
+| **19-channels-basics** | Channels fundamentals |
+| **20-select-fanin-fanout** | Select, fan-in, fan-out |
+| **21-race-detection-demo** | Race detection |
+| **22-worker-pool-with-backpressure** | Backpressure |
+| **23-bounded-channel-semaphore** | Semaphores |
+| **24-sync-mutex-vs-rwmutex** | Mutex vs RWMutex |
+| **25-atomic-counters-vs-mutex** | Atomics vs Mutex |
+| **26-sync-once-singleton** | sync.Once, singletons |
+| **27-sync-pool-allocator** | sync.Pool, object pooling |
+
+#### Performance & Profiling (28-30)
+| Project | Description |
+|---------|-------------|
+| **28-pprof-cpu-mem-benchmarks** | pprof, benchmarking |
+| **29-escape-analysis-inlining** | Escape analysis |
+| **30-build-tags-conditional-compilation** | Build tags |
+
+#### Advanced HTTP (31-38)
+| Project | Description |
+|---------|-------------|
+| **31-static-file-server** | Static files |
+| **32-websocket-chatroom** | WebSockets |
+| **33-tcp-echo-server-client** | TCP networking |
+| **34-rate-limiter-token-bucket** | Rate limiting |
+| **35-jwt-auth-middleware** | JWT authentication |
+| **36-caching-reverse-proxy** | Reverse proxy, caching |
+| **37-http-middleware-chain** | Middleware patterns |
+| **38-config-loader-env-yaml** | Configuration |
+
+#### Cryptography & Blockchain (39-45)
+| Project | Description |
+|---------|-------------|
+| **39-sha256-hasher** | SHA256 hashing |
+| **40-merkle-tree-basics** | Merkle trees |
+| **41-signed-transactions-ed25519** | Digital signatures |
+| **42-simple-block-struct-hashing** | Block structures |
+| **43-proof-of-work-demo** | Proof of Work |
+| **44-mempool-in-memory** | Mempool implementation |
+| **45-p2p-gossip-mock-network** | P2P networking |
+
+#### Advanced Topics (46-50)
+| Project | Description |
+|---------|-------------|
+| **46-generics-map-reduce** | Generics, map/reduce |
+| **47-plugin-system-hot-reload** | Plugin systems |
+| **48-reflection-introspection** | Reflection |
+| **49-state-machine-pattern** | State machines |
+| **50-mini-service-all-features** | Complete microservice |
+
+---
 
 ### `geth/` — Ethereum & Go-Ethereum Patterns (25 Projects)
 
-| Range | Topics |
-|-------|--------|
-| **01-06** | RPC stack, chain ID, keys/addresses, accounts, transaction nonces, EIP-1559 |
-| **07-12** | eth_call, abigen, events, filters, storage proofs, Merkle-Patricia tries |
-| **13-17** | Tracing, block explorer, receipts, concurrency patterns, indexers |
-| **18-25** | Reorgs, devnets, node setup, sync modes, peer management, mempool monitoring, toolbox utilities |
+#### Foundation (01-06)
+| Project | Description |
+|---------|-------------|
+| **01-stack** | Ethereum stack overview, RPC connectivity |
+| **02-rpc-basics** | Chain ID, network ID, headers |
+| **03-keys-addresses** | secp256k1, private keys, addresses |
+| **04-accounts-balances** | Account queries, balance checks |
+| **05-tx-nonces** | Transaction nonces, replay protection |
+| **06-eip1559** | EIP-1559 dynamic fees, priority fees |
+
+#### Smart Contracts (07-09)
+| Project | Description |
+|---------|-------------|
+| **07-eth-call** | eth_call, read-only contract calls |
+| **08-abigen** | ABI encoding/decoding, typed bindings |
+| **09-events** | Event logs, decoding, filtering |
+
+#### State & Storage (10-12)
+| Project | Description |
+|---------|-------------|
+| **10-filters** | Log filters, WebSocket subscriptions |
+| **11-storage** | Storage slots, state access |
+| **12-proofs** | Merkle-Patricia tries, cryptographic proofs |
+
+#### Advanced Queries (13-17)
+| Project | Description |
+|---------|-------------|
+| **13-trace** | Transaction tracing, internal calls |
+| **14-explorer** | Block explorer queries |
+| **15-receipts** | Transaction receipts, gas used, logs |
+| **16-concurrency** | Concurrent RPC calls, rate limiting |
+| **17-indexer** | Event indexing, historical data |
+
+#### Operations (18-25)
+| Project | Description |
+|---------|-------------|
+| **18-reorgs** | Chain reorganizations, handling reorgs |
+| **19-devnets** | Local devnets, Ganache, Hardhat |
+| **20-node** | Node management, peer discovery |
+| **21-sync** | Sync status, sync modes (full, snap, light) |
+| **22-peers** | Peer management, network topology |
+| **23-mempool** | Mempool monitoring, pending transactions |
+| **24-monitor** | Node monitoring, health checks |
+| **25-toolbox** | Utility functions, helper libraries |
 
 ---
 
@@ -214,7 +338,27 @@ cat internal/<pkg>/solution.reference.go
 go build -tags=reference ./...
 ```
 
-**Important:** Reference files are for learning only. They do **not** participate in tests or builds unless you explicitly use `-tags=reference`.
+---
+
+## 🐛 Debugging with VS Code
+
+Every project includes a `.vscode/launch.json` with these configurations:
+
+| Configuration | Description |
+|---------------|-------------|
+| **Debug: cmd/app** | Debug the application entry point |
+| **Debug: cmd/dev (Debug Harness)** | Debug with fixed inputs — perfect for stepping through code |
+| **Test: Run All Tests** | Run all tests with verbose output |
+| **Test: Current Test Function** | Debug specific test — select test name in editor first |
+| **Test: View Reference Implementation** | Run tests with reference implementation |
+| **Debug: Current File** | Debug currently open file |
+
+### Debugging Workflow
+
+1. Open project in VS Code
+2. Set breakpoints in `internal/<pkg>/exercise.go`
+3. Press F5 and select "Debug: cmd/dev (Debug Harness)"
+4. Step through code, inspect variables, explore execution flow
 
 ---
 
@@ -227,17 +371,17 @@ go build -tags=reference ./...
 go test ./...
 ```
 
-### Run Benchmarks
-
-```bash
-go test -bench=. ./...
-```
-
 ### Run Tests for a Specific Project
 
 ```bash
 cd minis/06-worker-pool-wordcount
 go test ./...
+```
+
+### Run Benchmarks
+
+```bash
+go test -bench=. ./...
 ```
 
 ### Verify Reference Files Are Excluded
@@ -253,90 +397,7 @@ go list -f '{{.GoFiles}}' ./minis/01-hello-strings/internal/hellostrings
 
 ---
 
-## 🐛 Debugging
-
-Every project includes:
-
-- **`cmd/dev/main.go`** — Fixed inputs for reproducible debugging
-- Inline comments marking good breakpoint locations
-- VS Code launch configurations (`.vscode/launch.json` where applicable)
-
-### Debugging Workflow
-
-1. Open project in your editor (e.g., VS Code)
-2. Set breakpoints in `internal/<pkg>/exercise.go`
-3. Run `cmd/dev/main.go` with debugger (F5 in VS Code)
-4. Step through code, inspect variables, explore execution flow
-
-See individual project `README.md` files for project-specific debugging tips.
-
----
-
-## 📖 Project-Specific READMEs
-
-Every project has a `README.md` with:
-
-- **Description** — What the project teaches
-- **Concepts Covered** — Go features, CS principles, production patterns
-- **How to Run** — Commands for tests, benchmarks, dev harness, app
-- **Learning Objectives** — What you'll master by completing the project
-- **Debugging Tips** — Suggested breakpoints and exploration strategies
-
-Navigate to any project and read its `README.md`:
-
-```bash
-cd minis/07-generic-lru-cache
-cat README.md
-```
-
----
-
-## 🎓 Educational Philosophy
-
-### Why This Structure?
-
-1. **Self-contained projects** — Each project is an isolated, complete system
-2. **cmd/app vs cmd/dev** — Separates "production usage" from "debugging harness"
-3. **One buildable implementation** — No confusion about which code is "active"
-4. **Reference files are inert** — Learn by comparing, not by accidentally compiling multiple implementations
-5. **Real-world patterns** — Every project mirrors production Go codebases (especially Geth and Ethereum tooling)
-
-### Who Is This For?
-
-- **New Go developers** transitioning from other languages
-- **Intermediate Go developers** wanting to master concurrency, interfaces, and production patterns
-- **Blockchain developers** learning go-ethereum internals and Ethereum RPC patterns
-- **Anyone** seeking hands-on, project-based Go education
-
----
-
-## 🔗 Additional Resources
-
-- [Official Go Documentation](https://go.dev/doc/)
-- [Effective Go](https://go.dev/doc/effective_go)
-- [Go by Example](https://gobyexample.com/)
-- [go-ethereum (Geth) Documentation](https://geth.ethereum.org/docs)
-- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
-
----
-
-## 🤝 Contributing
-
-This is an educational repository. If you find issues or have suggestions:
-
-1. Open an issue describing the problem or enhancement
-2. For typos or small fixes, submit a pull request
-3. For new projects or major changes, discuss in an issue first
-
----
-
-## 📄 License
-
-See `LICENSE` file for details.
-
----
-
-## 🌟 Learning Path Recommendation
+## 🎓 Learning Path Recommendation
 
 ### Absolute Beginners
 
@@ -358,6 +419,22 @@ See `LICENSE` file for details.
 2. Progress through `geth/02-12` for core Ethereum concepts
 3. Dive into `geth/13-25` for advanced indexing, tracing, and node operations
 4. Complement with `minis/39-45` for crypto/blockchain fundamentals
+
+---
+
+## 🔗 Additional Resources
+
+- [Official Go Documentation](https://go.dev/doc/)
+- [Effective Go](https://go.dev/doc/effective_go)
+- [Go by Example](https://gobyexample.com/)
+- [go-ethereum (Geth) Documentation](https://geth.ethereum.org/docs)
+- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
+
+---
+
+## 📄 License
+
+See `LICENSE` file for details.
 
 ---
 

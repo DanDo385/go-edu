@@ -1,3 +1,5 @@
+//go:build reference
+
 package racedetectiondemo
 
 // This file contains solutions to all the race detection exercises.

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Project 17: File Streaming with bufio - Solutions

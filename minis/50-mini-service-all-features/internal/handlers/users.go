@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/database"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/middleware"
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/models"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/database"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/middleware"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/models"
 )
 
 // ListUsers returns all users

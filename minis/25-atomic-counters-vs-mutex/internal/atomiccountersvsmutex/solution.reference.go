@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 // Package exercise contains hands-on exercises for atomic operations.
 

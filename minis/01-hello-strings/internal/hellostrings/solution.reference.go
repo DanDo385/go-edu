@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Implement UTF-8-aware string utilities in Go

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Compute per-category statistics from a CSV of financial transactions

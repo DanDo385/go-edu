@@ -7,7 +7,10 @@
 bin/
 dist/
 
-# Test and coverage
+# Go build artifacts
+/app
+/debug
+/worker-pool-wordcount
 *.test
 *.out
 coverage.out
@@ -35,3 +38,18 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Project-specific binaries that may be built locally
+minis/*/file-server
+minis/*/tcp-client
+minis/*/tcp-server
+minis/*/pow-demo
+minis/*/mapreduce-demo
+minis/*/statemachine-demo
+minis/*/chatroom
+minis/*/hasher
+minis/*/merkle
+minis/*/gossip-demo
+
+# geth artifacts
+geth/*.env

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/metrics"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/metrics"
 )
 
 // Metrics records HTTP metrics to Prometheus

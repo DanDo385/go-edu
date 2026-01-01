@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Parse and filter JSONL (JSON Lines) log entries by severity level

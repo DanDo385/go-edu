@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Implement a thread-safe LRU cache with generics and TTL

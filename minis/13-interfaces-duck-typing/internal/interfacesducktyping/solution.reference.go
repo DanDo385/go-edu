@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Understanding Go's interface system and duck typing
