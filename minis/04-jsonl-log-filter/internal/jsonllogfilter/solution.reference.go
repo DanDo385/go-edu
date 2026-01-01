@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package jsonllogfilter
 
 /*
 Problem: Parse and filter JSONL (JSON Lines) log entries by severity level
@@ -40,8 +41,6 @@ Key debugging concepts covered:
 5. Using the Debug Console to evaluate expressions
 6. Understanding enum-like types and their memory representations
 */
-
-package jsonllogfilter
 
 import (
 	"bufio"
@@ -91,6 +90,7 @@ const (
 //   - TS: time.Time with wall clock and monotonic components
 //   - Level: integer value (0-3)
 //   - Msg: string with pointer and length
+//
 // DEBUG: In Debug Console, type: entry.TS
 // DEBUG: In Debug Console, type: entry.Level
 // DEBUG: In Debug Console, type: entry.Msg
@@ -130,8 +130,10 @@ type Entry struct {
 // DEBUG: In Variables panel, expand 'l' to see:
 //   - Memory address of Level being modified
 //   - Current value (may be uninitialized)
+//
 // DEBUG: In Variables panel, expand 'data' to see:
 //   - Raw JSON bytes including quotes
+//
 // DEBUG: In Debug Console, type: string(data)
 // See the JSON representation (e.g., "info")
 func (l *Level) UnmarshalJSON(data []byte) error {
@@ -174,10 +176,10 @@ func (l *Level) UnmarshalJSON(data []byte) error {
 // FilterLogs reads JSONL from r, filters entries >= minLevel, and sorts by timestamp.
 //
 // Function Signature Breakdown:
-// - io.Reader: Interface for any readable stream (files, network, memory buffers)
-//   This demonstrates Go's composition over inheritance philosophy
-// - []Entry: Slice (dynamic array) returned on the heap
-// - error: Go's explicit error handling (no exceptions like Python)
+//   - io.Reader: Interface for any readable stream (files, network, memory buffers)
+//     This demonstrates Go's composition over inheritance philosophy
+//   - []Entry: Slice (dynamic array) returned on the heap
+//   - error: Go's explicit error handling (no exceptions like Python)
 //
 // Memory Management Throughout:
 // 1. Scanner allocates a buffer (~4KB default) for reading lines
@@ -194,26 +196,29 @@ func (l *Level) UnmarshalJSON(data []byte) error {
 // Three-Input Iteration Table:
 //
 // Input 1: Valid JSONL (happy path)
-//   Line 1: {"ts":"2024-01-01T10:00:00Z","level":"info","msg":"A"} → filtered out (info < warn)
-//   Line 2: {"ts":"2024-01-01T11:00:00Z","level":"error","msg":"B"} → kept (error >= warn)
-//   Line 3: {"ts":"2024-01-01T09:00:00Z","level":"warn","msg":"C"} → kept (warn >= warn)
-//   After sort → [warn(09:00), error(11:00)] (sorted by timestamp, oldest first)
+//
+//	Line 1: {"ts":"2024-01-01T10:00:00Z","level":"info","msg":"A"} → filtered out (info < warn)
+//	Line 2: {"ts":"2024-01-01T11:00:00Z","level":"error","msg":"B"} → kept (error >= warn)
+//	Line 3: {"ts":"2024-01-01T09:00:00Z","level":"warn","msg":"C"} → kept (warn >= warn)
+//	After sort → [warn(09:00), error(11:00)] (sorted by timestamp, oldest first)
 //
 // Input 2: Empty input (edge case)
-//   No lines → scanner.Scan() returns false immediately
-//   Result: []Entry{} (empty slice), nil (no error)
+//
+//	No lines → scanner.Scan() returns false immediately
+//	Result: []Entry{} (empty slice), nil (no error)
 //
 // Input 3: Malformed JSON (partial failure)
-//   Line 1: {"ts":"...","level":"info","msg":"A"} → filtered out (info < warn)
-//   Line 2: {invalid json} → json.Unmarshal fails, skippedCount++, continue
-//   Line 3: {"ts":"...","level":"error","msg":"C"} → kept
-//   Result: []Entry{error entry}, error("skipped 2 lines") - partial success pattern
+//
+//	Line 1: {"ts":"...","level":"info","msg":"A"} → filtered out (info < warn)
+//	Line 2: {invalid json} → json.Unmarshal fails, skippedCount++, continue
+//	Line 3: {"ts":"...","level":"error","msg":"C"} → kept
+//	Result: []Entry{error entry}, error("skipped 2 lines") - partial success pattern
 func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 	// Initialize slice with zero capacity. Go will allocate backing array dynamically.
 	// Memory: nil slice (no allocation yet), capacity grows as we append: 0→1→2→4→8→16...
 	// This doubling strategy gives amortized O(1) append, similar to C++ vector or Python list.
 	var entries []Entry
-	
+
 	// Track number of lines we skip due to parse errors.
 	// Memory: Single integer on the stack (typically 8 bytes)
 	var skippedCount int
@@ -267,7 +272,7 @@ func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
 		// Memory: Entry is allocated on the stack initially (48 bytes).
 		// If it escapes (added to slice), it will be moved to heap by escape analysis.
 		var entry Entry
-		
+
 		// json.Unmarshal performs the following steps:
 		// 1. Parse JSON bytes into intermediate representation (using reflection)
 		// 2. Map JSON fields to struct fields using `json:"..."` tags

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package explorer
 
@@ -7,9 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
-
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 /*
@@ -79,12 +75,12 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	// what's useful for explorer UI: number, hash, parent, gas usage.
 	header := block.Header()
 	res := &Result{
-		Number:   header.Number.Uint64(),  // Block height
-		Hash:     block.Hash(),            // Block identifier
-		Parent:   header.ParentHash,       // Links to previous block (forms the chain!)
+		Number:   header.Number.Uint64(),    // Block height
+		Hash:     block.Hash(),              // Block identifier
+		Parent:   header.ParentHash,         // Links to previous block (forms the chain!)
 		TxCount:  len(block.Transactions()), // How many transactions in this block
-		GasUsed:  header.GasUsed,          // Total gas consumed by all transactions
-		GasLimit: header.GasLimit,         // Maximum gas allowed per block
+		GasUsed:  header.GasUsed,            // Total gas consumed by all transactions
+		GasLimit: header.GasLimit,           // Maximum gas allowed per block
 	}
 
 	// ============================================================================
@@ -117,9 +113,9 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 			to := tx.To()
 
 			res.Txs = append(res.Txs, TxSummary{
-				Hash: tx.Hash(),  // Transaction identifier
-				To:   to,         // Recipient (nil for contract creation)
-				Gas:  tx.Gas(),   // Gas limit for this transaction
+				Hash: tx.Hash(), // Transaction identifier
+				To:   to,        // Recipient (nil for contract creation)
+				Gas:  tx.Gas(),  // Gas limit for this transaction
 			})
 		}
 	}

@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package csvstats
 
@@ -27,15 +26,15 @@ KEY CONCEPTS:
 // CoreSummarizeCSV demonstrates CSV statistics without error handling
 //
 // Algorithm steps:
-// 1. Create CSV reader for parsing records
-// 2. Skip header row (assume it's valid)
-// 3. Create statistics map to accumulate results
-// 4. For each data row:
-//    a. Extract category and amount fields
-//    b. Parse amount string to float value
-//    c. Update statistics for that category
-// 5. Calculate average for each category
-// 6. Return the accumulated statistics
+//  1. Create CSV reader for parsing records
+//  2. Skip header row (assume it's valid)
+//  3. Create statistics map to accumulate results
+//  4. For each data row:
+//     a. Extract category and amount fields
+//     b. Parse amount string to float value
+//     c. Update statistics for that category
+//  5. Calculate average for each category
+//  6. Return the accumulated statistics
 func CoreSummarizeCSV(r io.Reader) map[string]Stat {
 	// TODO: Step 1 - Create CSV reader
 

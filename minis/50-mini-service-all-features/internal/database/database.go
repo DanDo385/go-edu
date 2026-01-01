@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/user/go-edu/minis/50-mini-service-all-features/internal/models"
+	"github.com/example/go-10x-minis/minis/50-mini-service-all-features/internal/models"
 )
 
 // DB provides in-memory database for demonstration

@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package slicesinternalscapacitygrowth
 
 /*
 Problem: Understanding Go slice internals and capacity growth patterns
@@ -26,8 +27,6 @@ Why slices are tricky:
 - append() may or may not reallocate (depends on capacity)
 - Holding small slice can prevent large array from being GC'd
 */
-
-package slicesinternalscapacitygrowth
 
 // GrowSlice appends an element and tracks capacity changes.
 // BREAKPOINT: Set breakpoint here to trace append behavior

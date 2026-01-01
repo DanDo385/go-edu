@@ -1,9 +1,11 @@
+//go:build reference
+
+package boundedchannelsemaphore
+
 // Package exercise provides complete solutions for semaphore exercises.
 //
 // This file contains reference implementations. Students should work in
 // exercise.go and refer to these solutions only after attempting the exercises.
-
-package boundedchannelsemaphore
 
 import (
 	"context"
@@ -213,14 +215,14 @@ func (ws *WeightedSemaphoreSolution) AcquireWithContext(ctx context.Context, wei
 // - Results channel for processed results
 // - Graceful shutdown waits for all workers to finish
 type WorkerPoolSolution struct {
-	jobs      chan Job
-	results   chan Result
-	sem       chan struct{}
+	jobs       chan Job
+	results    chan Result
+	sem        chan struct{}
 	numWorkers int
-	processor func(Job) Result
-	wg        sync.WaitGroup
-	started   bool
-	mu        sync.Mutex
+	processor  func(Job) Result
+	wg         sync.WaitGroup
+	started    bool
+	mu         sync.Mutex
 }
 
 // NewWorkerPoolSolution creates a worker pool.

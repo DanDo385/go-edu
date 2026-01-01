@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package events
 
@@ -301,9 +300,9 @@ func addressTopic(addr common.Address) common.Hash {
 // parameters we want to extract.
 //
 // Error handling: This function validates:
-//   1. Enough topics (need at least 3: signature + from + to)
-//   2. Correct event signature (prevent decoding wrong event type)
-//   3. Enough data (need at least 32 bytes for value)
+//  1. Enough topics (need at least 3: signature + from + to)
+//  2. Correct event signature (prevent decoding wrong event type)
+//  3. Enough data (need at least 32 bytes for value)
 //
 // These checks prevent panics and catch malformed logs early.
 func decodeTransferLog(lg types.Log) (TransferEvent, error) {

@@ -1,228 +1,370 @@
-//go:build !solution
-// +build !solution
-
-// Package exercise contains hands-on exercises for channels.
+//go:build !solution && !reference
 
 package channelsbasics
 
-// import (
-// 	"context"
-// 	"time"
-// )
+import (
+	"context"
+	"sync"
+	"time"
+)
 
 // Ping creates a channel and sends a single value, then closes it.
 func Ping(value int) <-chan int {
-	// TODO: Implement Ping
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	ch := make(chan int, 1)
+	ch <- value
+	close(ch)
+	return ch
 }
-
 
 // PingPong creates two channels that play ping-pong n times.
 func PingPong(n int) (chan<- int, <-chan int) {
-	// TODO: Implement PingPong
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	ping := make(chan int)
+	pong := make(chan int)
 
+	go func() {
+		defer close(pong)
+		for i := 0; i < n; i++ {
+			value := <-ping
+			pong <- value
+		}
+	}()
+
+	return ping, pong
+}
 
 // Merge combines multiple input channels into a single output channel.
 func Merge(channels ...<-chan int) <-chan int {
-	// TODO: Implement Merge
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
+	var wg sync.WaitGroup
 
+	// Launch a goroutine for each input channel
+	for _, ch := range channels {
+		wg.Add(1)
+		go func(c <-chan int) {
+			defer wg.Done()
+			for v := range c {
+				output <- v
+			}
+		}(ch)
+	}
+
+	// Close output when all inputs are drained
+	go func() {
+		wg.Wait()
+		close(output)
+	}()
+
+	return output
+}
 
 // Filter creates a channel that only forwards values matching the predicate.
 func Filter(input <-chan int, predicate func(int) bool) <-chan int {
-	// TODO: Implement Filter
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+		for v := range input {
+			if predicate(v) {
+				output <- v
+			}
+		}
+	}()
+
+	return output
+}
 
 // Map creates a channel that transforms values using a function.
 func Map(input <-chan int, transform func(int) int) <-chan int {
-	// TODO: Implement Map
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+		for v := range input {
+			output <- transform(v)
+		}
+	}()
+
+	return output
+}
 
 // Take creates a channel that forwards at most n values from input.
 func Take(input <-chan int, n int) <-chan int {
-	// TODO: Implement Take
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+		count := 0
+		for v := range input {
+			if count >= n {
+				break
+			}
+			output <- v
+			count++
+		}
+	}()
+
+	return output
+}
 
 // OrDone wraps a channel and adds cancellation via context.
 func OrDone(ctx context.Context, input <-chan int) <-chan int {
-	// TODO: Implement OrDone
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, ok := <-input:
+				if !ok {
+					return
+				}
+				select {
+				case output <- v:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return output
+}
 
 // Tee splits an input channel into two output channels.
 func Tee(input <-chan int) (<-chan int, <-chan int) {
-	// TODO: Implement Tee
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	out1 := make(chan int)
+	out2 := make(chan int)
 
+	go func() {
+		defer close(out1)
+		defer close(out2)
+
+		for v := range input {
+			// Create local copies for goroutine
+			val1, val2 := v, v
+
+			// Send to both outputs (in parallel to avoid blocking)
+			var wg sync.WaitGroup
+			wg.Add(2)
+
+			go func() {
+				defer wg.Done()
+				out1 <- val1
+			}()
+
+			go func() {
+				defer wg.Done()
+				out2 <- val2
+			}()
+
+			wg.Wait()
+		}
+	}()
+
+	return out1, out2
+}
 
 // Bridge flattens a channel of channels into a single channel.
 func Bridge(input <-chan (<-chan int)) <-chan int {
-	// TODO: Implement Bridge
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+
+		for ch := range input {
+			for v := range ch {
+				output <- v
+			}
+		}
+	}()
+
+	return output
+}
 
 // Debounce creates a channel that only forwards values if no new value
 // arrives within the specified duration.
 func Debounce(input <-chan int, duration time.Duration) <-chan int {
-	// TODO: Implement Debounce
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	output := make(chan int)
 
+	go func() {
+		defer close(output)
+
+		var timer *time.Timer
+		var lastValue int
+		var hasValue bool
+
+		for {
+			select {
+			case v, ok := <-input:
+				if !ok {
+					// Input closed, send pending value if any
+					if hasValue && timer != nil {
+						timer.Stop()
+						output <- lastValue
+					}
+					return
+				}
+
+				// Reset timer
+				if timer != nil {
+					timer.Stop()
+				}
+
+				lastValue = v
+				hasValue = true
+				timer = time.AfterFunc(duration, func() {
+					output <- lastValue
+					hasValue = false
+				})
+
+			}
+		}
+	}()
+
+	return output
+}
 
 // NewBoundedQueue creates a queue with a maximum capacity.
 func NewBoundedQueue(capacity int) *BoundedQueue {
-	// TODO: Implement NewBoundedQueue
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	return &BoundedQueue{
+		ch: make(chan int, capacity),
+	}
 }
-
 
 // Enqueue adds a value to the queue (blocks if full).
 func (q *BoundedQueue) Enqueue(value int) {
-	// TODO: Implement this.
-	// - Simply send the value to the channel: `q.ch <- value`.
-	// - If the channel's buffer is full, this operation will block until another goroutine dequeues a value, making space.
+	q.ch <- value
 }
 
 // Dequeue removes and returns a value from the queue (blocks if empty).
 func (q *BoundedQueue) Dequeue() int {
-	// TODO: Implement this.
-	// - Simply receive a value from the channel: `return <-q.ch`.
-	// - If the channel's buffer is empty, this operation will block until another goroutine enqueues a value.
-	return 0
+	return <-q.ch
 }
 
 // TryEnqueue attempts to add a value without blocking.
-// Returns true if successful, false if queue is full.
 func (q *BoundedQueue) TryEnqueue(value int) bool {
-	// TODO: Implement this.
-
-	// This demonstrates non-blocking channel operations.
-
-	// Step 1: Use a `select` statement.
-	// - `case q.ch <- value:`
-	//   - If the send succeeds immediately (because the buffer is not full), this case is chosen. Return `true`.
-	// - `default:`
-	//   - If the send would block (because the buffer is full), the `default` case is chosen immediately. Return `false`.
-	return false
+	select {
+	case q.ch <- value:
+		return true
+	default:
+		return false
+	}
 }
 
 // TryDequeue attempts to remove a value without blocking.
-// Returns (value, true) if successful, (0, false) if queue is empty.
 func (q *BoundedQueue) TryDequeue() (int, bool) {
-	// TODO: Implement this.
-
-	// This is the non-blocking receive equivalent of `TryEnqueue`.
-
-	// Step 1: Use a `select` statement.
-	// - `case v := <-q.ch:`
-	//   - If the receive succeeds immediately (because the buffer is not empty), this case is chosen. Return `v, true`.
-	// - `default:`
-	//   - If the receive would block (because the buffer is empty), the `default` case is chosen. Return `0, false`.
-	return 0, false
+	select {
+	case v := <-q.ch:
+		return v, true
+	default:
+		return 0, false
+	}
 }
 
 // NewBroadcaster creates a new broadcaster.
 func NewBroadcaster() *Broadcaster {
-	// TODO: Implement NewBroadcaster
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
-}
+	b := &Broadcaster{
+		listeners: make([]chan Message, 0),
+		input:     make(chan Message, 100),
+		done:      make(chan struct{}),
+	}
 
+	// Start broadcast goroutine
+	go func() {
+		for {
+			select {
+			case <-b.done:
+				// Close all listener channels
+				b.mu.Lock()
+				for _, ch := range b.listeners {
+					close(ch)
+				}
+				b.mu.Unlock()
+				return
+
+			case msg := <-b.input:
+				// Broadcast to all listeners
+				b.mu.RLock()
+				for _, ch := range b.listeners {
+					ch <- msg
+				}
+				b.mu.RUnlock()
+			}
+		}
+	}()
+
+	return b
+}
 
 // Subscribe adds a new listener and returns its channel.
 func (b *Broadcaster) Subscribe() <-chan Message {
-	// TODO: Implement this.
+	ch := make(chan Message, 10)
 
-	// Step 1: Create a new channel for the subscriber.
-	// Step 2: Lock the mutex (`b.mu.Lock()`) because you are modifying the `listeners` slice.
-	// Step 3: Append the new channel to the `b.listeners` slice.
-	// Step 4: Unlock the mutex (`b.mu.Unlock()`).
-	// Step 5: Return the new channel.
-	return nil
+	b.mu.Lock()
+	b.listeners = append(b.listeners, ch)
+	b.mu.Unlock()
+
+	return ch
 }
 
 // Unsubscribe removes a listener.
 func (b *Broadcaster) Unsubscribe(ch <-chan Message) {
-	// TODO: Implement this.
+	b.mu.Lock()
+	defer b.mu.Unlock()
 
-	// Step 1: Lock the mutex.
-	// Step 2: Find the channel in the `listeners` slice.
-	// Step 3: Remove it from the slice. A common way to do this is `b.listeners = append(b.listeners[:i], b.listeners[i+1:]...)`.
-	// Step 4: Close the channel that is being removed.
-	// Step 5: Unlock the mutex.
+	for i, listener := range b.listeners {
+		if listener == ch {
+			// Remove from slice
+			b.listeners = append(b.listeners[:i], b.listeners[i+1:]...)
+			close(listener)
+			break
+		}
+	}
 }
 
 // Send broadcasts a message to all subscribers.
 func (b *Broadcaster) Send(msg Message) {
-	// TODO: Implement this.
-	// - Simply send the message to the `input` channel. The central goroutine will handle the rest.
+	b.input <- msg
 }
 
 // Close stops the broadcaster.
 func (b *Broadcaster) Close() {
-	// TODO: Implement this.
-	// - Simply close the `done` channel. This will signal the central goroutine to shut down.
+	close(b.done)
 }
 
 // NewBarrier creates a barrier for n goroutines.
 func NewBarrier(n int) *Barrier {
-	// TODO: Implement NewBarrier
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	return &Barrier{
+		n:       n,
+		count:   0,
+		ch:      make(chan struct{}),
+		waiting: make(chan struct{}),
+	}
 }
-
 
 // Wait blocks until all n goroutines have called Wait.
 func (b *Barrier) Wait() {
-	// TODO: Implement this.
+	b.mu.Lock()
+	b.count++
 
-	// This is the core logic of the barrier.
+	if b.count < b.n {
+		// Not all goroutines have arrived yet
+		b.mu.Unlock()
 
-	// Step 1: Lock the mutex to safely modify the count.
-	// - `b.mu.Lock()`
+		// Wait for signal
+		<-b.waiting
+		return
+	}
 
-	// Step 2: Increment the count of waiting goroutines.
-	// - `b.count++`
+	// Last goroutine to arrive
+	// Signal all waiting goroutines
+	close(b.waiting)
 
-	// Step 3: Check if this is the last goroutine.
-	// - `if b.count < b.n { ... }` (The "early" goroutines)
-	//   - If it's not the last one, this goroutine must wait.
-	//   - **Crucially**, you must unlock the mutex *before* waiting on the channel, otherwise the last goroutine will never be able to acquire the lock. `b.mu.Unlock()`.
-	//   - Wait on the `waiting` channel: `<-b.waiting`. This will block.
-	//   - After being unblocked, `return`.
-	//
-	// - `else { ... }` (The "last" goroutine)
-	//   - If this is the last goroutine, it's time to open the gate for everyone else.
-	//   - `close(b.waiting)`. Closing a channel unblocks all goroutines that are currently waiting to receive from it.
-	//   - Reset the barrier for the next use: set `b.count = 0` and create a new `waiting` channel.
-	//   - Unlock the mutex: `b.mu.Unlock()`.
+	// Reset for next use
+	b.count = 0
+	b.waiting = make(chan struct{})
 
-	// Memory & Language Comparison:
-	// - Go: The standard library doesn't have a barrier primitive, so this is a common pattern to implement one using mutexes and channels.
-	// - Java: `java.util.concurrent.CyclicBarrier` is a standard library class that provides this exact functionality.
-	// - C++: `std::barrier` was introduced in C++20.
-	// - Python: `threading.Barrier` provides this functionality.
+	b.mu.Unlock()
 }

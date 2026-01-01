@@ -2,8 +2,6 @@ package mempool
 
 import (
 	"context"
-
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // MempoolClient captures the ethclient calls needed for module 23 (pending transactions).

@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package arraysmapsbasics
 
 /*
 Problem: Count word frequencies from text input and find the most common word
@@ -38,8 +39,6 @@ Key debugging concepts covered:
 6. Understanding the call stack at each level
 */
 
-package arraysmapsbasics
-
 import (
 	"bufio"
 	"io"
@@ -58,21 +57,24 @@ import (
 // Three-Input Iteration Table:
 //
 // Input 1: "hello\nworld\nhello\n" (happy path)
-//   Line 1: "hello" → freq["hello"] = 1, maxWord = "hello", maxCount = 1
-//   Line 2: "world" → freq["world"] = 1 (maxWord unchanged)
-//   Line 3: "hello" → freq["hello"] = 2, maxWord = "hello", maxCount = 2
-//   Result: map[hello:2 world:1], "hello", nil
+//
+//	Line 1: "hello" → freq["hello"] = 1, maxWord = "hello", maxCount = 1
+//	Line 2: "world" → freq["world"] = 1 (maxWord unchanged)
+//	Line 3: "hello" → freq["hello"] = 2, maxWord = "hello", maxCount = 2
+//	Result: map[hello:2 world:1], "hello", nil
 //
 // Input 2: "" (empty input)
-//   No lines scanned
-//   Result: map[], "", nil (empty map is valid)
+//
+//	No lines scanned
+//	Result: map[], "", nil (empty map is valid)
 //
 // Input 3: "Go\n\ngo\nGO\n" (blank line + case variations)
-//   Line 1: "Go" → "go" → freq["go"] = 1
-//   Line 2: "" (blank) → skipped
-//   Line 3: "go" → freq["go"] = 2
-//   Line 4: "GO" → "go" → freq["go"] = 3
-//   Result: map[go:3], "go", nil
+//
+//	Line 1: "Go" → "go" → freq["go"] = 1
+//	Line 2: "" (blank) → skipped
+//	Line 3: "go" → freq["go"] = 2
+//	Line 4: "GO" → "go" → freq["go"] = 3
+//	Result: map[go:3], "go", nil
 //
 // DEBUGGING WORKFLOW:
 // ===================

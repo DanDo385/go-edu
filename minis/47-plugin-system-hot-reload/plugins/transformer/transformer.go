@@ -55,9 +55,10 @@ func (p *TransformerPlugin) Init() error {
 // - "leetspeak": Convert to l33t sp34k
 //
 // Example:
-//   Input: "hello world"
-//   Output (upper mode): "HELLO WORLD"
-//   Output (reverse mode): "dlrow olleh"
+//
+//	Input: "hello world"
+//	Output (upper mode): "HELLO WORLD"
+//	Output (reverse mode): "dlrow olleh"
 func (p *TransformerPlugin) Process(input interface{}) (interface{}, error) {
 	// Type assert to string
 	text, ok := input.(string)

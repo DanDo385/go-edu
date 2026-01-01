@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package workerpoolwordcount
 
 /*
 Problem: Fetch multiple URLs concurrently and count word frequencies
@@ -40,8 +41,6 @@ Key debugging concepts covered:
 5. Using the Debug Console for concurrent debugging
 6. Understanding context cancellation propagation
 */
-
-package workerpoolwordcount
 
 import (
 	"context"  // Context for cancellation and timeouts

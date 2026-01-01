@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package pointerszerovaluesnilgotchas
 
 /*
 Problem: Understanding Go's pointer semantics and nil handling
@@ -28,8 +29,6 @@ Why pointers are essential:
 - Represent optional values (nil = absent)
 - Build recursive data structures
 */
-
-package pointerszerovaluesnilgotchas
 
 // SafeDeref safely dereferences a pointer.
 // BREAKPOINT: Set breakpoint here to trace nil handling

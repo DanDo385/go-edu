@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package grpctelemetryservice
 
 /*
 Problem: Build a gRPC telemetry aggregator with streaming and time windows
@@ -32,8 +33,6 @@ Concurrency Strategy:
 - Read lock for Summary (reads data, doesn't modify)
 - RWMutex allows concurrent readers
 */
-
-package grpctelemetryservice
 
 import (
 	"context"
@@ -116,9 +115,10 @@ func (a *aggregator) PushPoint(ctx context.Context, p *pb.Point) error {
 // 1. Acquire read lock (concurrent reads allowed)
 // 2. Calculate cutoff time (now - window)
 // 3. For each metric:
-//    - Filter points within time window
-//    - Calculate sum, min, max, count
-//    - Calculate average = sum / count
+//   - Filter points within time window
+//   - Calculate sum, min, max, count
+//   - Calculate average = sum / count
+//
 // 4. Return report with all metrics
 //
 // BREAKPOINT: Set breakpoint at function entry to trace summary generation

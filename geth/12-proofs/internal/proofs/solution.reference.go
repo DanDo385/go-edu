@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package proofs
 
@@ -165,10 +164,10 @@ func Run(ctx context.Context, client ProofClient, cfg Config) (*Result, error) {
 	// Here we extend it to slices. This pattern repeats throughout the course.
 	res := &Result{
 		Account: AccountProof{
-			Balance:     new(big.Int).Set(proof.Balance),           // Defensive copy: big.Int is mutable
-			Nonce:       proof.Nonce,                               // Direct copy: uint64 is value type
-			CodeHash:    proof.CodeHash,                            // Direct copy: Hash is value type (array)
-			StorageHash: proof.StorageHash,                         // Direct copy: Hash is value type (array)
+			Balance:     new(big.Int).Set(proof.Balance),              // Defensive copy: big.Int is mutable
+			Nonce:       proof.Nonce,                                  // Direct copy: uint64 is value type
+			CodeHash:    proof.CodeHash,                               // Direct copy: Hash is value type (array)
+			StorageHash: proof.StorageHash,                            // Direct copy: Hash is value type (array)
 			ProofNodes:  append([]string(nil), proof.AccountProof...), // Defensive copy: slice is reference type
 		},
 	}

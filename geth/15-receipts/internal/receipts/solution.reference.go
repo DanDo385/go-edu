@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package receipts
 
@@ -110,9 +109,9 @@ func Run(ctx context.Context, client ReceiptClient, cfg Config) (*Result, error)
 
 		// Construct LogSummary with copied data.
 		logs = append(logs, LogSummary{
-			Address: lg.Address,    // common.Address is value type (array), auto-copied
-			Topics:  topicsCopy,    // Copied slice
-			Data:    dataCopy,      // Copied slice
+			Address: lg.Address,     // common.Address is value type (array), auto-copied
+			Topics:  topicsCopy,     // Copied slice
+			Data:    dataCopy,       // Copied slice
 			Index:   uint(lg.Index), // uint64 → uint conversion, value type
 		})
 	}
@@ -141,13 +140,13 @@ func Run(ctx context.Context, client ReceiptClient, cfg Config) (*Result, error)
 	//   - Value vs reference types from all modules
 	//   - Receipt structure understanding
 	return &Result{
-		TxHash:        rcpt.TxHash,                           // Transaction identifier (Hash is value type)
-		BlockNumber:   new(big.Int).Set(rcpt.BlockNumber),  // Defensive copy: big.Int is mutable
-		StatusOK:      rcpt.Status == 1,                    // Convert status (1/0) to bool (true/false)
-		GasUsed:       rcpt.GasUsed,                        // Actual gas consumed (uint64 is value type)
-		CumulativeGas: rcpt.CumulativeGasUsed,              // Total gas used in block up to this tx
-		Contract:      rcpt.ContractAddress,                // Contract address if creation, else zero
-		Logs:          logs,                                // Copied logs slice
+		TxHash:        rcpt.TxHash,                            // Transaction identifier (Hash is value type)
+		BlockNumber:   new(big.Int).Set(rcpt.BlockNumber),     // Defensive copy: big.Int is mutable
+		StatusOK:      rcpt.Status == 1,                       // Convert status (1/0) to bool (true/false)
+		GasUsed:       rcpt.GasUsed,                           // Actual gas consumed (uint64 is value type)
+		CumulativeGas: rcpt.CumulativeGasUsed,                 // Total gas used in block up to this tx
+		Contract:      rcpt.ContractAddress,                   // Contract address if creation, else zero
+		Logs:          logs,                                   // Copied logs slice
 		PostStateRoot: append([]byte(nil), rcpt.PostState...), // Defensive copy: []byte is reference type
 	}, nil
 	// ============================================================================

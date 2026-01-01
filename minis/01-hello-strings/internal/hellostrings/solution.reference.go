@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package hellostrings
 
 /*
 Problem: Implement UTF-8-aware string utilities in Go
@@ -38,8 +39,6 @@ Key debugging concepts covered:
 5. Using the Debug Console to evaluate expressions
 6. Understanding the call stack at each level
 */
-
-package hellostrings
 
 import (
 	"strings"
@@ -245,19 +244,22 @@ func TitleCase(s string) string {
 // Three-Input Iteration Table:
 //
 // Input 1: "Hello" (ASCII-only, happy path)
-//   []rune conversion → [H, e, l, l, o]
-//   After swap loop  → [o, l, l, e, H]
-//   Result: "olleH"
+//
+//	[]rune conversion → [H, e, l, l, o]
+//	After swap loop  → [o, l, l, e, H]
+//	Result: "olleH"
 //
 // Input 2: "" (empty string, edge case)
-//   []rune conversion → []
-//   Loop never executes (i=0, j=-1, condition false)
-//   Result: ""
+//
+//	[]rune conversion → []
+//	Loop never executes (i=0, j=-1, condition false)
+//	Result: ""
 //
 // Input 3: "Hi👋" (multi-byte emoji)
-//   []rune conversion → [H, i, 👋] (3 runes, but 6 bytes!)
-//   After swap loop  → [👋, i, H]
-//   Result: "👋iH" (correctly preserves emoji)
+//
+//	[]rune conversion → [H, i, 👋] (3 runes, but 6 bytes!)
+//	After swap loop  → [👋, i, H]
+//	Result: "👋iH" (correctly preserves emoji)
 //
 // DEBUGGING WORKFLOW:
 // ===================
@@ -427,19 +429,22 @@ func Reverse(s string) string {
 // Three-Input Iteration Table:
 //
 // Input 1: "hello" (ASCII, happy path)
-//   Each ASCII char is 1 byte
-//   utf8.RuneCountInString internally iterates: h(1), e(1), l(1), l(1), o(1)
-//   Result: 5 runes
+//
+//	Each ASCII char is 1 byte
+//	utf8.RuneCountInString internally iterates: h(1), e(1), l(1), l(1), o(1)
+//	Result: 5 runes
 //
 // Input 2: "" (empty, edge case)
-//   No iterations
-//   Result: 0 runes
+//
+//	No iterations
+//	Result: 0 runes
 //
 // Input 3: "👋😀" (emoji, 2 characters but 8 bytes)
-//   👋 = 4 bytes [0xF0, 0x9F, 0x91, 0x8B]
-//   😀 = 4 bytes [0xF0, 0x9F, 0x98, 0x80]
-//   utf8.RuneCountInString recognizes multi-byte sequences
-//   Result: 2 runes (not 8!)
+//
+//	👋 = 4 bytes [0xF0, 0x9F, 0x91, 0x8B]
+//	😀 = 4 bytes [0xF0, 0x9F, 0x98, 0x80]
+//	utf8.RuneCountInString recognizes multi-byte sequences
+//	Result: 2 runes (not 8!)
 //
 // DEBUGGING WORKFLOW:
 // ===================

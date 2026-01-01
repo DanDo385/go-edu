@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package contextcancellationtimeouts
 
 /*
 Project 16: Context Cancellation and Timeouts - Solutions
@@ -20,8 +21,6 @@ DEBUGGING GUIDE:
 - Use Step Into (F11) to enter function calls
 - Watch panel shows variable values in real-time
 */
-
-package contextcancellationtimeouts
 
 import (
 	"context"

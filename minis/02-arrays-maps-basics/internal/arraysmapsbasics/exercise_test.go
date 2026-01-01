@@ -152,7 +152,7 @@ func TestFreqFromReader_UnicodeWords(t *testing.T) {
 	}
 
 	wantFreq := map[string]int{
-		"日本語": 2,
+		"日本語":  2,
 		"café": 1,
 	}
 

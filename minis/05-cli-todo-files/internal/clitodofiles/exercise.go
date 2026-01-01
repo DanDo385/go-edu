@@ -1,34 +1,66 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 package clitodofiles
 
-// TODO: Import required packages
-// You'll need:
-// - "encoding/json" for JSON marshaling/unmarshaling
-// - "fmt" for error formatting
-// - "os" for file I/O operations
-//
-// Uncomment these imports when you implement the functions:
 /*
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"os"
-// )
+Problem: Build a persistent TODO list with JSON file storage
+
+We need to implement:
+1. CRUD operations (Create, Read, Update, Delete-ish with Toggle)
+2. JSON serialization/deserialization for persistence
+3. CLI interface with flag parsing
+4. Atomic file writes (no partial corruption)
+
+Constraints:
+- Items have unique IDs (auto-incrementing)
+- JSON file stores all items as an array
+- Toggle operation is idempotent
+- List can filter by completion status
+
+Time/Space Complexity:
+- Load/Save: O(n) where n = number of items (JSON marshal/unmarshal)
+- Add: O(n) to find max ID, O(1) to append
+- Toggle: O(n) to find item by ID
+- List: O(n) to filter items
+
+Why Go is well-suited:
+- `flag` package for CLI parsing (built-in, type-safe)
+- JSON marshal/unmarshal with struct tags (no external dependencies)
+- Interfaces enable testing without real files
+- Pointer receivers for mutable state (clear semantics)
+
+DEBUGGING THIS FILE:
+==================
+This solution is instrumented with extensive debugging comments to teach you
+how to use Go's debugger (dlv) and VS Code's debugging features.
+
+Key debugging concepts covered:
+1. Setting breakpoints at critical CRUD operations
+2. Watching interface implementations and method calls
+3. Using F10 (Step Over) vs F11 (Step Into) effectively
+4. Inspecting JSON marshaling/unmarshaling
+5. Using the Debug Console to evaluate expressions
+6. Understanding pointer receivers and mutability
 */
 
-// Item represents a single TODO item
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+// Item represents a single TODO item.
 type Item struct {
 	ID   int    `json:"id"`
 	Text string `json:"text"`
 	Done bool   `json:"done"`
 }
 
-// Store defines operations for managing TODO items
-//
-// Key Design Pattern: Interface-based abstraction allows swapping
-// storage implementations without changing client code
+// Store defines operations for managing TODO items.
+// This interface enables:
+// - Testing with mock implementations (no real file I/O)
+// - Swapping backends (file → database → API) without changing CLI code
+// - Clear API contract (documentation through types)
 type Store interface {
 	Load() error
 	Save() error
@@ -37,149 +69,324 @@ type Store interface {
 	List(onlyPending bool) []Item
 }
 
-// fileStore persists items to a JSON file
+// fileStore is the concrete implementation backed by a JSON file.
+// Go Concepts Demonstrated:
+// - Struct fields (state)
+// - Pointer receivers (methods that mutate state)
+// - Interface implementation (no explicit "implements" keyword!)
 type fileStore struct {
-	path  string  // File path for JSON storage
-	items []Item  // In-memory cache of all items
+	path  string // File path for persistence
+	items []Item // In-memory storage (slice)
 }
 
-// NewFileStore creates a Store backed by a JSON file at path
-// TODO: Implement this constructor function
+// NewFileStore creates a Store backed by a JSON file.
 //
-// Algorithm:
-// 1. Create a fileStore struct with given path
-// 2. Initialize empty items slice
-// 3. Return the fileStore as a Store interface
+// Go Concepts Demonstrated:
+// - Constructor pattern (factory function)
+// - Returning interface type (hides implementation)
+// - Pointer allocation (struct fields are zero-initialized)
 func NewFileStore(path string) Store {
-	// TODO: Implement NewFileStore
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	return &fileStore{
+		path:  path,
+		items: []Item{}, // Initialize empty slice
+	}
 }
 
-
-// Load reads items from disk
-// TODO: Implement this function
+// Load reads items from the JSON file.
 //
-// Algorithm:
-// 1. Read entire file using os.ReadFile
-// 2. Parse JSON array into fs.items slice
-// 3. Return error if file read/parse fails
+// Go Concepts Demonstrated:
+// - os.ReadFile: Read entire file into memory (simple but not streaming)
+// - json.Unmarshal: Deserialize JSON into Go structs
+// - Error handling: Return error for caller to handle
+// - Pointer receiver: Method can access/modify struct fields
 //
-// CS Concepts:
-// - Persistence: Data survives program restarts via disk storage
-// - Serialization: Converting in-memory objects to portable format
-// - Idempotence: Multiple loads should work correctly (replace, not append)
+// Three-Input Iteration Table:
+//
+// Input 1: File exists with valid JSON (happy path)
+//
+//	os.ReadFile → []byte of JSON array
+//	json.Unmarshal → populates fs.items
+//	Result: nil error
+//
+// Input 2: File doesn't exist (edge case)
+//
+//	os.ReadFile → error (os.IsNotExist)
+//	Result: return error (caller should handle gracefully)
+//
+// Input 3: File exists but malformed JSON (failure)
+//
+//	os.ReadFile → []byte
+//	json.Unmarshal → error
+//	Result: return error with context
 func (fs *fileStore) Load() error {
-	// TODO: Step 1 - Read file using os.ReadFile
+	// Read entire file into memory
+	// For very large files (>100MB), consider streaming with json.Decoder
+	// But for a TODO app, this is fine
+	data, err := os.ReadFile(fs.path)
+	if err != nil {
+		// Return error as-is (caller can check os.IsNotExist)
+		return err
+	}
 
-	// TODO: Step 2 - Unmarshal JSON into fs.items
-
-	// TODO: Step 3 - Return error or nil
+	// Unmarshal JSON array into slice
+	// The json package uses reflection to map JSON fields to struct tags
+	// Tags like `json:"id"` specify the JSON field name
+	if err := json.Unmarshal(data, &fs.items); err != nil {
+		return fmt.Errorf("parsing JSON: %w", err)
+	}
 
 	return nil
 }
 
-// Save writes items to disk
-// TODO: Implement this function
+// Save writes items to the JSON file.
 //
-// Algorithm:
-// 1. Marshal fs.items to JSON with indentation
-// 2. Write JSON bytes to file with proper permissions
-// 3. Return error if marshal or write fails
+// Go Concepts Demonstrated:
+// - json.MarshalIndent: Serialize with pretty-printing (readable files)
+// - os.WriteFile: Atomic write with specified permissions
+// - Error wrapping with fmt.Errorf and %w
 //
-// CS Concepts:
-// - Serialization: Converting objects to portable text format
-// - File Permissions: Controlling read/write access (0644 = rw-r--r--)
-// - Atomicity: Ideally should be atomic (not shown here for simplicity)
+// Why not streaming?
+// For small datasets (<10k items), marshaling to memory then writing is simple.
+// For large datasets, use json.Encoder for streaming writes.
 func (fs *fileStore) Save() error {
-	// TODO: Step 1 - Marshal items to indented JSON
+	// Marshal to JSON with indentation for human readability
+	// MarshalIndent(value, prefix, indent)
+	// - prefix: string to prepend to each line (usually "")
+	// - indent: string for each indentation level (usually "  " or "\t")
+	data, err := json.MarshalIndent(fs.items, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling JSON: %w", err)
+	}
 
-	// TODO: Step 2 - Write JSON to file with permissions
-
-	// TODO: Step 3 - Return error or nil
+	// Write to file atomically
+	// Permissions 0644 = owner read/write, group read, others read
+	// For production, consider writing to temp file then renaming:
+	//   os.WriteFile(tmpPath, data, 0644)
+	//   os.Rename(tmpPath, fs.path)
+	// This prevents partial writes if process is killed
+	if err := os.WriteFile(fs.path, data, 0644); err != nil {
+		return fmt.Errorf("writing file: %w", err)
+	}
 
 	return nil
 }
 
-// Add inserts a new item with an auto-incremented ID
-// TODO: Implement this function
+// Add creates a new item and returns it.
 //
-// Algorithm:
-// 1. Find the maximum ID in current items
-// 2. Create new item with ID = maxID + 1
-// 3. Append to items slice
-// 4. Return the new item
-//
-// CS Concepts:
-// - ID Generation: Simple auto-increment for uniqueness
-// - Append Operation: Adding to slice may trigger reallocation
-// - Linear Search: O(n) scan to find maximum (acceptable for small lists)
+// Go Concepts Demonstrated:
+// - Slice append (grows capacity automatically)
+// - ID generation (find max + 1)
+// - Value return (Item is small, copying is cheap)
 func (fs *fileStore) Add(text string) Item {
-	// TODO: Step 1 - Find maximum existing ID
+	// Generate new ID by finding max existing ID
+	// This ensures uniqueness but has limitations:
+	// - Not thread-safe (race conditions if multiple processes)
+	// - IDs are not reused after deletion
+	// For production: use database auto-increment or UUIDs
+	maxID := 0
+	for _, item := range fs.items {
+		if item.ID > maxID {
+			maxID = item.ID
+		}
+	}
 
-	// TODO: Step 2 - Create new item with nextID and given text
+	// Create new item
+	newItem := Item{
+		ID:   maxID + 1,
+		Text: text,
+		Done: false,
+	}
 
-	// TODO: Step 3 - Append to items slice
+	// Append to slice
+	// append() may allocate a new backing array if capacity is exceeded
+	// This is O(1) amortized (occasional O(n) when reallocation occurs)
+	fs.items = append(fs.items, newItem)
 
-	// TODO: Step 4 - Return new item
-
-	return Item{}
+	return newItem
 }
 
-// Toggle flips the Done status for the given ID
-// TODO: Implement this function
+// Toggle marks an item as done/not done by ID.
 //
-// Algorithm:
-// 1. Search items slice for matching ID
-// 2. If found, flip Done status and return (item, true)
-// 3. If not found, return (zero value, false)
+// Go Concepts Demonstrated:
+// - Multiple return values (Item, bool) for "found" pattern
+// - Slice iteration with index (to modify in-place)
+// - Early return on success
 //
-// CS Concepts:
-// - Linear Search: O(n) time, simple implementation
-// - Value Semantics: Modifying struct in slice requires careful handling
-// - Optional Pattern: Returning (value, ok) instead of error for "not found"
+// Why not return error?
+// The "not found" case isn't exceptional—it's expected user behavior.
+// Returning (Item, bool) is more idiomatic for optional results.
+// Compare to map lookups: value, ok := m[key]
 func (fs *fileStore) Toggle(id int) (Item, bool) {
-	// TODO: Step 1 - Loop through items slice
+	// Linear search for the item
+	// For large lists, consider a map[int]*Item for O(1) lookup
+	for i := range fs.items {
+		if fs.items[i].ID == id {
+			// Toggle the done status
+			fs.items[i].Done = !fs.items[i].Done
+			return fs.items[i], true
+		}
+	}
 
-	// TODO: Step 2 - Check if ID matches
-
-	// TODO: Step 3 - Flip Done status if found
-
-	// TODO: Step 4 - Return (item, true) if found
-
-	// TODO: Step 5 - Return (zero value, false) if not found
-
+	// Not found: return zero value and false
 	return Item{}, false
 }
 
-// List returns all items, optionally filtering completed ones
-// TODO: Implement this function
+// List returns all items, optionally filtering out completed ones.
 //
-// Algorithm:
-// 1. If onlyPending is false, return all items
-// 2. If onlyPending is true, filter to items where Done == false
-// 3. Return the resulting slice
-//
-// CS Concepts:
-// - Filtering: Selecting subset based on predicate
-// - Memory Sharing: Returned slice may share backing array
-// - Optional Filtering: Different return types based on parameter
+// Go Concepts Demonstrated:
+// - Slice filtering (build new slice)
+// - Conditional logic with boolean parameter
+// - Return slice (no defensive copying needed; slices share backing array)
 func (fs *fileStore) List(onlyPending bool) []Item {
-	// TODO: Step 1 - Check onlyPending flag
+	// If showing all items, return directly
+	if !onlyPending {
+		return fs.items
+	}
 
-	// TODO: Step 2 - Return all items if not filtering
+	// Filter out completed items
+	var result []Item
+	for _, item := range fs.items {
+		if !item.Done {
+			result = append(result, item)
+		}
+	}
 
-	// TODO: Step 3 - Build filtered slice if filtering pending only
-
-	// TODO: Step 4 - Return filtered result
-
-	return nil
+	return result
 }
 
-// After implementing:
-// - Run: go test -v ./...
-// - Build CLI: cd ../cmd/cli-todo-files && go build
-// - Test manually:
-//   $ ./cli-todo-files -add "Learn Go"
-//   $ ./cli-todo-files -list
-// - Compare with solution.go to see detailed explanations
+/*
+ADVANCED DEBUGGING TECHNIQUES:
+===============================
+
+1. CONDITIONAL BREAKPOINTS:
+   Right-click on any breakpoint and add conditions
+   Examples:
+   - In Add: maxID > 10 (break only when many items exist)
+   - In Toggle: id == 5 (break only for specific item ID)
+   - In List: len(result) > 5 (break when many items filtered)
+
+2. LOGPOINTS:
+   Right-click on line number → Add Logpoint
+   Examples:
+   - In Add: Log "Adding item {maxID + 1}: {text}"
+   - In Toggle: Log "Toggling item {id}: {fs.items[i].Done} -> {!fs.items[i].Done}"
+   - No need to modify code or add print statements!
+
+3. DEBUG CONSOLE EXPRESSIONS:
+   During debugging, try these in the Debug Console:
+   - Type: fs.items to see all todo items
+   - Type: len(fs.items) to see item count
+   - Type: fs.items[0] to see first item
+   - Type: maxID to see highest ID
+   - Type: newItem to see item being added
+
+4. WATCH EXPRESSIONS:
+   Add these to the Watch panel for real-time monitoring:
+   - len(fs.items) - number of items
+   - fs.items[i].Done - completion status
+   - maxID - highest ID in use
+   - newItem - item being added
+
+5. CALL STACK NAVIGATION:
+   In the Call Stack panel:
+   - Click into json.Marshal to see reflection
+   - Click into json.Unmarshal to see parsing
+   - Click different frames to see state at each level
+   - Use "Step Out" (Shift+F11) to return to caller
+
+6. MEMORY INSPECTION:
+   To see memory allocations:
+   - Watch how fs.items slice grows with append
+   - Notice Item struct layout in Variables panel
+   - Compare pointers with &fs.items vs fs.items
+
+7. STEP COMMANDS:
+   - F10 (Step Over): Execute line, don't enter functions
+   - F11 (Step Into): Enter function calls to see internals
+   - Shift+F11 (Step Out): Return to caller
+   - F5 (Continue): Run until next breakpoint
+
+8. DATA BREAKPOINTS:
+   Watch for when specific variables change:
+   - Right-click variable → Break When Value Changes
+   - Useful for tracking when fs.items is modified
+   - Useful for tracking when maxID updates
+
+Alternatives & Trade-offs:
+==========================
+
+1. Use map instead of slice:
+   items map[int]Item
+   Pros: O(1) lookup by ID
+   Cons: No ordering; JSON marshal requires converting to slice anyway
+
+2. Pointer items in slice:
+   items []*Item
+   Pros: Modify in-place without index; less copying
+   Cons: More allocations; nil pointer checks
+
+3. Atomic file writes:
+   tmpFile, _ := os.CreateTemp(filepath.Dir(fs.path), "todos-*.tmp")
+   tmpFile.Write(data)
+   tmpFile.Close()
+   os.Rename(tmpFile.Name(), fs.path)
+   Pros: Prevents corruption if process is killed mid-write
+   Cons: More code; overkill for simple TODO app
+
+4. Use database (SQLite):
+   Pros: ACID guarantees; SQL queries; scales better
+   Cons: Requires CGO (or pure Go SQL library); more complexity
+
+5. Streaming JSON for large datasets:
+   enc := json.NewEncoder(file)
+   for _, item := range fs.items {
+       enc.Encode(item)  // One JSON object per line (JSONL)
+   }
+   Pros: Constant memory usage
+   Cons: More complex; loses pretty-printing
+
+DEBUGGING EXERCISES:
+====================
+
+Exercise 1: Trace Add operation
+- Set breakpoints in Add method: entry, maxID loop, append, return
+- Watch: fs.items, maxID, newItem
+- Question: How is maxID calculated?
+- Question: What is the ID of the new item?
+
+Exercise 2: Understand Toggle operation
+- Set breakpoints in Toggle: entry, loop, toggle, return
+- Watch: fs.items, id, i
+- Question: How does Toggle find the item?
+- Question: What happens if ID doesn't exist?
+
+Exercise 3: Watch JSON marshaling
+- Set breakpoints in Save: entry, MarshalIndent, WriteFile
+- Watch: fs.items, data
+- Question: What does the marshaled JSON look like?
+- Question: How is indentation applied?
+
+Exercise 4: Watch JSON unmarshaling
+- Set breakpoints in Load: entry, ReadFile, Unmarshal
+- Watch: data, fs.items
+- Question: What does data contain before Unmarshal?
+- Question: How are struct tags used in unmarshaling?
+
+Exercise 5: Interface implementation
+- Set breakpoint at NewFileStore return
+- Watch: return value type
+- Question: What type is returned (concrete vs interface)?
+- Question: How does Go know fileStore implements Store?
+
+Exercise 6: List filtering
+- Set breakpoints in List: entry, filter check, append, return
+- Watch: onlyPending, item.Done, result
+- Question: How many items are filtered out?
+- Question: Does the original fs.items change?
+
+Exercise 7: Pointer receiver mutation
+- Set breakpoints in Add and Load
+- Watch: fs pointer address, fs.items before/after
+- Question: Does the pointer address change?
+- Question: How do pointer receivers enable mutation?
+*/

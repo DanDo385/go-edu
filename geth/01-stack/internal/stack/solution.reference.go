@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package stack
 
@@ -46,7 +45,7 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	// Client validation: The RPCClient interface is what we depend on. If it's nil,
 	// we can't proceed. This is a critical check because Go's zero value for interfaces
 	// is nil, and calling methods on nil interfaces causes panics.
@@ -174,6 +173,6 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	return &Result{
 		ChainID:   new(big.Int).Set(chainID),   // Defensive copy: prevents mutation of client's internal data
 		NetworkID: new(big.Int).Set(networkID), // Defensive copy: ensures each caller gets independent data
-		Header:    types.CopyHeader(header),     // Deep copy: header contains pointers/slices that must be copied
+		Header:    types.CopyHeader(header),    // Deep copy: header contains pointers/slices that must be copied
 	}, nil
 }

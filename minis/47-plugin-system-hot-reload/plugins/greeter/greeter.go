@@ -52,8 +52,9 @@ func (p *GreeterPlugin) Init() error {
 // Output: string (greeting message)
 //
 // Example:
-//   Input: "Alice"
-//   Output: "Hello, Alice! Great to see you!"
+//
+//	Input: "Alice"
+//	Output: "Hello, Alice! Great to see you!"
 func (p *GreeterPlugin) Process(input interface{}) (interface{}, error) {
 	// Type assert input to string
 	name, ok := input.(string)

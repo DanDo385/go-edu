@@ -6,6 +6,9 @@
 *.dylib
 bin/
 dist/
+/app
+/debug
+/worker-pool-wordcount
 
 # Test and coverage
 *.test
@@ -19,11 +22,13 @@ go.work.sum
 
 # IDEs
 .idea/
-# Ignore .vscode settings except launch.json (which is part of curriculum)
+# Ignore .vscode settings except curriculum files
 .vscode/*
 !.vscode/launch.json
+!.vscode/settings.json
 **/.vscode/*
 !**/.vscode/launch.json
+!**/.vscode/settings.json
 *.swp
 *.swo
 *~

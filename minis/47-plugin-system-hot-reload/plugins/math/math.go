@@ -50,18 +50,19 @@ func (p *MathPlugin) Init() error {
 
 // Process performs mathematical operations.
 //
-// Input: map[string]interface{}{
-//   "op": string,        // Operation: "add", "subtract", "multiply", "divide", "power", "sqrt"
-//   "a":  float64,       // First operand
-//   "b":  float64,       // Second operand (not needed for "sqrt")
-// }
+//	Input: map[string]interface{}{
+//	  "op": string,        // Operation: "add", "subtract", "multiply", "divide", "power", "sqrt"
+//	  "a":  float64,       // First operand
+//	  "b":  float64,       // Second operand (not needed for "sqrt")
+//	}
 //
 // Output: float64 (result of operation)
 //
 // Examples:
-//   {"op": "add", "a": 10, "b": 5} → 15.0
-//   {"op": "multiply", "a": 7, "b": 6} → 42.0
-//   {"op": "sqrt", "a": 16} → 4.0
+//
+//	{"op": "add", "a": 10, "b": 5} → 15.0
+//	{"op": "multiply", "a": 7, "b": 6} → 42.0
+//	{"op": "sqrt", "a": 16} → 4.0
 func (p *MathPlugin) Process(input interface{}) (interface{}, error) {
 	// Type assert to map
 	data, ok := input.(map[string]interface{})

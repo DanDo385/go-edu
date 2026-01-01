@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package interfacesducktyping
 
 /*
 Problem: Understanding Go's interface system and duck typing
@@ -28,9 +29,10 @@ Why interfaces enable polymorphism:
 - Runtime flexibility with compile-time safety
 */
 
-package interfacesducktyping
-
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // String implements the Stringer interface for Person.
 // BREAKPOINT: Set breakpoint here to trace interface implementation
@@ -206,19 +208,38 @@ func CountTypes(values []interface{}) map[string]int {
 	// BREAKPOINT: Set breakpoint here to create map
 	// DEBUG: Watch map initialization
 	counts := make(map[string]int)
+	localPkg := reflect.TypeOf(Person{}).PkgPath()
 
 	// BREAKPOINT: Set breakpoint here before loop
 	// DEBUG: Watch iteration through values
 	for _, v := range values {
-		// BREAKPOINT: Set breakpoint here for each value
-		// DEBUG: Watch 'v' current value
-		// DEBUG: Watch '%T' format verb extract type name
-		typeName := fmt.Sprintf("%T", v)
+		if v == nil {
+			counts["nil"]++
+			continue
+		}
 
-		// BREAKPOINT: Set breakpoint here for increment
-		// DEBUG: Watch 'counts[typeName]++' increment count
-		// DEBUG: Zero value (0) allows safe increment without check
-		counts[typeName]++
+		t := reflect.TypeOf(v)
+
+		// Unwrap pointers so *Person and Person count the same.
+		if t.Kind() == reflect.Ptr {
+			t = t.Elem()
+		}
+
+		// Builtins (int/string/bool) have empty PkgPath and match expected keys.
+		if t.PkgPath() == "" {
+			counts[t.String()]++
+			continue
+		}
+
+		// For types defined in this exercise package, keep the legacy key prefix
+		// expected by tests ("exercise.<Type>").
+		if t.PkgPath() == localPkg && t.Name() != "" {
+			counts[fmt.Sprintf("exercise.%s", t.Name())]++
+			continue
+		}
+
+		// Fallback: use Go's type string.
+		counts[t.String()]++
 	}
 
 	// DEBUG: Watch final 'counts' map

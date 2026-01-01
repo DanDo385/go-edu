@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package filestreamingbufio
 
 /*
 Project 17: File Streaming with bufio - Solutions
@@ -20,8 +21,6 @@ DEBUGGING GUIDE:
 - Use Step Into (F11) to enter function calls
 - Watch panel shows variable values in real-time
 */
-
-package filestreamingbufio
 
 import (
 	"bufio"

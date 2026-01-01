@@ -1,84 +1,56 @@
-//go:build !solution
-// +build !solution
+//go:build !solution && !reference
 
 package workerpoolwithbackpressure
 
-// ============================================================================
-// WORKER POOL WITH BACKPRESSURE: Understanding Queue Management and Flow Control
-// ============================================================================
-//
-// A worker pool is a concurrency pattern that:
-// 1. Maintains a fixed number of worker goroutines
-// 2. Processes jobs from a queue (channel)
-// 3. Enforces backpressure when queue is full
-// 4. Prevents unbounded memory growth
-//
-// Why backpressure matters:
-// - Without it: Queue grows unbounded, memory exhaustion
-// - With it: Producers slow down when consumers can't keep up
-// - Real-world: HTTP servers return 503, message queues block
-//
-// Backpressure strategies:
-// 1. REJECT: Fail fast (non-blocking send with select+default)
-// 2. TIMEOUT: Wait with limit (select with time.After)
-// 3. BLOCK: Wait indefinitely (regular channel send)
-//
-// Go advantages:
-// - Buffered channels provide bounded queues naturally
-// - Select statement enables non-blocking operations
-// - Context propagation for cancellation
-// - Goroutines are cheap (can have thousands)
-//
-// Memory considerations:
-// - Buffered channel allocates queue array on heap
-// - Size: (queueSize * sizeof(Job)) bytes
-// - Each goroutine: ~2KB stack (grows as needed)
-// - Total: queue memory + (numWorkers * 2KB)
-//
-// Real-world applications:
-// - HTTP servers (prevent overload, return 503)
-// - Message queue consumers (bounded processing)
-// - Database connection pools (limit concurrent queries)
-// - API clients (respect rate limits)
-//
-// ============================================================================
+/*
+Problem: Worker pool with backpressure and rate limiting
 
-// TODO: Import required packages
-// You'll need:
-// - "context" for cancellation
-// - "sync" for WaitGroup
-// - "time" for timeout support
-//
-// import (
-//     "context"
-//     "sync"
-//     "time"
-// )
+We need to:
+1. Implement a bounded worker pool that prevents unbounded queue growth
+2. Provide backpressure when queue is full (reject or timeout)
+3. Support non-blocking submission (fail fast when full)
+4. Support timeout-based submission (wait with limit)
+5. Implement token bucket rate limiting
+6. Gracefully handle context cancellation
 
-// ============================================================================
-// Exercise 1: Worker Pool with Backpressure
-// ============================================================================
+Constraints:
+- Queue size must be bounded (prevent memory exhaustion)
+- Workers must respect context cancellation
+- Non-blocking operations must use select with default
+- Rate limiter must enforce throughput limits
+
+Time/Space Complexity:
+- Submit: O(1) - channel send or immediate return
+- Worker processing: O(1) per job
+- Rate limiter: O(1) per token acquisition
+- Space: O(queueSize + numWorkers) for channels and goroutines
+
+Why Go is well-suited:
+- Buffered channels provide built-in bounded queues with blocking
+- Select statement enables non-blocking operations
+- Context propagation for cancellation
+- Lightweight goroutines for workers
+
+Real-world applications:
+- HTTP servers (prevent overload with 503 responses)
+- Message queue consumers (acknowledge only when processed)
+- Database connection pools (bounded connections)
+- API rate limiting (comply with third-party limits)
+*/
+
+import (
+	"context"
+	"sync"
+	"time"
+)
 
 // Job represents work to be processed
-// TODO: This type is already defined, just understand the structure
-//
-// Memory layout:
-// - ID: 8 bytes (int)
-// - Payload: 16 bytes (string header: ptr + len)
-// - Total: ~24 bytes per job (plus string data on heap)
 type Job struct {
 	ID      int
 	Payload string
 }
 
 // Result represents the outcome of processing a job
-// TODO: This type is already defined, understand error handling
-//
-// Memory layout:
-// - JobID: 8 bytes (int)
-// - Data: 16 bytes (string header)
-// - Err: 16 bytes (interface: type + ptr)
-// - Total: ~40 bytes per result (plus string/error data)
 type Result struct {
 	JobID int
 	Data  string
@@ -86,39 +58,6 @@ type Result struct {
 }
 
 // WorkerPool manages a bounded pool of workers with backpressure
-// TODO: Add fields for the worker pool
-//
-// Required fields:
-// - jobs: Buffered channel for pending jobs (bounded queue)
-//   * Type: chan Job
-//   * Size: queueSize (enforces backpressure)
-//   * Memory: ~queueSize * 24 bytes
-//
-// - results: Buffered channel for completed results
-//   * Type: chan Result
-//   * Size: queueSize (prevents worker blocking on send)
-//   * Memory: ~queueSize * 40 bytes
-//
-// - numWorkers: Number of concurrent workers
-//   * Type: int
-//   * Determines parallelism level
-//
-// - wg: WaitGroup to track worker completion
-//   * Type: sync.WaitGroup
-//   * Coordinates graceful shutdown
-//
-// Why pointer receiver?
-// - Pool must be shared across goroutines
-// - Cannot copy WaitGroup or channels (breaks synchronization)
-// - Methods modify pool state
-//
-// type WorkerPool struct {
-//     jobs       chan Job       // Bounded job queue (backpressure point)
-//     results    chan Result    // Result channel (buffered to prevent blocking)
-//     numWorkers int            // Worker count (parallelism level)
-//     wg         sync.WaitGroup // Tracks worker goroutines
-// }
-
 type WorkerPool struct {
 	jobs       chan Job
 	results    chan Result
@@ -126,142 +65,223 @@ type WorkerPool struct {
 	wg         sync.WaitGroup
 }
 
+// NewWorkerPool creates a new worker pool
+//
+// Go Concepts Demonstrated:
+// - Buffered channels with fixed capacity
+// - Struct initialization
+// - Resource allocation
+//
+// Parameters:
+//   - queueSize: Maximum number of jobs that can be queued (backpressure threshold)
+//   - numWorkers: Number of concurrent workers (parallelism level)
+//
+// Design decisions:
+//   - jobs channel size = queueSize (enforces backpressure)
+//   - results channel size = queueSize (prevents worker blocking on send)
+//   - Store numWorkers to start workers later
 func NewWorkerPool(queueSize, numWorkers int) *WorkerPool {
-	// TODO: Implement NewWorkerPool
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	return &WorkerPool{
+		jobs:       make(chan Job, queueSize),
+		results:    make(chan Result, queueSize),
+		numWorkers: numWorkers,
+	}
 }
 
-
+// Start begins processing jobs
+//
+// Go Concepts Demonstrated:
+// - Goroutines for concurrent execution
+// - WaitGroup for coordinating goroutine completion
+// - Select for context cancellation
+// - Defer for cleanup
+//
+// Architecture:
+//   - Spawns numWorkers goroutines
+//   - Each worker processes jobs from shared channel
+//   - Workers stop on context cancellation or channel close
+//   - Results channel closes when all workers finish
+//
+// Parameters:
+//   - ctx: Context for cancellation (allows stopping all workers)
+//   - process: Function to process each job (user-provided logic)
 func (p *WorkerPool) Start(ctx context.Context, process func(Job) Result) {
-	// TODO: Implement this function.
+	// Start worker goroutines
+	for i := 0; i < p.numWorkers; i++ {
+		p.wg.Add(1)
+		go func(workerID int) {
+			defer p.wg.Done()
 
-	// This method launches the worker goroutines.
+			// Worker loop: process jobs until stopped
+			for {
+				select {
+				case <-ctx.Done():
+					// Context cancelled, stop immediately
+					return
+				case job, ok := <-p.jobs:
+					if !ok {
+						// Jobs channel closed, no more work
+						return
+					}
 
-	// Step 1: Loop `p.numWorkers` times to start each worker.
-	// - In each iteration, call `p.wg.Add(1)` and launch a goroutine.
+					// Process job (could panic, so production code would use recover)
+					result := process(job)
 
-	// Step 2: Implement the worker's logic inside the goroutine.
-	// - The goroutine should `defer p.wg.Done()` to signal completion.
-	// - Use an infinite `for { ... }` loop and a `select` statement.
-	// - `case <-ctx.Done():` -> The context was cancelled, so `return` to stop the worker.
-	// - `case job, ok := <-p.jobs:`
-	//   - If `!ok`, the channel is closed and empty. `return` to stop the worker.
-	//   - Otherwise, call the `process(job)` function.
-	//   - Send the result to the `p.results` channel. **Important:** This send must also be in a `select` with a `case <-ctx.Done()` to prevent the worker from blocking forever if the context is cancelled while it's trying to send a result.
+					// Send result (use select to respect cancellation)
+					select {
+					case <-ctx.Done():
+						return
+					case p.results <- result:
+						// Result sent successfully
+					}
+				}
+			}
+		}(i)
+	}
 
-	// Step 3: Start a final goroutine to close the `results` channel.
-	// - This goroutine waits for all workers to finish and then closes the `results` channel.
-	// - `go func() { p.wg.Wait(); close(p.results) }()`
-	// - This is what allows a consumer to safely `range` over the `Results()` channel.
+	// Close results channel when all workers finish
+	// This allows consumers to range over results channel
+	go func() {
+		p.wg.Wait()
+		close(p.results)
+	}()
 }
 
+// Submit attempts to add a job to the queue (non-blocking)
+//
+// Go Concepts Demonstrated:
+// - Select with default (non-blocking channel operation)
+// - Error return for backpressure signaling
+//
+// Backpressure strategy: REJECT
+//   - If queue is full, reject immediately
+//   - Returns error so caller can decide (retry, drop, defer)
+//   - Never blocks (guaranteed O(1) time)
+//
+// Parameters:
+//   - job: The job to submit
+//
+// Returns:
+//   - error: ErrQueueFull if queue is at capacity, nil otherwise
 func (p *WorkerPool) Submit(job Job) error {
-	// TODO: Implement this function.
-
-	// This method implements the "REJECT" backpressure strategy.
-
-	// Step 1: Use a `select` statement with a `default` case.
-	// - `case p.jobs <- job:` -> The job was successfully sent. Return `nil`.
-	// - `default:` -> The `jobs` channel is full, so the send would block. Return `ErrQueueFull`.
-	return nil
+	select {
+	case p.jobs <- job:
+		return nil // Submitted successfully
+	default:
+		return ErrQueueFull // Queue full, backpressure applied
+	}
 }
 
+// SubmitWithTimeout attempts to add a job with a timeout
+//
+// Go Concepts Demonstrated:
+// - Select with multiple cases (channel send, timeout, cancellation)
+// - time.After for timeout
+// - Context for cancellation
+//
+// Backpressure strategy: TIMEOUT
+//   - Waits up to timeout duration for space
+//   - If space becomes available, submits
+//   - If timeout expires, returns error
+//   - Respects context cancellation
+//
+// Parameters:
+//   - ctx: Context for cancellation
+//   - job: The job to submit
+//   - timeout: Maximum time to wait
+//
+// Returns:
+//   - error: ErrQueueFull (timeout), context error (cancelled), or nil (success)
 func (p *WorkerPool) SubmitWithTimeout(ctx context.Context, job Job, timeout time.Duration) error {
-	// TODO: Implement this function.
-
-	// This method implements the "TIMEOUT" backpressure strategy.
-
-	// Step 1: Use a `select` statement with three cases.
-	// - `case p.jobs <- job:` -> The job was sent successfully. Return `nil`.
-	// - `case <-time.After(timeout):` -> The timeout was reached. Return `ErrQueueFull`.
-	// - `case <-ctx.Done():` -> The context was cancelled. Return `ctx.Err()`.
-	return nil
+	select {
+	case p.jobs <- job:
+		return nil // Submitted immediately
+	case <-time.After(timeout):
+		// Timeout expired, queue still full
+		return ErrQueueFull
+	case <-ctx.Done():
+		// Context cancelled
+		return ctx.Err()
+	}
 }
 
+// Results returns a read-only channel of results
+//
+// Go Concepts Demonstrated:
+// - Read-only channel type (<-chan)
+// - Encapsulation (caller can't send to this channel)
+//
+// Returns:
+//   - <-chan Result: Read-only channel of results
+//
+// Usage:
+//
+//	for result := range pool.Results() {
+//	    handleResult(result)
+//	}
 func (p *WorkerPool) Results() <-chan Result {
-	// TODO: Implement this function.
-	// - Simply return the `p.results` channel.
-	// - The return type is `<-chan Result`, a receive-only channel, which prevents the caller from closing or sending to the channel, enforcing encapsulation.
-	return nil
+	return p.results
 }
 
+// Close signals no more jobs will be submitted
+//
+// Go Concepts Demonstrated:
+// - Closing channels to signal completion
+// - Only sender should close (worker pool owns jobs channel)
+//
+// Behavior:
+//   - Closes jobs channel
+//   - Workers finish processing queued jobs
+//   - Workers exit when jobs channel is drained
+//   - Results channel closes when all workers exit (via Start's goroutine)
 func (p *WorkerPool) Close() {
-	// TODO: Implement this function.
-	// - Simply close the `p.jobs` channel.
-	// - This is the signal that no more jobs will be submitted. The workers will drain the channel and then exit.
-	// - **Rule:** Only the sender should close a channel. In this design, the `WorkerPool` is the sender to the `jobs` channel.
+	close(p.jobs)
 }
 
+// QueueDepth returns current number of jobs in queue
+//
+// Go Concepts Demonstrated:
+// - len() on channel (non-blocking query)
+//
+// Returns:
+//   - int: Number of jobs currently waiting in queue
+//
+// Use case:
+//   - Monitoring queue depth for metrics/alerting
+//   - Adaptive scaling decisions
 func (p *WorkerPool) QueueDepth() int {
-	// TODO: Implement this function.
-	// - Return the number of items currently in the `jobs` channel's buffer.
-	// - `len(p.jobs)` does this. It's a non-blocking, O(1) operation.
-	return 0
+	return len(p.jobs)
 }
 
+// QueueUtilization returns queue fullness as a percentage (0.0 to 1.0)
+//
+// Go Concepts Demonstrated:
+// - len() and cap() on channels
+// - Float division
+//
+// Returns:
+//   - float64: Utilization ratio (0.0 = empty, 1.0 = full)
+//
+// Use case:
+//   - Alert when utilization > 0.8 (approaching capacity)
+//   - Scale workers when consistently high
 func (p *WorkerPool) QueueUtilization() float64 {
-	// TODO: Implement this function.
-	// - Return the queue depth divided by the queue capacity.
-	// - `float64(len(p.jobs)) / float64(cap(p.jobs))`
-	// - `cap(p.jobs)` returns the buffer capacity of the channel.
-	return 0.0
+	return float64(len(p.jobs)) / float64(cap(p.jobs))
 }
-
-// ============================================================================
-// Exercise 2: Token Bucket Rate Limiter
-// ============================================================================
 
 // RateLimiter implements token bucket rate limiting
-// TODO: Add fields for rate limiting
 //
-// Token bucket algorithm:
-// - Bucket holds tokens (each token = permission for one operation)
-// - Tokens are consumed when operation is performed
-// - Tokens are refilled at constant rate
-// - Bucket has maximum capacity (allows burst)
-//
-// Required fields:
-// - tokens: Buffered channel holding available tokens
-//   * Type: chan struct{}
-//   * Capacity: requestsPerSecond (max burst)
-//   * struct{} is zero-size (memory efficient)
-//
-// - rate: Time between token refills
-//   * Type: time.Duration
-//   * = 1 second / requestsPerSecond
-//
-// - capacity: Maximum tokens in bucket
-//   * Type: int
-//   * Same as channel capacity
-//
-// - stop: Channel to signal refill goroutine to stop
-//   * Type: chan struct{}
-//   * Closed to signal shutdown
-//
-// - wg: WaitGroup to wait for refill goroutine
-//   * Type: sync.WaitGroup
-//   * Ensures clean shutdown
-//
-// Why buffered channel for tokens?
-// - Buffer size = max tokens (burst capacity)
-// - Sending = consuming token (blocks if empty)
-// - Receiving in refill = adding token (blocks if full)
+// Algorithm: Token Bucket
+//   - Bucket holds tokens (permission to make request)
+//   - Tokens are consumed when request is made
+//   - Tokens are refilled at constant rate
+//   - Bucket has maximum capacity (allows burst)
 //
 // Example: 10 requests/second
-// - Bucket capacity: 10 tokens
-// - Refill rate: 1 token per 100ms
-// - Can burst 10 requests immediately
-// - Sustained rate: 10 req/sec
-//
-// type RateLimiter struct {
-//     tokens   chan struct{}  // Token bucket (buffered = capacity)
-//     rate     time.Duration  // Time between refills
-//     capacity int            // Max tokens in bucket
-//     stop     chan struct{}  // Signal to stop refill goroutine
-//     wg       sync.WaitGroup // Wait for refill goroutine to exit
-// }
-
+//   - Bucket capacity: 10 tokens
+//   - Refill rate: 1 token per 100ms
+//   - Can burst 10 requests immediately
+//   - Sustained rate: 10 req/sec
 type RateLimiter struct {
 	tokens   chan struct{}
 	rate     time.Duration
@@ -270,47 +290,127 @@ type RateLimiter struct {
 	wg       sync.WaitGroup
 }
 
+// NewRateLimiter creates a rate limiter
+//
+// Go Concepts Demonstrated:
+// - Buffered channel as semaphore
+// - Ticker for periodic operations
+// - Goroutine for background refilling
+//
+// Parameters:
+//   - requestsPerSecond: Maximum requests allowed per second
+//
+// Returns:
+//   - *RateLimiter: Configured rate limiter (starts immediately)
+//
+// Design:
+//   - tokens channel size = requestsPerSecond (max burst)
+//   - Refill rate = 1 second / requestsPerSecond
+//   - Start with full bucket (allow immediate burst)
 func NewRateLimiter(requestsPerSecond int) *RateLimiter {
-	// TODO: Implement NewRateLimiter
-	// See solution.reference.go for reference implementation
-	panic("not implemented")
+	rl := &RateLimiter{
+		tokens:   make(chan struct{}, requestsPerSecond),
+		rate:     time.Second / time.Duration(requestsPerSecond),
+		capacity: requestsPerSecond,
+		stop:     make(chan struct{}),
+	}
+
+	// Fill bucket initially (allow immediate burst)
+	for i := 0; i < requestsPerSecond; i++ {
+		rl.tokens <- struct{}{}
+	}
+
+	// Start background token refiller
+	rl.wg.Add(1)
+	go func() {
+		defer rl.wg.Done()
+
+		ticker := time.NewTicker(rl.rate)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-rl.stop:
+				return
+			case <-ticker.C:
+				// Try to add token (non-blocking)
+				select {
+				case rl.tokens <- struct{}{}:
+					// Token added
+				default:
+					// Bucket full, drop token
+				}
+			}
+		}
+	}()
+
+	return rl
 }
 
-
+// Wait blocks until a token is available or context is cancelled
+//
+// Go Concepts Demonstrated:
+// - Blocking receive from channel
+// - Select for context cancellation
+//
+// Behavior:
+//   - Consumes one token from bucket
+//   - Blocks if no tokens available (rate limit enforcement)
+//   - Returns immediately if token available
+//   - Returns error if context is cancelled
+//
+// Parameters:
+//   - ctx: Context for cancellation
+//
+// Returns:
+//   - error: Context error if cancelled, nil if token acquired
 func (rl *RateLimiter) Wait(ctx context.Context) error {
-	// TODO: Implement this function.
-
-	// This is the blocking method to acquire a token.
-
-	// Step 1: Use a `select` to wait for a token or for the context to be cancelled.
-	// - `case <-rl.tokens:` -> A token was acquired. Return `nil`.
-	// - `case <-ctx.Done():` -> The context was cancelled. Return `ctx.Err()`.
-	return nil
+	select {
+	case <-rl.tokens:
+		return nil // Got token
+	case <-ctx.Done():
+		return ctx.Err() // Context cancelled
+	}
 }
 
+// TryAcquire attempts to get a token without blocking
+//
+// Go Concepts Demonstrated:
+// - Select with default (non-blocking receive)
+//
+// Behavior:
+//   - Returns immediately
+//   - Consumes token if available
+//   - Returns false if no tokens (rate limited)
+//
+// Returns:
+//   - bool: true if token acquired, false if none available
+//
+// Use case:
+//   - Best-effort operations (drop if rate limited)
+//   - Metrics collection (sample when not overloaded)
 func (rl *RateLimiter) TryAcquire() bool {
-	// TODO: Implement this function.
-
-	// This is the non-blocking method to acquire a token.
-
-	// Step 1: Use a `select` with a `default` case.
-	// - `case <-rl.tokens:` -> A token was acquired. Return `true`.
-	// - `default:` -> No token was available. Return `false`.
-	return false
+	select {
+	case <-rl.tokens:
+		return true
+	default:
+		return false
+	}
 }
 
+// Stop stops the rate limiter's token refill goroutine
+//
+// Go Concepts Demonstrated:
+// - Closing channel to signal goroutine
+// - WaitGroup for waiting on goroutine completion
+//
+// Behavior:
+//   - Stops token refill
+//   - Waits for refiller goroutine to exit
+//   - Should be called when rate limiter is no longer needed
 func (rl *RateLimiter) Stop() {
-	// TODO: Implement this function.
-
-	// This gracefully stops the refill goroutine.
-
-	// Step 1: Close the `stop` channel.
-	// - `close(rl.stop)`
-	// - This will be received by the `case <-rl.stop:` in the refill goroutine, causing it to exit.
-
-	// Step 2: Wait for the goroutine to finish.
-	// - `rl.wg.Wait()`
-	// - This ensures that the goroutine has fully stopped before this function returns.
+	close(rl.stop)
+	rl.wg.Wait()
 }
 
 // Common errors
@@ -325,25 +425,86 @@ func (e *QueueFullError) Error() string {
 	return "queue is full"
 }
 
-// ============================================================================
-// After implementing all functions:
-// - Run: go test -v ./... to verify correctness
-// - Run: go test -race ./... to check for data races
-// - Run: go test -bench=. to measure performance
-// - Compare with solution.go to see optimizations
-//
-// Key learnings:
-// 1. Bounded channels enforce backpressure naturally
-// 2. Select with default enables non-blocking operations
-// 3. Context propagation allows graceful cancellation
-// 4. WaitGroup coordinates goroutine completion
-// 5. Closing channels signals "no more data"
-// 6. Token bucket rate limiting uses channels elegantly
-//
-// Common mistakes:
-// - Forgetting to close channels (goroutine leaks)
-// - Closing channels from receiver (panic)
-// - Not respecting context cancellation (hangs)
-// - Unbuffered results channel (workers block on send)
-// - Not using select with timeout (operations hang forever)
-// ============================================================================
+/*
+Alternatives & Trade-offs:
+
+1. Unbounded queue (no backpressure):
+   jobs := make(chan Job)  // No buffer limit
+   Pros: Never rejects work, simple
+   Cons: Memory exhaustion under load, no flow control
+   Go: Buffered channels enforce bounded queues naturally
+
+2. Semaphore-based rate limiting (no refill):
+   sem := make(chan struct{}, N)
+   Pros: Simpler (no ticker goroutine)
+   Cons: No automatic refill, manual release required
+   Use case: Connection pools, not rate limiting
+
+3. Global mutex for rate limiting:
+   var mu sync.Mutex
+   var lastRequest time.Time
+   Pros: Lower memory (no channel)
+   Cons: Lock contention, harder to reason about
+   Go: Channels provide cleaner API
+
+4. Adaptive queue resizing:
+   Dynamically grow/shrink queue
+   Pros: Handles variable load
+   Cons: Complex, still needs max size, breaks backpressure contract
+   Go: Fixed-size channels are simpler and more predictable
+
+5. Priority queue with multiple lanes:
+   highPriority := make(chan Job, N)
+   lowPriority := make(chan Job, N)
+   Pros: Differentiate critical vs best-effort work
+   Cons: More complex, can starve low priority
+   Use case: Multi-tenant systems
+
+Go vs X:
+
+Go vs Java (Executors):
+- Java uses ExecutorService with BlockingQueue
+- Similar bounded queue concept
+- More verbose, heavyweight threads, manual queue management
+- Go: Channels integrate queue and synchronization
+
+Go vs Python (asyncio.Queue):
+- Python uses asyncio.Queue with maxsize parameter
+- Similar non-blocking put (raises QueueFull exception)
+- Single-threaded (no true parallelism), exception-based flow
+- Go: Multi-threaded, error-based flow (no exceptions)
+
+Go vs Rust (tokio + channel):
+- Rust uses tokio mpsc channel with try_send
+- Zero-cost abstractions, compile-time safety
+- More complex (async traits, Send bounds, lifetimes)
+- Go: Simpler, faster development
+
+Go vs Node.js (p-queue):
+- Node.js uses p-queue library for concurrency limiting
+- Similar queue pattern
+- Single-threaded, no true parallelism, requires library
+- Go: Built-in, multi-threaded
+
+Real-world examples:
+
+1. NGINX (HTTP server):
+   - Bounded connection queue
+   - Returns 503 when queue full
+   - Our pattern: Submit returns ErrQueueFull
+
+2. Kafka (message broker):
+   - Bounded log segments
+   - Backpressure via ack delays
+   - Our pattern: Workers drain at limited rate
+
+3. AWS Lambda (serverless):
+   - Concurrent execution limit
+   - Throttles when limit reached
+   - Our pattern: Rate limiter enforces limit
+
+4. Database connection pools:
+   - Fixed pool size
+   - Wait or reject when exhausted
+   - Our pattern: SubmitWithTimeout
+*/

@@ -43,8 +43,8 @@ func TestSafeDeref(t *testing.T) {
 
 func TestSwap(t *testing.T) {
 	tests := []struct {
-		name     string
-		a, b     int
+		name             string
+		a, b             int
 		expectA, expectB int
 	}{
 		{

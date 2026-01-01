@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package eip1559
 
@@ -376,14 +375,14 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 	// Why all these fields? Each serves a specific purpose in Ethereum's transaction
 	// model. Together they define a complete, self-contained unit of work.
 	txData := &types.DynamicFeeTx{
-		ChainID:   chainID,                      // Replay protection
-		Nonce:     nonce,                        // Sequence number
-		GasTipCap: tipCap,                       // Max priority fee
-		GasFeeCap: maxFee,                       // Max total fee
-		Gas:       gasLimit,                     // Computation budget
-		To:        &cfg.To,                      // Recipient
+		ChainID:   chainID,                         // Replay protection
+		Nonce:     nonce,                           // Sequence number
+		GasTipCap: tipCap,                          // Max priority fee
+		GasFeeCap: maxFee,                          // Max total fee
+		Gas:       gasLimit,                        // Computation budget
+		To:        &cfg.To,                         // Recipient
 		Value:     new(big.Int).Set(cfg.AmountWei), // Amount (defensive copy!)
-		Data:      dataCopy,                     // Payload (already copied)
+		Data:      dataCopy,                        // Payload (already copied)
 	}
 
 	// ============================================================================
@@ -500,9 +499,9 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 	//   - We used defensive copying for mutable data → our Result is safe to use
 	//   - We followed the same RPC patterns from module 01-stack → consistency!
 	return &Result{
-		FromAddress: from,      // Sender (derived from key)
-		Nonce:       nonce,     // Sequence number
-		Tx:          signedTx,  // Signed transaction (ready for tracking)
-		BaseFee:     baseFee,   // Base fee context (already defensively copied)
+		FromAddress: from,     // Sender (derived from key)
+		Nonce:       nonce,    // Sequence number
+		Tx:          signedTx, // Signed transaction (ready for tracking)
+		BaseFee:     baseFee,  // Base fee context (already defensively copied)
 	}, nil
 }

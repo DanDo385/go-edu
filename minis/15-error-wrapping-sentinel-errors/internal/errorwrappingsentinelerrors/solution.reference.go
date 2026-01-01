@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package errorwrappingsentinelerrors
 
 /*
 Problem: Understanding Go's error handling patterns
@@ -28,8 +29,6 @@ Why error handling is critical:
 - Type-safe error inspection
 - Composable error handling
 */
-
-package errorwrappingsentinelerrors
 
 import (
 	"errors"

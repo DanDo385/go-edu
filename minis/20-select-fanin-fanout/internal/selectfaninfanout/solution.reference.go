@@ -1,5 +1,6 @@
 //go:build reference
-// +build reference
+
+package selectfaninfanout
 
 /*
 Project 20: Select, Fan-In, and Fan-Out - Solutions
@@ -28,8 +29,6 @@ Compared to other languages:
 - Rust: select! macro in tokio, similar power but more verbose
 - Java: No direct equivalent (need CompletableFuture.anyOf with boilerplate)
 */
-
-package selectfaninfanout
 
 import (
 	"sync"
@@ -206,8 +205,8 @@ func FanIn(channels ...<-chan int) <-chan int {
 
 	// Close output when all inputs are exhausted
 	go func() {
-		wg.Wait()    // Wait for all forwarders to finish
-		close(out)   // Signal to receiver that no more values coming
+		wg.Wait()  // Wait for all forwarders to finish
+		close(out) // Signal to receiver that no more values coming
 	}()
 
 	return out
