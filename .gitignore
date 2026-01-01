@@ -1,42 +1,41 @@
-# Binaries
+# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-bin/
-dist/
-/app
-/debug
-/worker-pool-wordcount
 
-# Test and coverage
+# Test binary, built with `go test -c`
 *.test
+
+# Output of the go coverage tool
 *.out
 coverage.out
-coverage.html
 
-# Go workspace
+# Dependency directories
+vendor/
+
+# Go workspace file
 go.work
 go.work.sum
 
-# IDEs
+# IDE specific files
 .idea/
-# Ignore .vscode settings except curriculum files
-.vscode/*
-!.vscode/launch.json
-!.vscode/settings.json
-**/.vscode/*
-!**/.vscode/launch.json
-!**/.vscode/settings.json
+.vscode/
 *.swp
 *.swo
 *~
 
-# OS
+# OS specific files
 .DS_Store
 Thumbs.db
 
+# Test artifacts
+*.log
+testdata/output/
+
 # Temporary files
-tmp/
-temp/
+/tmp/
+*.tmp
+*.bak
+*.orig

@@ -1,4 +1,4 @@
-.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help
+.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help reset-exercises reset-exercises-minis reset-exercises-geth
 
 # Colors for output
 CYAN := \033[0;36m
@@ -151,6 +151,22 @@ clean:
 	rm -f coverage.out
 	@echo "$(GREEN)✓ Build cache cleaned$(NC)"
 
+# Reset exercises to TODO list format
+reset-exercises:
+	@echo "$(CYAN)Resetting all exercises to TODO format...$(NC)"
+	@./scripts/reset-exercises.sh
+	@echo "$(GREEN)✓ All exercises reset$(NC)"
+
+reset-exercises-minis:
+	@echo "$(CYAN)Resetting minis exercises to TODO format...$(NC)"
+	@./scripts/reset-exercises.sh minis
+	@echo "$(GREEN)✓ Minis exercises reset$(NC)"
+
+reset-exercises-geth:
+	@echo "$(CYAN)Resetting geth exercises to TODO format...$(NC)"
+	@./scripts/reset-exercises.sh geth
+	@echo "$(GREEN)✓ Geth exercises reset$(NC)"
+
 help:
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
 	@echo "$(CYAN)  Go Educational Projects - Makefile Commands$(NC)"
@@ -190,6 +206,11 @@ help:
 	@echo ""
 	@echo "$(GREEN)Cleanup:$(NC)"
 	@echo "  make clean           Clean build cache"
+	@echo ""
+	@echo "$(GREEN)Exercise Management:$(NC)"
+	@echo "  make reset-exercises       Reset all exercises to TODO format"
+	@echo "  make reset-exercises-minis Reset only minis exercises"
+	@echo "  make reset-exercises-geth  Reset only geth exercises"
 	@echo ""
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
 	@echo "$(YELLOW)Quick Start:$(NC)"
