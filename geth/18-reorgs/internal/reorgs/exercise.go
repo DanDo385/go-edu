@@ -2,5 +2,9 @@
 
 package reorgs
 
-// Run currently acts as a placeholder; see module README for full implementation steps.
-func Run() {}
+func Run() {
+	// TODO: Implement this function
+	// TODO: Handle errors appropriately
+	// TODO: Add necessary validations
+	panic("not implemented")
+}
