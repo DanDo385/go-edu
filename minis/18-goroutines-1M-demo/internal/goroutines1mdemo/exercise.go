@@ -3,24 +3,6 @@
 package goroutines1mdemo
 
 /*
-Project 18: Goroutines and Concurrency - Solutions
-
-This file contains complete solutions with extensive debugging support.
-
-Key Go Concepts Demonstrated:
-1. Lightweight goroutines (millions possible)
-2. Work distribution and parallelism
-3. Atomic operations for thread-safe counters
-4. Worker pools and fan-in/fan-out patterns
-5. Graceful shutdown with context
-
-DEBUGGING GUIDE:
-- BREAKPOINT comments mark ideal breakpoint locations
-- DEBUG comments explain what to observe in debugger
-- Use Step Over (F10) to execute line by line
-- Use Step Into (F11) to enter function calls
-- Watch panel shows variable values in real-time
-- Use runtime.NumGoroutine() to track goroutine count
 */
 
 import (
@@ -30,263 +12,115 @@ import (
 	"time"
 )
 
-// ParallelSum calculates the sum using multiple workers.
+// ParallelSum - TODO: implement this function
 func ParallelSum(n int, numWorkers int) int64 {
-	// BREAKPOINT: Set breakpoint to observe atomic variable initialization
-	// DEBUG: Watch total.value - starts at 0
-	// DEBUG: atomic.Int64 provides thread-safe operations
-	var total atomic.Int64
-	var wg sync.WaitGroup
-
-	// BREAKPOINT: Watch range calculation for work distribution
-	// DEBUG: Watch rangeSize and remainder computation
-	// DEBUG: Each worker gets approximately equal work
-	rangeSize := n / numWorkers
-	remainder := n % numWorkers
-
-	// BREAKPOINT: Set breakpoint in loop to watch worker creation
-	// DEBUG: Watch i incrementing as workers launch
-	// DEBUG: Each worker processes a distinct range of numbers
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-
-		// BREAKPOINT: Watch range boundaries being calculated
-		// DEBUG: Watch start and end values for each worker
-		// DEBUG: Ranges don't overlap - partition the work
-		start := i*rangeSize + 1
-		end := (i + 1) * rangeSize
-
-		// DEBUG: Last worker gets any remainder to ensure all numbers summed
-		// DEBUG: Watch end value increase for last worker
-		if i == numWorkers-1 {
-			end += remainder
-		}
-
-		// BREAKPOINT: Set breakpoint inside goroutine to watch parallel execution
-		// DEBUG: Multiple goroutines run concurrently
-		// DEBUG: Watch s and e parameters captured from loop
-		go func(s, e int) {
-			defer wg.Done()
-
-			// BREAKPOINT: Watch partial sum calculation
-			// DEBUG: Each worker sums its assigned range
-			// DEBUG: Watch sum accumulating within worker
-			var sum int64
-			for j := s; j <= e; j++ {
-				sum += int64(j)
-			}
-
-			// BREAKPOINT: Watch atomic add operation
-			// DEBUG: total.Add() is thread-safe - no race condition
-			// DEBUG: Watch total.value increasing from multiple workers
-			total.Add(sum)
-		}(start, end)
-	}
-
-	// BREAKPOINT: Set breakpoint to watch waiting for completion
-	// DEBUG: wg.Wait() blocks until all wg.Done() called
-	// DEBUG: Ensures all workers finish before reading total
-	wg.Wait()
-
-	// BREAKPOINT: Watch final total load
-	// DEBUG: total.Load() atomically reads final sum
-	return total.Load()
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return 0
 }
 
-// FanOut distributes values to multiple channels.
+// FanOut - TODO: implement this function
 func FanOut(input <-chan int, numWorkers int) []<-chan int {
-	outputs := make([]chan int, numWorkers)
-	readOnlyOutputs := make([]<-chan int, numWorkers)
-
-	for i := 0; i < numWorkers; i++ {
-		outputs[i] = make(chan int)
-		readOnlyOutputs[i] = outputs[i]
-	}
-
-	// Distributor goroutine
-	go func() {
-		defer func() {
-			for _, ch := range outputs {
-				close(ch)
-			}
-		}()
-
-		i := 0
-		for v := range input {
-			// Round-robin distribution
-			outputs[i%numWorkers] <- v
-			i++
-		}
-	}()
-
-	return readOnlyOutputs
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// FanIn merges multiple channels into one.
+// FanIn - TODO: implement this function
 func FanIn(inputs ...<-chan int) <-chan int {
-	output := make(chan int)
-	var wg sync.WaitGroup
-
-	// Launch a goroutine for each input
-	for _, in := range inputs {
-		wg.Add(1)
-		go func(ch <-chan int) {
-			defer wg.Done()
-			for v := range ch {
-				output <- v
-			}
-		}(in)
-	}
-
-	// Close output when all inputs are done
-	go func() {
-		wg.Wait()
-		close(output)
-	}()
-
-	return output
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// NewWorkerPool creates a worker pool.
+// NewWorkerPool - TODO: implement this function
 func NewWorkerPool(numWorkers int) *WorkerPool {
-	pool := &WorkerPool{
-		jobs: make(chan func(), 100), // Buffered channel
-	}
-
-	// Launch workers
-	for i := 0; i < numWorkers; i++ {
-		pool.wg.Add(1)
-		go func() {
-			defer pool.wg.Done()
-			for job := range pool.jobs {
-				job()
-			}
-		}()
-	}
-
-	return pool
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Submit adds a job to the pool.
+// Submit - TODO: implement this function
 func (p *WorkerPool) Submit(job func()) {
-	if p.stopped.Load() {
-		return // Pool is stopped, don't accept new jobs
-	}
-	p.jobs <- job
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Stop shuts down the pool.
+// Stop - TODO: implement this function
 func (p *WorkerPool) Stop() {
-	p.stopped.Store(true)
-	close(p.jobs) // Signal workers to stop
-	p.wg.Wait()   // Wait for all workers to finish
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// NewRateLimiter creates a rate limiter.
+// NewRateLimiter - TODO: implement this function
 func NewRateLimiter(maxOps int) *RateLimiter {
-	limiter := &RateLimiter{
-		ticker: time.NewTicker(time.Second / time.Duration(maxOps)),
-		tokens: make(chan struct{}, maxOps),
-	}
-
-	// Pre-fill tokens
-	for i := 0; i < maxOps; i++ {
-		limiter.tokens <- struct{}{}
-	}
-
-	// Refill tokens at rate
-	go func() {
-		for range limiter.ticker.C {
-			select {
-			case limiter.tokens <- struct{}{}:
-			default:
-				// Token bucket full, skip
-			}
-		}
-	}()
-
-	return limiter
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Wait blocks until a token is available.
+// Wait - TODO: implement this function
 func (r *RateLimiter) Wait() {
-	<-r.tokens
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// ConcurrentCounter implementation.
-
-// Increment atomically increments.
+// Increment - TODO: implement this function
 func (c *ConcurrentCounter) Increment() {
-	c.value.Add(1)
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Decrement atomically decrements.
+// Decrement - TODO: implement this function
 func (c *ConcurrentCounter) Decrement() {
-	c.value.Add(-1)
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Value returns current value.
+// Value - TODO: implement this function
 func (c *ConcurrentCounter) Value() int64 {
-	return c.value.Load()
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// NewGracefulWorker creates a new graceful worker.
+// NewGracefulWorker - TODO: implement this function
 func NewGracefulWorker(ctx context.Context) *GracefulWorker {
-	return &GracefulWorker{
-		ctx:      ctx,
-		workDone: atomic.Int64{},
-	}
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Start begins execution.
+// Start - TODO: implement this function
 func (w *GracefulWorker) Start() {
-	go func() {
-		for {
-			select {
-			case <-w.ctx.Done():
-				return // Exit when cancelled
-			default:
-				// Do work
-				w.workDone.Add(1)
-				time.Sleep(1 * time.Microsecond)
-			}
-		}
-	}()
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// WorkDone returns the total work completed.
+// WorkDone - TODO: implement this function
 func (w *GracefulWorker) WorkDone() int64 {
-	return w.workDone.Load()
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// Pipeline chains stages together.
+// Pipeline - TODO: implement this function
 func Pipeline(input <-chan int, stages ...func(<-chan int) <-chan int) <-chan int {
-	output := input
-	for _, stage := range stages {
-		output = stage(output)
-	}
-	return output
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
 
-// BoundedParallel executes with limited concurrency.
+// BoundedParallel - TODO: implement this function
 func BoundedParallel(maxConcurrent int, fns ...func()) {
-	sem := make(chan struct{}, maxConcurrent) // Semaphore
-	var wg sync.WaitGroup
-
-	for _, fn := range fns {
-		wg.Add(1)
-
-		go func(f func()) {
-			defer wg.Done()
-
-			// Acquire semaphore
-			sem <- struct{}{}
-			defer func() { <-sem }() // Release semaphore
-
-			// Execute function
-			f()
-		}(fn)
-	}
-
-	wg.Wait()
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return nil
 }
+
