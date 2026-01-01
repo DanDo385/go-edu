@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Worker pool with backpressure and rate limiting

@@ -74,8 +74,9 @@ Every project follows the **self-contained layout**:
 
 #### Core Invariant: One Buildable Implementation
 
-- `exercise.go` is the **only** non-test, non-reference file that participates in builds
-- All production logic must be consolidated into `exercise.go`
+- `exercise.go` uses build tag `//go:build !solution && !reference` to ensure it's the only implementation compiled
+- All production logic must be in `exercise.go`
+- Reference files use `//go:build reference` and are excluded from normal builds
 - This enforces clarity: there is one source of truth for implementation
 
 #### Reference Files Are Inert
@@ -84,12 +85,13 @@ Reference implementations exist **only** for learning:
 
 ```go
 //go:build reference
-// +build reference
 
 package mypackage
 
 // This file is NEVER compiled during normal builds
 ```
+
+**Note:** Build tags use the modern `//go:build` syntax only (legacy `// +build` lines have been removed).
 
 To view reference implementations:
 

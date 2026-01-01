@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Fetch multiple URLs concurrently and count word frequencies

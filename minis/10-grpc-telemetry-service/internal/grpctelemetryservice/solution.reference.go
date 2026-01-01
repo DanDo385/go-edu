@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Build a gRPC telemetry aggregator with streaming and time windows

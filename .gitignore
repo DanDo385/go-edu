@@ -7,6 +7,17 @@
 bin/
 dist/
 
+# Build artifacts (specific to this repo)
+/app
+/debug
+/worker-pool-wordcount
+*-demo
+pool-demo
+mapreduce-demo
+statemachine-demo
+pow-demo
+plugin-demo
+
 # Test and coverage
 *.test
 *.out

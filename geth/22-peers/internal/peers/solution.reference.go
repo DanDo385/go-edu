@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 package peers
 

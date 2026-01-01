@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Problem: Count word frequencies from text input and find the most common word

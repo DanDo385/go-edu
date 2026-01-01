@@ -1,5 +1,4 @@
 //go:build reference
-// +build reference
 
 /*
 Project 20: Select, Fan-In, and Fan-Out - Solutions
