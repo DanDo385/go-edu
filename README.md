@@ -4,13 +4,10 @@ Go learning repo built as a collection of **self-contained projects** under `min
 
 ### Project layout (every project)
 
-Each project follows the same shape:
+Each project follows the same **standard Go project layout**:
 
 ```text
 <project>/
-  .vscode/
-    launch.json
-    settings.json
   cmd/
     app/
       main.go
@@ -25,10 +22,13 @@ Each project follows the same shape:
       (optional: extra *_test.go, benchmarks, types.go, etc.)
 ```
 
-- **`internal/<pkg>`**: the exercise package and tests.
-- **`cmd/app`**: "real" entry point (CLI/server/demo).
-- **`cmd/dev`**: deterministic "debug harness" entry point.
-- **`.vscode/`**: per-project debug/run/test configurations.
+- **`internal/<pkg>/exercise.go`**: **student-facing** file. This is where you write your solution by filling in the `// TODO:` blocks (keep signatures the same).
+- **`internal/<pkg>/exercise_test.go`**: tests that describe the required behavior and guide your implementation.
+- **`internal/<pkg>/solution.reference.go`** / `solution_no_err.reference.go`: **reference implementations** with deeper explanations (and often debugging notes).
+- **`cmd/app/main.go`**: "real" entry point (CLI/server/demo). Often takes arguments.
+- **`cmd/dev/main.go`**: deterministic **debug harness** with fixed inputs. Designed to be breakpoint-friendly.
+
+Repo-wide VS Code debugging is configured in **`.vscode/launch.json`** at the repository root (some projects may also ship their own `.vscode/` folder).
 
 ### Getting started
 
@@ -59,11 +59,41 @@ go run ./cmd/app
 ```
 
 - **Debug in VS Code**:
-  - Open the project folder (e.g. `minis/01-hello-strings/`).
-  - Use:
-    - **"Debug: cmd/dev"** (debug harness)
-    - **"Run: cmd/app"** (no-debug run)
-    - **"Test: internal package"** (debug tests)
+  - Open the repository root in VS Code.
+  - Use the repo-wide launch configs in `.vscode/launch.json`:
+    - **"Debug: cmd/dev (project)"** (recommended)
+    - **"Debug: cmd/app (project)"**
+    - **"Test: go test ./... (project)"**
+
+### Solving an exercise (how to use the `// TODO:` blocks)
+
+Open the exercise package (usually `internal/<pkg>/exercise.go`) and implement the code *inside* the `// TODO:` blocks.
+
+- Keep **function signatures** unchanged (tests and `cmd/` programs depend on them).
+- Use the `// TODO:` comments as your step-by-step plan.
+- Run tests frequently:
+
+```bash
+go test ./...
+```
+
+If you get stuck, read `solution.reference.go` / `solution_no_err.reference.go` for a full implementation and deeper explanations.
+
+### Commentary guidelines (where documentation should live)
+
+- **`exercise.go`**: keep commentary minimal and actionable (short `// TODO:` steps + brief debugging reminders).
+- **`solution.reference.go`** and this `README.md`: put longer explanations, walkthroughs, and “why this works” material here.
+- **Breakpoints/debugging**: keep and use `// BREAKPOINT:` markers in `cmd/dev` (and in exercises where they help).
+
+### Resetting exercises (`make todo`)
+
+This repo intentionally supports “start over” resets that **erase your in-progress code** and regenerate `exercise.go` files back to their starter TODO state from the reference solutions.
+
+- From repo root: `make todo all` resets **both** `minis/` and `geth/`
+- From `geth/`: `make todo all` resets **only** `geth/`
+- From `minis/`: `make todo all` resets **only** `minis/`
+- From a project folder (e.g. `geth/01-stack/`): `make todo all` resets **only that project**
+- From anywhere: `make todo <path>` resets the project(s) under `<path>` (root-relative paths work)
 
 ---
 
@@ -91,7 +121,7 @@ The `cmd/dev/main.go` file is a debug harness designed for stepping through code
 
 1. **Open** `cmd/dev/main.go` in VS Code
 2. **Set breakpoints** at "// BREAKPOINT:" comments or anywhere in your code
-3. **Press F5** and select "Debug: cmd/dev (Debug Harness)"
+3. **Press F5** and select "Debug: cmd/dev (project)" (then enter the project path when prompted)
 4. **Step through** using F10 (Step Over) and F11 (Step Into)
 5. **Watch variables** in the Variables panel
 
@@ -103,7 +133,7 @@ cd minis/01-hello-strings
 
 # 2. Open cmd/dev/main.go in VS Code
 # 3. Set breakpoint in internal/hellostrings/exercise.go
-# 4. Press F5, select "Debug: cmd/dev"
+# 4. Press F5, select "Debug: cmd/dev (project)" and enter: minis/01-hello-strings
 # 5. Debugger stops at breakpoint - step through implementation
 ```
 
@@ -140,16 +170,11 @@ Each project has different CLI arguments based on its purpose:
 
 #### Debugging cmd/app/main.go:
 
-1. **Open** `.vscode/launch.json`
-2. **Find** "Debug: cmd/app" configuration
-3. **Edit** the `args` array to include your CLI arguments:
-
-```json
-"args": ["https://eth.llamarpc.com", "12345"]
-```
-
-4. **Press F5** and select "Debug: cmd/app"
-5. Set breakpoints and step through
+1. Press F5 and select **"Debug: cmd/app (project)"** (then enter the project path when prompted)
+2. If your `cmd/app` expects CLI args, either:
+   - Run it from a terminal (recommended for ad-hoc args): `go run ./cmd/app -- <args...>`
+   - Or temporarily edit `.vscode/launch.json` to add an `"args": [...]` array for that configuration
+3. Set breakpoints and step through
 
 ### Testing with go test
 
@@ -172,21 +197,19 @@ go test -tags=reference -v ./...
 #### Debugging Tests:
 
 1. Set breakpoint in test function or exercise code
-2. Press F5 and select "Test: Run All Tests" or "Test: Current Test Function"
+2. Press F5 and select "Test: go test ./... (project)" (then enter the project path when prompted)
 3. Step through test execution
 
 ### VS Code Debug Configurations
 
-Each project includes `.vscode/launch.json` with these configurations:
+The repository includes `.vscode/launch.json` with these configurations:
 
 | Configuration | Description |
 |---------------|-------------|
-| **Debug: cmd/app** | Debug application with CLI arguments |
-| **Debug: cmd/dev** | Debug harness with fixed inputs (recommended) |
-| **Test: Run All Tests** | Run all tests with debugger |
-| **Test: Current Test Function** | Debug specific test (select test name first) |
-| **Test: View Reference Implementation** | Run tests with solution.reference.go |
-| **Debug: Current File** | Debug currently open file |
+| **Debug: cmd/app (project)** | Debug application with CLI arguments |
+| **Debug: cmd/dev (project)** | Debug harness with fixed inputs (recommended) |
+| **Test: go test ./... (project)** | Run all tests in the project with debugger |
+| **Test: go test -tags=reference ./... (project)** | Run tests against reference implementations |
 
 ### Tips for Effective Debugging
 

@@ -2,6 +2,10 @@
 
 package csvstats
 
+import (
+	"io"
+)
+
 /*
 Problem: Compute per-category statistics from a CSV of financial transactions
 Constraints:
@@ -14,13 +18,7 @@ Time/Space Complexity:
 - Space: O(c) where c = number of unique categories (map storage)
 */
 
-import (
-	"encoding/csv"
-	"fmt"
-	"io"
-	"strconv"
-)
-
+// Stat holds aggregated statistics for a category.
 type Stat struct {
 	Count int
 	Sum   float64
@@ -31,6 +29,7 @@ type Stat struct {
 func SummarizeCSV(r io.Reader) (map[string]Stat, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 map[string]Stat
+	var zero1 error
+	return zero0, zero1
 }
-

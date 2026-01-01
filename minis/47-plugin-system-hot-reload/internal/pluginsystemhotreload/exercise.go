@@ -2,6 +2,10 @@
 
 package pluginsystemhotreload
 
+import (
+	"github.com/example/go-10x-minis/minis/47-plugin-system-hot-reload/shared"
+)
+
 /*
 Problem: Dynamic plugin loading and execution
 Constraints:
@@ -16,32 +20,29 @@ Time/Space Complexity:
 - Space: O(m) where m = number of loaded plugins in memory
 */
 
-import (
-	"fmt"
-	"path/filepath"
-	"plugin"
-
-	"github.com/example/go-10x-minis/minis/47-plugin-system-hot-reload/shared"
-)
-
 // LoadAndExecute - TODO: implement this function
 func LoadAndExecute(pluginPath string, input interface{}) (interface{}, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	var zero0 interface{}
+	var zero1 error
+	return zero0, zero1
 }
 
 // DiscoverPlugins - TODO: implement this function
 func DiscoverPlugins(dir string) ([]string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 []string
+	var zero1 error
+	return zero0, zero1
 }
 
 // ReloadPlugin - TODO: implement this function
 func ReloadPlugin(pluginPath string) (shared.Plugin, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 shared.Plugin
+	var zero1 error
+	return zero0, zero1
 }
-

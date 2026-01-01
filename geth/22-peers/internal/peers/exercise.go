@@ -4,8 +4,6 @@ package peers
 
 import (
 	"context"
-	"errors"
-	"fmt"
 )
 
 /*
@@ -16,6 +14,7 @@ Problem: Query the number of connected peers to assess node connectivity health.
 func Run(ctx context.Context, client PeerClient, cfg Config) (*Result, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 *Result
+	var zero1 error
+	return zero0, zero1
 }
-

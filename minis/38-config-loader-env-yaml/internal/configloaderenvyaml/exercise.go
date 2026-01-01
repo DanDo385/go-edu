@@ -3,21 +3,17 @@
 package configloaderenvyaml
 
 import (
-	"fmt"
-	"os"
-	"regexp"
-	"strings"
 	"time"
-
-	"gopkg.in/yaml.v3"
 )
 
+// Config represents the complete application configuration
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
 	Database DatabaseConfig `yaml:"database"`
 	Logging  LoggingConfig  `yaml:"logging"`
 }
 
+// ServerConfig holds HTTP server settings
 type ServerConfig struct {
 	Host         string        `yaml:"host"`
 	Port         int           `yaml:"port"`
@@ -25,6 +21,7 @@ type ServerConfig struct {
 	WriteTimeout time.Duration `yaml:"write_timeout"`
 }
 
+// DatabaseConfig holds database connection settings
 type DatabaseConfig struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
@@ -34,6 +31,7 @@ type DatabaseConfig struct {
 	MaxConns int    `yaml:"max_connections"`
 }
 
+// LoggingConfig holds logging configuration
 type LoggingConfig struct {
 	Level  string `yaml:"level"`  // debug, info, warn, error
 	Format string `yaml:"format"` // json, text
@@ -44,27 +42,29 @@ type LoggingConfig struct {
 func LoadConfig(filename string) (*Config, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 *Config
+	var zero1 error
+	return zero0, zero1
 }
 
 // substituteEnvVars - TODO: implement this function
 func substituteEnvVars(input string) string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return ""
+	var zero0 string
+	return zero0
 }
 
 // ApplyDefaults - TODO: implement this function
 func (c *Config) ApplyDefaults() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
 }
 
 // Validate - TODO: implement this function
 func (c *Config) Validate() error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	var zero0 error
+	return zero0
 }
-

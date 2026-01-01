@@ -2,21 +2,16 @@
 
 package keysaddresses
 
-import (
-	"encoding/hex"
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/crypto"
+const (
+	defaultOutDir   = "./keystore-demo"
+	defaultPassword = "changeit"
 )
 
-const (
 // Run - TODO: implement this function
 func Run(cfg Config) (*Result, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 *Result
+	var zero1 error
+	return zero0, zero1
 }
-

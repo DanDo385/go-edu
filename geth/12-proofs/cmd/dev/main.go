@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/12-proofs/internal/proofs"
+	"github.com/example/go-10x-minis/geth/12-proofs/internal/proofs"
 )
 
 /*

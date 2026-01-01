@@ -1,4 +1,51 @@
 {
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "projectPath",
+      "type": "promptString",
+      "description": "Project folder (example: minis/01-hello-strings or geth/01-stack)",
+      "default": "minis/01-hello-strings"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "Debug: cmd/dev (project)",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/${input:projectPath}/cmd/dev",
+      "cwd": "${workspaceFolder}/${input:projectPath}"
+    },
+    {
+      "name": "Debug: cmd/app (project)",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/${input:projectPath}/cmd/app",
+      "cwd": "${workspaceFolder}/${input:projectPath}"
+    },
+    {
+      "name": "Test: go test ./... (project)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/${input:projectPath}",
+      "cwd": "${workspaceFolder}/${input:projectPath}"
+    },
+    {
+      "name": "Test: go test -tags=reference ./... (project)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/${input:projectPath}",
+      "cwd": "${workspaceFolder}/${input:projectPath}",
+      "buildFlags": "-tags=reference"
+    }
+  ]
+}
+
+{
     "version": "0.2.0",
     "configurations": [
         {

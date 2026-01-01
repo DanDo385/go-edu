@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"geth/19-devnets/internal/devnets"
+	"github.com/example/go-10x-minis/geth/19-devnets/internal/devnets"
 )
 
 /*

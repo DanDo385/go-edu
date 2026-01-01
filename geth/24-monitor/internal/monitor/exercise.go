@@ -4,9 +4,6 @@ package monitor
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"time"
 )
 
 /*
@@ -17,6 +14,7 @@ Problem: Implement node health monitoring by checking block freshness and detect
 func Run(ctx context.Context, client MonitorClient, cfg Config) (*Result, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 *Result
+	var zero1 error
+	return zero0, zero1
 }
-

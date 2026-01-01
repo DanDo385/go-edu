@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/16-concurrency/internal/concurrency"
+	"github.com/example/go-10x-minis/geth/16-concurrency/internal/concurrency"
 )
 
 /*

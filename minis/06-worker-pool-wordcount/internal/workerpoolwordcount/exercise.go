@@ -2,6 +2,10 @@
 
 package workerpoolwordcount
 
+import (
+	"context" // Context for cancellation and timeouts
+)
+
 /*
 Problem: Fetch multiple URLs concurrently and count word frequencies
 Constraints:
@@ -14,38 +18,37 @@ Time/Space Complexity:
 - Space: O(u) where u = number of unique words across all URLs
 */
 
-import (
-	"context"  // Context for cancellation and timeouts
-	"fmt"      // Error formatting
-	"io"       // Reading HTTP response bodies
-	"net/http" // HTTP client
-	"strings"  // String manipulation (Fields, ToLower, Map)
-
 // WordCount - TODO: implement this function
 func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 map[string]int
+	var zero1 error
+	return zero0, zero1
 }
 
 // WordCountWithErrGroup - TODO: implement this function
 func WordCountWithErrGroup(ctx context.Context, urls []string, workers int) (map[string]int, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 map[string]int
+	var zero1 error
+	return zero0, zero1
 }
 
 // fetchAndCount - TODO: implement this function
 func fetchAndCount(ctx context.Context, url string) (map[string]int, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	var zero0 map[string]int
+	var zero1 error
+	return zero0, zero1
 }
 
 // tokenizeAndCount - TODO: implement this function
 func tokenizeAndCount(text string) map[string]int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	var zero0 map[string]int
+	return zero0
 }
-

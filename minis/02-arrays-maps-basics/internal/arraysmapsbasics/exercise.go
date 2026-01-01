@@ -2,6 +2,10 @@
 
 package arraysmapsbasics
 
+import (
+	"io"
+)
+
 /*
 Problem: Count word frequencies from text input and find the most common word
 Constraints:
@@ -13,16 +17,12 @@ Time/Space Complexity:
 - Space: O(u) where u = number of unique words (map storage)
 */
 
-import (
-	"bufio"
-	"io"
-	"strings"
-)
-
 // FreqFromReader - TODO: implement this function
 func FreqFromReader(r io.Reader) (map[string]int, string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, "", nil
+	var zero0 map[string]int
+	var zero1 string
+	var zero2 error
+	return zero0, zero1, zero2
 }
-

@@ -14,30 +14,26 @@ Time/Space Complexity:
 - RuneLen: O(n) time, O(1) space (just counting)
 */
 
-import (
-	"strings"
-	"unicode"
-	"unicode/utf8"
-)
-
 // TitleCase - TODO: implement this function
 func TitleCase(s string) string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return ""
+	var zero0 string
+	return zero0
 }
 
 // Reverse - TODO: implement this function
 func Reverse(s string) string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return ""
+	var zero0 string
+	return zero0
 }
 
 // RuneLen - TODO: implement this function
 func RuneLen(s string) int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0
+	var zero0 int
+	return zero0
 }
-

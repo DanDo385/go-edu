@@ -46,3 +46,6 @@ help:
 	@echo "  lint          - Run linter"
 	@echo "  fmt           - Format code"
 	@echo "  help          - Show this help message"
+
+# Make `make todo ...` available from this project directory.
+include ../../mk/todo.mk

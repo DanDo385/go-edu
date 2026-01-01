@@ -50,3 +50,6 @@ help:
 	@echo "  Terminal 2: Edit plugins/greeter/greeter.go"
 	@echo "  Terminal 2: make build-plugins"
 	@echo "  Terminal 1: Watch plugin auto-reload!"
+
+# Make `make todo ...` available from this project directory.
+include ../../mk/todo.mk

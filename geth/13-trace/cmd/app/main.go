@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/13-trace/internal/trace"
+	"github.com/example/go-10x-minis/geth/13-trace/internal/trace"
 )
 
 /*

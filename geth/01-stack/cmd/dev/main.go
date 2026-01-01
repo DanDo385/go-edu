@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/01-stack/internal/stack"
+	"github.com/example/go-10x-minis/geth/01-stack/internal/stack"
 )
 
 /*
@@ -17,10 +17,10 @@ This file provides a deterministic debug environment with fixed inputs.
 Use this for stepping through the code with VS Code debugger.
 
 How to use:
-  1. Set breakpoints at "// BREAKPOINT:" comments
-  2. Press F5 in VS Code
-  3. Select "Debug: cmd/dev (Debug Harness)"
-  4. Step through with F10 (Step Over) and F11 (Step Into)
+ 1. Set breakpoints at "// BREAKPOINT:" comments
+ 2. Press F5 in VS Code
+ 3. Select "Debug: cmd/dev (Debug Harness)"
+ 4. Step through with F10 (Step Over) and F11 (Step Into)
 */
 func main() {
 	fmt.Println("=== Stack Debug Harness ===")

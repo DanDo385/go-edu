@@ -1,5 +1,7 @@
 .PHONY: help tidy test clean
 
+include ../mk/todo.mk
+
 help:
 	@echo "Ethereum Go Development Track"
 	@echo ""
@@ -9,6 +11,7 @@ help:
 	@echo "  go test -tags solution ./01-stack/...  # Run the reference solution"
 	@echo ""
 	@echo "Targets:"
+	@echo "  todo all - Reset exercises in this track to TODO state"
 	@echo "  tidy  - Run go mod tidy to update dependencies"
 	@echo "  test  - Execute all module tests with the solution build tag"
 	@echo "  clean - Remove generated artifacts (databases, *.out, etc.)"
