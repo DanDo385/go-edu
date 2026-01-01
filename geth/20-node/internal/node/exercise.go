@@ -1,6 +1,9 @@
 //go:build !solution && !reference
 
+// TODO:
+// - Read the tests in exercise_test.go to understand expected behavior.
+// - Implement the exported API in this file.
+// - Compare with the fully-commented reference in solution.reference.go (go test -tags=reference ./...).
 package node
-
-// Run currently acts as a placeholder; see module README for full implementation steps.
-func Run() {}
+// TODO: implement Run.
+func Run() { panic("TODO: implement") }

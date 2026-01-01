@@ -1,4 +1,4 @@
-.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help
+.PHONY: setup list list-minis list-geth test bench run run-minis run-geth reset-exercises reset-exercises-dry clean help
 
 # Colors for output
 CYAN := \033[0;36m
@@ -20,6 +20,20 @@ setup:
 		go build ./$$d/... 2>/dev/null || echo "  (no main package)"; \
 	done
 	@echo "\n$(GREEN)✓ All projects verified successfully$(NC)"
+
+# Reset all exercise.go files to TODO-list stubs (generated from solution.reference.go)
+reset-exercises:
+	@SCOPE="$(SCOPE)"; \
+	if [ -z "$$SCOPE" ]; then SCOPE="all"; fi; \
+	echo "$(CYAN)Resetting exercise.go files (scope=$$SCOPE)...$(NC)"; \
+	go run ./tools/reset_exercises -scope "$$SCOPE"
+
+# Dry-run variant: prints what would change
+reset-exercises-dry:
+	@SCOPE="$(SCOPE)"; \
+	if [ -z "$$SCOPE" ]; then SCOPE="all"; fi; \
+	echo "$(CYAN)Dry run: resetting exercise.go files (scope=$$SCOPE)...$(NC)"; \
+	go run ./tools/reset_exercises -scope "$$SCOPE" -dry-run -v
 
 # List all projects from both tracks
 list:
@@ -187,6 +201,12 @@ help:
 	@echo "  make bench           Run all benchmarks"
 	@echo "  make bench P=<path>  Benchmark specific project"
 	@echo "                       Example: make bench P=minis/07-generic-lru-cache"
+	@echo ""
+	@echo "$(GREEN)Exercise resets (scaffolding):$(NC)"
+	@echo "  make reset-exercises            Reset ALL exercise.go to TODO-list stubs"
+	@echo "  make reset-exercises SCOPE=minis   Reset only minis/**/exercise.go"
+	@echo "  make reset-exercises SCOPE=geth    Reset only geth/**/exercise.go"
+	@echo "  make reset-exercises-dry SCOPE=all Dry-run (prints planned changes)"
 	@echo ""
 	@echo "$(GREEN)Cleanup:$(NC)"
 	@echo "  make clean           Clean build cache"
