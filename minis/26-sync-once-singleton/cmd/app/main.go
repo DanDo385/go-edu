@@ -1,7 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	fmt.Println("minis/26-sync-once-singleton: cmd/app")
+	fmt.Println("Project: 26-sync-once-singleton")
+	fmt.Println("To run tests: go test ./...")
+	
+	if len(os.Args) > 1 {
+		fmt.Printf("Arguments provided: %v\n", os.Args[1:])
+	} else {
+		fmt.Println("No arguments provided. Usage: go run ./cmd/app/main.go [args...]")
+	}
+	
+	fmt.Println("\nSee internal/synconcesingleton/exercise.go for the implementation.")
 }

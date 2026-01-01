@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("minis/49-state-machine-pattern: cmd/dev")
+	fmt.Println("Debug Harness: 49-state-machine-pattern")
+	
+	// Define fixed inputs here for debugging
+	// input := "some value"
+	
+	// BREAKPOINT: Set breakpoint here
+	fmt.Println("Ready to debug internal logic...")
 }

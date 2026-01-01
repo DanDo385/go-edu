@@ -2,6 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug: cmd/app",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/app",
+            "args": [],
+            "noDebug": true
+        },
+        {
             "name": "Debug: cmd/dev",
             "type": "go",
             "request": "launch",
@@ -12,16 +21,7 @@
             "buildFlags": "-gcflags=all=-N -l"
         },
         {
-            "name": "Run: cmd/app",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/app",
-            "args": [],
-            "noDebug": true
-        },
-        {
-            "name": "Test: internal package",
+            "name": "Test: Run All Tests",
             "type": "go",
             "request": "launch",
             "mode": "test",
@@ -33,7 +33,21 @@
             "buildFlags": "-gcflags=all=-N -l"
         },
         {
-            "name": "Test: internal package (reference)",
+            "name": "Test: Current Test Function",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/internal/hellostrings",
+            "args": [
+                "-test.v",
+                "-test.run",
+                "${selectedText}"
+            ],
+            "showLog": true,
+            "buildFlags": "-gcflags=all=-N -l"
+        },
+        {
+            "name": "Test: View Reference Implementation",
             "type": "go",
             "request": "launch",
             "mode": "test",
@@ -43,6 +57,13 @@
             ],
             "showLog": true,
             "buildFlags": "-tags=reference -gcflags=all=-N -l"
+        },
+        {
+            "name": "Debug: Current File",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${file}"
         }
     ]
 }

@@ -1,7 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	fmt.Println("minis/08-http-client-retries: cmd/app")
+	fmt.Println("Project: 08-http-client-retries")
+	fmt.Println("To run tests: go test ./...")
+	
+	if len(os.Args) > 1 {
+		fmt.Printf("Arguments provided: %v\n", os.Args[1:])
+	} else {
+		fmt.Println("No arguments provided. Usage: go run ./cmd/app/main.go [args...]")
+	}
+	
+	fmt.Println("\nSee internal/httpclientretries/exercise.go for the implementation.")
 }

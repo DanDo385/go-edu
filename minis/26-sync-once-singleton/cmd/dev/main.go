@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("minis/26-sync-once-singleton: cmd/dev")
+	fmt.Println("Debug Harness: 26-sync-once-singleton")
+	
+	// Define fixed inputs here for debugging
+	// input := "some value"
+	
+	// BREAKPOINT: Set breakpoint here
+	fmt.Println("Ready to debug internal logic...")
 }

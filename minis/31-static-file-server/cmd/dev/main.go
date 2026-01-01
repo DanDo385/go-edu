@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("minis/31-static-file-server: cmd/dev")
+	fmt.Println("Debug Harness: 31-static-file-server")
+	
+	// Define fixed inputs here for debugging
+	// input := "some value"
+	
+	// BREAKPOINT: Set breakpoint here
+	fmt.Println("Ready to debug internal logic...")
 }

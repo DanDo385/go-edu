@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	fmt.Println("minis/36-caching-reverse-proxy: cmd/dev")
+	fmt.Println("Debug Harness: 36-caching-reverse-proxy")
+	
+	// Define fixed inputs here for debugging
+	// input := "some value"
+	
+	// BREAKPOINT: Set breakpoint here
+	fmt.Println("Ready to debug internal logic...")
 }
