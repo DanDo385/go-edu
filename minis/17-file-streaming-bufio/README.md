@@ -1,0 +1,102 @@
+# 17: File Streaming
+
+## What Is This Project About?
+
+Efficient file streaming with bufio
+
+## Why Is This Important?
+
+This module teaches essential Go programming skills for building robust applications.
+
+## Real-World Problems This Solves
+
+- Building production Go applications
+- Writing idiomatic Go code
+- Solving common programming challenges
+
+## Key Concepts You'll Learn
+
+- File Streaming fundamentals
+- Go language features
+- Best practices and patterns
+
+## Prerequisites
+
+- Basic Go syntax knowledge
+- Understanding of previous minis modules (if sequential)
+
+## Project Structure
+
+```
+minis/17-file-streaming-bufio/
+├── cmd/
+│   ├── app/
+│   │   └── main.go          # CLI application
+│   └── dev/
+│       └── main.go          # Debug harness
+├── internal/
+│   └── filestreamingbufio/
+│       ├── exercise.go      # Your implementation
+│       ├── exercise_test.go # Tests
+│       ├── solution.reference.go      # Reference solution
+│       └── solution_no_err.reference.go # Simplified reference
+└── .vscode/
+    └── launch.json          # Debug configurations
+```
+
+## How to Run
+
+### Using cmd/app/main.go (CLI Arguments)
+
+```bash
+go run ./cmd/app/main.go [args...]
+```
+
+### Using cmd/dev/main.go (Debug Harness)
+
+```bash
+# Run with fixed test inputs (recommended for learning)
+go run ./cmd/dev/main.go
+
+# Or use VS Code debugger (F5)
+```
+
+## How to Debug
+
+1. Set breakpoints at `// BREAKPOINT:` comments in the code
+2. Press F5 in VS Code and select "Debug: cmd/dev (Debug Harness)"
+3. Step through code:
+   - F10 (Step Over) - Execute current line
+   - F11 (Step Into) - Enter function calls
+4. Watch variables in the Variables panel
+5. Inspect call stack to understand execution flow
+
+## Testing
+
+```bash
+# Run all tests
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run specific test
+go test -v -run TestFunctionName ./...
+
+# Run with reference implementation
+go test -tags=reference -v ./...
+```
+
+## Exercises
+
+See `internal/filestreamingbufio/exercise.go` for implementation details and exercises.
+
+## Additional Resources
+
+- [Go Documentation](https://go.dev/doc/)
+- [Go Standard Library](https://pkg.go.dev/std)
+- [Effective Go](https://go.dev/doc/effective_go)
+
+## Next Steps
+
+Continue with the next module to build on these concepts!

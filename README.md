@@ -142,28 +142,239 @@ go test -tags=reference ./...
 
 #### geth/
 
-- [geth/01-stack](./geth/01-stack/)
-- [geth/02-rpc-basics](./geth/02-rpc-basics/)
-- [geth/03-keys-addresses](./geth/03-keys-addresses/)
-- [geth/04-accounts-balances](./geth/04-accounts-balances/)
-- [geth/05-tx-nonces](./geth/05-tx-nonces/)
-- [geth/06-eip1559](./geth/06-eip1559/)
-- [geth/07-eth-call](./geth/07-eth-call/)
-- [geth/08-abigen](./geth/08-abigen/)
-- [geth/09-events](./geth/09-events/)
-- [geth/10-filters](./geth/10-filters/)
-- [geth/11-storage](./geth/11-storage/)
-- [geth/12-proofs](./geth/12-proofs/)
-- [geth/13-trace](./geth/13-trace/)
-- [geth/14-explorer](./geth/14-explorer/)
-- [geth/15-receipts](./geth/15-receipts/)
-- [geth/16-concurrency](./geth/16-concurrency/)
-- [geth/17-indexer](./geth/17-indexer/)
-- [geth/18-reorgs](./geth/18-reorgs/)
-- [geth/19-devnets](./geth/19-devnets/)
-- [geth/20-node](./geth/20-node/)
-- [geth/21-sync](./geth/21-sync/)
-- [geth/22-peers](./geth/22-peers/)
-- [geth/23-mempool](./geth/23-mempool/)
-- [geth/24-monitor](./geth/24-monitor/)
-- [geth/25-toolbox](./geth/25-toolbox/)
+- [geth/01-stack](./geth/01-stack/) - RPC connectivity and chain information
+- [geth/02-rpc-basics](./geth/02-rpc-basics/) - RPC methods and retry logic
+- [geth/03-keys-addresses](./geth/03-keys-addresses/) - Key generation and addresses
+- [geth/04-accounts-balances](./geth/04-accounts-balances/) - Account state queries
+- [geth/05-tx-nonces](./geth/05-tx-nonces/) - Transaction nonces and sequencing
+- [geth/06-smart-contracts](./geth/06-smart-contracts/) - **Smart contract interaction fundamentals (Geth console tutorial)**
+- [geth/07-eth-call](./geth/07-eth-call/) - Contract calls in Go (eth_call)
+- [geth/08-abigen](./geth/08-abigen/) - Type-safe contract bindings
+- [geth/09-events](./geth/09-events/) - Contract events and logs
+- [geth/10-filters](./geth/10-filters/) - Log filtering techniques
+- [geth/11-storage](./geth/11-storage/) - Direct storage slot reading
+- [geth/12-proofs](./geth/12-proofs/) - Merkle proofs and verification
+- [geth/13-trace](./geth/13-trace/) - Transaction tracing and debugging
+- [geth/14-explorer](./geth/14-explorer/) - Block explorer implementation
+- [geth/15-receipts](./geth/15-receipts/) - Transaction receipt handling
+- [geth/16-concurrency](./geth/16-concurrency/) - Concurrent RPC patterns
+- [geth/17-indexer](./geth/17-indexer/) - Event indexer implementation
+- [geth/18-reorgs](./geth/18-reorgs/) - Chain reorganization handling
+- [geth/19-devnets](./geth/19-devnets/) - Local development networks
+- [geth/20-node](./geth/20-node/) - Geth node management
+- [geth/21-sync](./geth/21-sync/) - Chain synchronization modes
+- [geth/22-peers](./geth/22-peers/) - P2P peer management
+- [geth/23-mempool](./geth/23-mempool/) - Mempool monitoring
+- [geth/24-monitor](./geth/24-monitor/) - Network and node monitoring
+- [geth/25-toolbox](./geth/25-toolbox/) - Developer utilities
+- [geth/26-eip1559](./geth/26-eip1559/) - EIP-1559 transaction fee mechanics
+
+---
+
+## Testing and Debugging Guide
+
+### Overview
+
+Each project provides two ways to run and debug your implementation:
+
+1. **cmd/app/main.go** - Application entry point with CLI arguments
+2. **cmd/dev/main.go** - Debug harness with fixed inputs (recommended for learning)
+
+### Using cmd/dev/main.go (Recommended for Learning)
+
+The `cmd/dev/main.go` file is a debug harness designed for stepping through code with breakpoints.
+
+#### Why Use cmd/dev/main.go?
+
+- **Fixed inputs**: No need to remember command-line arguments
+- **Deterministic**: Same inputs every time, making debugging predictable
+- **Focused**: Contains only the essential code to test your implementation
+- **Breakpoint-friendly**: Includes "// BREAKPOINT:" comments at key locations
+
+#### How to Use
+
+1. **Open** `cmd/dev/main.go` in VS Code
+2. **Set breakpoints** at "// BREAKPOINT:" comments or anywhere in your code
+3. **Press F5** and select "Debug: cmd/dev (Debug Harness)"
+4. **Step through** using:
+   - F10 (Step Over) - Execute current line
+   - F11 (Step Into) - Enter function calls
+   - Shift+F11 (Step Out) - Return to caller
+5. **Watch variables** in the Variables panel
+
+#### Example Workflow
+
+```bash
+# 1. Navigate to project
+cd minis/01-hello-strings
+
+# 2. Open cmd/dev/main.go in VS Code
+
+# 3. Set breakpoint in internal/hellostrings/exercise.go
+
+# 4. Press F5, select "Debug: cmd/dev"
+
+# 5. Debugger stops at breakpoint - step through implementation
+```
+
+### Using cmd/app/main.go (CLI Arguments)
+
+The `cmd/app/main.go` file is the application entry point that accepts command-line arguments.
+
+#### Project-Specific CLI Arguments
+
+Each project has different CLI arguments based on its purpose:
+
+**minis/ Projects:**
+
+- **01-hello-strings**: `[input_string] [function]`
+  ```bash
+  go run ./cmd/app/main.go "hello world" titlecase
+  ```
+
+- **06-worker-pool-wordcount**: `[url1] [url2] ... [urlN]`
+  ```bash
+  go run ./cmd/app/main.go https://example.com https://example.org
+  ```
+
+- **08-http-client-retries**: `[url] [max-retries]`
+  ```bash
+  go run ./cmd/app/main.go https://api.example.com 3
+  ```
+
+**geth/ Projects:**
+
+- **01-stack**: `<RPC_URL> [block_number]`
+  ```bash
+  go run ./cmd/app/main.go https://eth.llamarpc.com
+  go run ./cmd/app/main.go https://eth.llamarpc.com 12345
+  ```
+
+- **05-tx-nonces**: `<RPC_URL> <address>`
+  ```bash
+  go run ./cmd/app/main.go https://eth.llamarpc.com 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+  ```
+
+- **06-smart-contracts**: Console-based tutorial (see README.md)
+  ```bash
+  # This module uses Geth console, not cmd/app
+  # See geth/06-smart-contracts/README.md for tutorial
+  ```
+
+- **07-eth-call**: `<RPC_URL> <contract_address>`
+  ```bash
+  go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+  ```
+
+- **09-events**: `<RPC_URL> <contract_address> <event_signature>`
+  ```bash
+  go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991... Transfer(address,address,uint256)
+  ```
+
+#### Debugging cmd/app/main.go
+
+1. **Open** `.vscode/launch.json`
+2. **Find** "Debug: cmd/app" configuration
+3. **Edit** the `args` array to include your CLI arguments:
+   ```json
+   "args": ["https://eth.llamarpc.com", "12345"]
+   ```
+4. **Press F5** and select "Debug: cmd/app"
+5. Set breakpoints and step through
+
+### Testing with go test
+
+#### Running Tests
+
+```bash
+# Run all tests in current project
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run specific test function
+go test -v -run TestFunctionName ./...
+
+# Run with reference implementation
+go test -tags=reference -v ./...
+```
+
+#### Debugging Tests
+
+1. Set breakpoint in test function or exercise code
+2. Press F5 and select "Test: Run All Tests" or "Test: Current Test Function"
+3. Step through test execution
+
+### VS Code Debug Configurations
+
+Each project includes `.vscode/launch.json` with these configurations:
+
+- **Debug: cmd/app** - Debug application with CLI arguments
+- **Debug: cmd/dev (Debug Harness)** - Debug harness with fixed inputs (recommended)
+- **Test: Run All Tests** - Run all tests with debugger
+- **Test: Current Test Function** - Debug specific test (edit test name in launch.json)
+- **Test: View Reference Implementation** - Run tests with `solution.reference.go`
+- **Debug: Current File** - Debug currently open file
+
+### Tips for Effective Debugging
+
+1. **Start with cmd/dev/main.go** - It's designed for learning
+2. **Use breakpoints liberally** - Set them at function entry points
+3. **Watch the Variables panel** - See how data transforms
+4. **Use Call Stack panel** - Understand function call hierarchy
+5. **Step Into (F11)** - Enter function implementations
+6. **Step Over (F10)** - Execute line by line
+7. **Step Out (Shift+F11)** - Return to caller
+
+### Common Issues
+
+#### "Cannot find package"
+
+```bash
+# Run go mod tidy in project directory
+go mod tidy
+# Ensure you're in the correct directory
+```
+
+#### "Build constraints exclude all Go files"
+
+- Check build tags in `exercise.go` (should be `//go:build !solution && !reference`)
+- Ensure you're not building with conflicting tags
+
+#### "RPC connection failed" (geth projects)
+
+- Check RPC URL is correct and accessible
+- Try a different public RPC endpoint: https://chainlist.org/
+- Ensure network connectivity
+- Verify firewall settings
+
+#### "Geth console not working" (geth/06-smart-contracts)
+
+- Ensure Geth is installed: `geth version`
+- Check Geth is running: `geth attach` should connect
+- Verify RPC endpoint is accessible
+- Check firewall settings
+
+### Special Note: geth/06-smart-contracts
+
+**Module 06 is console-tutorial based.** The main learning happens in the Geth JavaScript console, not in Go code. This teaches you:
+
+- How contracts work at the RPC level
+- The difference between `eth_call` (read-only) and `eth_sendTransaction` (state-changing)
+- How to decode events and logs manually
+- What happens under the hood before you use Go abstractions
+
+After completing the console tutorial, modules 07-09 teach you how to do the same things in Go:
+
+- **07-eth-call**: Making contract calls from Go
+- **08-abigen**: Type-safe Go bindings
+- **09-events**: Event subscriptions and decoding
+
+To use module 06:
+1. Read `geth/06-smart-contracts/README.md`
+2. Start Geth: `geth --dev --http --http.api eth,net,web3,personal`
+3. Attach: `geth attach`
+4. Follow the step-by-step console tutorial
+
+---

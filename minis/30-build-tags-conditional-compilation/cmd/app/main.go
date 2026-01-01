@@ -1,7 +1,51 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
+
+/*
+minis/30-build-tags-conditional-compilation: cmd/app
+
+CLI application demonstrating the concepts from this module.
+
+Usage:
+  go run ./cmd/app/main.go [args...]
+
+See README.md for specific usage examples and argument details.
+
+BREAKPOINT: Set breakpoints at "// BREAKPOINT:" comments for debugging.
+*/
 
 func main() {
-	fmt.Println("minis/30-build-tags-conditional-compilation: cmd/app")
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+	fmt.Println("  minis/30-build-tags-conditional-compilation")
+	fmt.Println("═══════════════════════════════════════════════════════════════")
+	fmt.Println()
+
+	// BREAKPOINT: Inspect command-line arguments
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: See README.md for command-line argument details")
+		fmt.Printf("Example: %s [args...]\n", os.Args[0])
+		fmt.Println()
+		fmt.Println("This module demonstrates: buildtagsconditionalcompilation concepts")
+		fmt.Println("See internal/buildtagsconditionalcompilation/ for implementation details")
+		os.Exit(1)
+	}
+
+	// Parse arguments (project-specific)
+	args := os.Args[1:]
+	
+	// BREAKPOINT: Exercise execution point
+	fmt.Println("Running exercise...")
+	fmt.Printf("Arguments: %v\n", args)
+	fmt.Println()
+	
+	// TODO: Add exercise-specific logic here
+	// Import and call functions from internal/buildtagsconditionalcompilation/exercise.go
+	
+	fmt.Println("✓ Complete")
+	fmt.Println()
+	fmt.Println("See internal/buildtagsconditionalcompilation/exercise.go for implementation")
 }
