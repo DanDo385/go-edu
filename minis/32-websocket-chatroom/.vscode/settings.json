@@ -1,0 +1,12 @@
+{
+    "go.testFlags": [
+        "-v"
+    ],
+    "go.buildFlags": [],
+    "go.lintOnSave": "package",
+    "go.formatTool": "goimports",
+    "editor.formatOnSave": true,
+    "[go]": {
+        "editor.defaultFormatter": "golang.go"
+    }
+}
