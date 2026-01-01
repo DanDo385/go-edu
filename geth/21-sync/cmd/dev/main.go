@@ -1,7 +1,42 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"time"
 
+	"github.com/ethereum/go-ethereum/ethclient"
+
+	"geth/21-sync/internal/sync"
+)
+
+/*
+Debug Harness for Sync Module
+*/
 func main() {
-	fmt.Println("geth/21-sync: cmd/dev")
+	fmt.Println("=== Sync Debug Harness ===")
+	fmt.Println()
+
+	rpcURL := "https://eth.llamarpc.com"
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client, err := ethclient.DialContext(ctx, rpcURL)
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+		return
+	}
+	defer client.Close()
+
+	// BREAKPOINT: Step into Run()
+	result, err := sync.Run(ctx, client, sync.Config{})
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Result: %+v\n", result)
+	fmt.Println()
+	fmt.Println("Next: Proceed to geth/22-peers")
 }
