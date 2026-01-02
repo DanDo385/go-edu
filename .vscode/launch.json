@@ -27,7 +27,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/dev",
+            "program": "${fileDirname}/cmd/dev",
+            "cwd": "${fileDirname}",
             "showLog": true,
             "env": {},
             "args": []
@@ -37,7 +38,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/app",
+            "program": "${fileDirname}/cmd/app",
+            "cwd": "${fileDirname}",
             "showLog": true,
             "env": {},
             "args": []

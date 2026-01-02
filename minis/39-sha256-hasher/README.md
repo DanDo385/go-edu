@@ -1,0 +1,98 @@
+# 39 Sha256 Hasher
+
+## Problem
+
+Implementing SHA-256 cryptographic hash operations
+
+## Complexity
+
+- HashString: O(n) time, O(1) space (where n = string length)
+
+## Project Structure
+
+```
+39-sha256-hasher/
+├── cmd/
+│   ├── app/
+│   │   └── main.go          # CLI application with custom arguments
+│   └── dev/
+│       └── main.go          # Debug harness with auto-demo
+├── internal/
+│   └── sha256hasher/
+│       ├── exercise.go      # YOUR CODE GOES HERE
+│       ├── exercise_test.go # Test cases
+│       └── solution.reference.go  # Reference implementation
+└── README.md
+```
+
+## Getting Started
+
+1. Navigate to this directory:
+   ```bash
+   cd minis/39-sha256-hasher
+   ```
+
+2. Open the exercise file:
+   ```bash
+   code internal/sha256hasher/exercise.go
+   ```
+
+3. Implement the TODO functions
+
+4. Run tests:
+   ```bash
+   go test -v ./...
+   ```
+
+## CLI Usage
+
+### Using cmd/app/main.go
+
+This project's CLI application accepts the following arguments:
+
+```bash
+go run ./cmd/app/main.go [arguments]
+```
+
+Run without arguments to see usage information:
+
+```bash
+go run ./cmd/app/main.go
+```
+
+### Using cmd/dev/main.go
+
+The `cmd/dev/main.go` file automatically demonstrates the project's capabilities
+by running through different scenarios with pre-configured inputs.
+
+**Run the demo:**
+
+```bash
+go run ./cmd/dev/main.go
+```
+
+**Debug with VS Code:**
+
+1. Open `cmd/dev/main.go`
+2. Set breakpoints at `// BREAKPOINT:` comments
+3. Press F5 and select "Debug cmd/dev (Debug Harness)"
+
+## Testing
+
+Run all tests:
+
+```bash
+go test -v ./...
+```
+
+Run specific test:
+
+```bash
+go test -v -run TestFunctionName ./...
+```
+
+## Reference Solution
+
+If you get stuck, check `internal/sha256hasher/solution.reference.go` for a complete
+implementation with detailed explanations.
+
