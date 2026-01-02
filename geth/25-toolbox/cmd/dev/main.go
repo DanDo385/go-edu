@@ -1,55 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-
-	"geth/25-toolbox/internal/toolbox"
+	"github.com/example/go-10x-minis/geth/25-toolbox/internal/toolbox/cli"
 )
 
-/*
-Debug Harness for Toolbox Module
-
-This is the final module - combining all skills learned throughout the course.
-*/
 func main() {
-	fmt.Println("=== Toolbox Debug Harness ===")
+	fmt.Println("=== geth/25-toolbox: cmd/dev ===")
 	fmt.Println()
 
-	rpcURL := "https://eth.llamarpc.com"
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
-	}
-	defer client.Close()
-
-	// BREAKPOINT: Step into Run()
-	result, err := toolbox.Run(ctx, client, toolbox.Config{})
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
+		fmt.Println()
 	}
 
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("=== Congratulations! ===")
-	fmt.Println("You've completed all geth modules!")
-	fmt.Println()
-	fmt.Println("Skills learned:")
-	fmt.Println("- Ethereum connectivity and RPC basics")
-	fmt.Println("- Key management and addresses")
-	fmt.Println("- Transaction nonces and EIP-1559")
-	fmt.Println("- Smart contract interaction (console and Go)")
-	fmt.Println("- Events, filters, and logs")
-	fmt.Println("- Storage, proofs, and tracing")
-	fmt.Println("- Indexing and chain monitoring")
-	fmt.Println("- Node operations and networking")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

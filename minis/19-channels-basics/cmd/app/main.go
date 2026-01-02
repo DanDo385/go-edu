@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/19-channels-basics/internal/channelsbasics/cli"
+)
 
 func main() {
-	fmt.Println("minis/19-channels-basics: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

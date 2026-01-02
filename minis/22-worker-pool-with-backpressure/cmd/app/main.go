@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/22-worker-pool-with-backpressure/internal/workerpoolwithbackpressure/cli"
+)
 
 func main() {
-	fmt.Println("minis/22-worker-pool-with-backpressure: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

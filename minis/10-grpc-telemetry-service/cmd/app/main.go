@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/internal/grpctelemetryservice/cli"
+)
 
 func main() {
-	fmt.Println("minis/10-grpc-telemetry-service: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

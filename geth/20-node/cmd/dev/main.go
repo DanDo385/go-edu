@@ -1,31 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"geth/20-node/internal/node"
+	"github.com/example/go-10x-minis/geth/20-node/internal/node/cli"
 )
 
-/*
-Debug Harness for Node Module
-*/
 func main() {
-	fmt.Println("=== Node Debug Harness ===")
+	fmt.Println("=== geth/20-node: cmd/dev ===")
 	fmt.Println()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// BREAKPOINT: Step into Run()
-	result, err := node.Run(ctx, node.Config{})
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
+		fmt.Println()
 	}
 
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("Next: Proceed to geth/21-sync")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

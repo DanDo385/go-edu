@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/31-static-file-server/internal/staticfileserver/cli"
+)
 
 func main() {
-	fmt.Println("minis/31-static-file-server: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

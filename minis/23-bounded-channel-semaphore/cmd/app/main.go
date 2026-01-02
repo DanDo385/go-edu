@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/23-bounded-channel-semaphore/internal/boundedchannelsemaphore/cli"
+)
 
 func main() {
-	fmt.Println("minis/23-bounded-channel-semaphore: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

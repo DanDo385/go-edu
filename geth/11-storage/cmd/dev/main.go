@@ -1,44 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-
-	"geth/11-storage/internal/storage"
+	"github.com/example/go-10x-minis/geth/11-storage/internal/storage/cli"
 )
 
-/*
-Debug Harness for Storage Module
-*/
 func main() {
-	fmt.Println("=== Storage Debug Harness ===")
+	fmt.Println("=== geth/11-storage: cmd/dev ===")
 	fmt.Println()
 
-	rpcURL := "https://eth.llamarpc.com"
-	contractAddr := common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
-	}
-	defer client.Close()
-
-	// BREAKPOINT: Step into Run()
-	result, err := storage.Run(ctx, client, storage.Config{Contract: contractAddr})
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
+		fmt.Println()
 	}
 
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("Next: Proceed to geth/12-proofs")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

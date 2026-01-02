@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/21-race-detection-demo/internal/racedetectiondemo/cli"
+)
 
 func main() {
-	fmt.Println("minis/21-race-detection-demo: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

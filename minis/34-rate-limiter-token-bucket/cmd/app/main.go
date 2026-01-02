@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/34-rate-limiter-token-bucket/internal/ratelimitertokenbucket/cli"
+)
 
 func main() {
-	fmt.Println("minis/34-rate-limiter-token-bucket: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

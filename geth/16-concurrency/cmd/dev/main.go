@@ -1,42 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-
-	"geth/16-concurrency/internal/concurrency"
+	"github.com/example/go-10x-minis/geth/16-concurrency/internal/concurrency/cli"
 )
 
-/*
-Debug Harness for Concurrency Module
-*/
 func main() {
-	fmt.Println("=== Concurrency Debug Harness ===")
+	fmt.Println("=== geth/16-concurrency: cmd/dev ===")
 	fmt.Println()
 
-	rpcURL := "https://eth.llamarpc.com"
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
-	}
-	defer client.Close()
-
-	// BREAKPOINT: Step into Run()
-	result, err := concurrency.Run(ctx, client, concurrency.Config{})
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
+		fmt.Println()
 	}
 
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("Next: Proceed to geth/17-indexer")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

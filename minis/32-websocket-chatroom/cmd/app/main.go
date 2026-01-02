@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/32-websocket-chatroom/internal/websocketchatroom/cli"
+)
 
 func main() {
-	fmt.Println("minis/32-websocket-chatroom: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

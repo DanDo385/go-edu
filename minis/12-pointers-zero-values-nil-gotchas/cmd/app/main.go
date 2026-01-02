@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/12-pointers-zero-values-nil-gotchas/internal/pointerszerovaluesnilgotchas/cli"
+)
 
 func main() {
-	fmt.Println("minis/12-pointers-zero-values-nil-gotchas: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

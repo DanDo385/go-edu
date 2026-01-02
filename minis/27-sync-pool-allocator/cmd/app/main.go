@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/27-sync-pool-allocator/internal/syncpoolallocator/cli"
+)
 
 func main() {
-	fmt.Println("minis/27-sync-pool-allocator: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

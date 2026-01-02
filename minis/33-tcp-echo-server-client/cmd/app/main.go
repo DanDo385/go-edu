@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/33-tcp-echo-server-client/internal/tcpechoserverclient/cli"
+)
 
 func main() {
-	fmt.Println("minis/33-tcp-echo-server-client: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

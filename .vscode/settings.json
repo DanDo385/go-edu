@@ -1,0 +1,20 @@
+{
+  "go.useLanguageServer": true,
+  "go.toolsManagement.autoUpdate": true,
+  "gopls": {
+    "staticcheck": true,
+    "analyses": {
+      "unusedparams": true,
+      "nilness": true,
+      "unusedwrite": true
+    }
+  },
+  "go.testFlags": ["-count=1"],
+  "go.testTimeout": "120s",
+  "files.trimTrailingWhitespace": true,
+  "editor.formatOnSave": true,
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  }
+}
+

@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/16-context-cancellation-timeouts/internal/contextcancellationtimeouts/cli"
+)
 
 func main() {
-	fmt.Println("minis/16-context-cancellation-timeouts: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

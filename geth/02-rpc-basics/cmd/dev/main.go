@@ -1,55 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-
-	"geth/02-rpc-basics/internal/rpcbasics"
+	"github.com/example/go-10x-minis/geth/02-rpc-basics/internal/rpcbasics/cli"
 )
 
-/*
-Debug Harness for RPC Basics Module
-
-Fixed inputs for deterministic debugging sessions.
-*/
 func main() {
-	fmt.Println("=== RPC Basics Debug Harness ===")
+	fmt.Println("=== geth/02-rpc-basics: cmd/dev ===")
 	fmt.Println()
 
-	rpcURL := "https://eth.llamarpc.com"
-	fmt.Printf("RPC URL: %s\n", rpcURL)
-	fmt.Println()
-
-	// BREAKPOINT: Connect to Ethereum
-	fmt.Println("Step 1: Connecting...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
-	}
-	defer client.Close()
-
-	fmt.Println("         Connected!")
-	fmt.Println()
-
-	// BREAKPOINT: Step into Run()
-	fmt.Println("Step 2: Running RPC basics...")
-
-	result, err := rpcbasics.Run(ctx, client, rpcbasics.Config{})
-	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
+		fmt.Println()
 	}
 
-	fmt.Println("Step 3: Results")
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("Next: Proceed to geth/03-keys-addresses")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

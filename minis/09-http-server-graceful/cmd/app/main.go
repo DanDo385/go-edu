@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/09-http-server-graceful/internal/httpservergraceful/cli"
+)
 
 func main() {
-	fmt.Println("minis/09-http-server-graceful: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

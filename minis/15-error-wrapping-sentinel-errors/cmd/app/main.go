@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/15-error-wrapping-sentinel-errors/internal/errorwrappingsentinelerrors/cli"
+)
 
 func main() {
-	fmt.Println("minis/15-error-wrapping-sentinel-errors: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

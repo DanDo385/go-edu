@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/11-slices-internals-capacity-growth/internal/slicesinternalscapacitygrowth/cli"
+)
 
 func main() {
-	fmt.Println("minis/11-slices-internals-capacity-growth: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

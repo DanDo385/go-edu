@@ -1,36 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"time"
+	"os"
+	"strings"
 
-	"geth/19-devnets/internal/devnets"
+	"github.com/example/go-10x-minis/geth/19-devnets/internal/devnets/cli"
 )
 
-/*
-Debug Harness for Devnets Module
-*/
 func main() {
-	fmt.Println("=== Devnets Debug Harness ===")
+	fmt.Println("=== geth/19-devnets: cmd/dev ===")
 	fmt.Println()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// BREAKPOINT: Step into Run()
-	result, err := devnets.Run(ctx, devnets.Config{
-		RPCURL: "http://localhost:8545",
-	})
-	if err != nil {
-		fmt.Printf("Note: %v\n", err)
-		fmt.Println("(This is expected if no local devnet is running)")
+	for _, ex := range cli.Examples() {
+		fmt.Printf("$ go run ./cmd/app %s\n", strings.Join(ex.Args, " "))
+		code := cli.RunCLI(ex.Args)
+		if code != 0 {
+			fmt.Printf("-> exited with code %d\n", code)
+		}
 		fmt.Println()
-		fmt.Println("To start a devnet: geth --dev --http --http.api eth,net,web3,personal")
-		return
 	}
 
-	fmt.Printf("Result: %+v\n", result)
-	fmt.Println()
-	fmt.Println("Next: Proceed to geth/20-node")
+	// If someone passes args manually to cmd/dev, forward them too.
+	if len(os.Args) > 1 {
+		fmt.Printf("$ (forwarded) go run ./cmd/app %s\n", strings.Join(os.Args[1:], " "))
+		os.Exit(cli.RunCLI(os.Args[1:]))
+	}
 }

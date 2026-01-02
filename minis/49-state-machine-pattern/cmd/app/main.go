@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/49-state-machine-pattern/internal/statemachinepattern/cli"
+)
 
 func main() {
-	fmt.Println("minis/49-state-machine-pattern: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

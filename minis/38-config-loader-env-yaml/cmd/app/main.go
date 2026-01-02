@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/38-config-loader-env-yaml/internal/configloaderenvyaml/cli"
+)
 
 func main() {
-	fmt.Println("minis/38-config-loader-env-yaml: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

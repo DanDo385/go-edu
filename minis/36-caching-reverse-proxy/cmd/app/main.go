@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/36-caching-reverse-proxy/internal/cachingreverseproxy/cli"
+)
 
 func main() {
-	fmt.Println("minis/36-caching-reverse-proxy: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

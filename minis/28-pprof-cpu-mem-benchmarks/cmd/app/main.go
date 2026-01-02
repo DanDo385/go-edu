@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/28-pprof-cpu-mem-benchmarks/internal/pprofcpumembenchmarks/cli"
+)
 
 func main() {
-	fmt.Println("minis/28-pprof-cpu-mem-benchmarks: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

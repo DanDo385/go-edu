@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/24-sync-mutex-vs-rwmutex/internal/syncmutexvsrwmutex/cli"
+)
 
 func main() {
-	fmt.Println("minis/24-sync-mutex-vs-rwmutex: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

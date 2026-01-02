@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/30-build-tags-conditional-compilation/internal/buildtagsconditionalcompilation/cli"
+)
 
 func main() {
-	fmt.Println("minis/30-build-tags-conditional-compilation: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

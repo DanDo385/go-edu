@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/14-methods-value-vs-pointer-receivers/internal/methodsvaluevspointerreceivers/cli"
+)
 
 func main() {
-	fmt.Println("minis/14-methods-value-vs-pointer-receivers: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

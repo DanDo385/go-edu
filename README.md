@@ -17,7 +17,8 @@ go-edu/
 │   ├── 02-arrays-maps-basics/
 │   └── ...
 ├── .vscode/
-│   └── launch.json          # Root-level debug configurations
+│   ├── launch.json          # Root-level debug configurations (universal)
+│   └── settings.json        # Root-level editor + Go tooling settings
 ├── Makefile                 # Build automation and exercise management
 ├── go.mod
 ├── go.sum
@@ -42,8 +43,6 @@ Each project follows a standard Go project structure:
 │       ├── exercise_test.go # Test cases
 │       ├── solution.reference.go    # Complete implementation with explanations
 │       └── solution_no_err.reference.go  # (optional) Error-free variant
-└── .vscode/
-    └── launch.json          # Project-specific debug configurations
 ```
 
 ### Key Files Explained
@@ -206,12 +205,14 @@ go run ./cmd/dev/main.go
 
 ### VS Code Launch Configurations
 
-The root `.vscode/launch.json` provides these configurations:
+The root `.vscode/launch.json` provides universal configurations:
 
 | Configuration | Purpose |
 |--------------|---------|
-| **Debug Current Package** | Auto-detects if it's a program or test |
-| **Debug Tests (Current Package)** | Runs tests with debugger attached |
+| **Go: Debug current package (auto)** | Debug whatever package your active file is in |
+| **Go: Debug tests (current package)** | Debug tests for the package your active file is in |
+| **Go: Debug cmd/app (pick project)** | Prompt for `minis/...` or `geth/...` project, then debug `cmd/app` |
+| **Go: Debug cmd/dev (pick project)** | Prompt for project, then debug `cmd/dev` (auto-runs examples) |
 
 ## Learning Paths
 

@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/43-proof-of-work-demo/internal/proofofworkdemo/cli"
+)
 
 func main() {
-	fmt.Println("minis/43-proof-of-work-demo: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

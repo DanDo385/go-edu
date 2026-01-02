@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/42-simple-block-struct-hashing/internal/simpleblockstructhashing/cli"
+)
 
 func main() {
-	fmt.Println("minis/42-simple-block-struct-hashing: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }

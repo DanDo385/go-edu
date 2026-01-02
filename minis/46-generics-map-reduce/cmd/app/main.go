@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/example/go-10x-minis/minis/46-generics-map-reduce/internal/genericsmapreduce/cli"
+)
 
 func main() {
-	fmt.Println("minis/46-generics-map-reduce: cmd/app")
+	os.Exit(cli.RunCLI(os.Args[1:]))
 }
