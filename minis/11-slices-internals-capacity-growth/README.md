@@ -1,65 +1,18 @@
-# 11-slices-internals-capacity-growth
+# 11: Slices Internals - Capacity Growth
 
-**Slice Internals**
+## What Is This Project About?
 
-Understand slice memory layout, capacity growth, and aliasing.
-
-## What You'll Learn
-
-- Slice header structure (ptr, len, cap)
-- Capacity growth algorithm
-- Slice aliasing pitfalls
-- Memory efficiency
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Demonstrate slice internals | Show capacity growth and aliasing |
-
-## Project Structure
-
-```
-11-slices-internals-capacity-growth/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/slicesinternalscapacitygrowth/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/11-slices-internals-capacity-growth
-
-# Run demonstration
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run demo
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module deep-dives into how Go slices work internally, including capacity growth algorithms and memory allocation patterns.
 
 ## Key Concepts
 
-1. **Slice Header**: struct { ptr *T; len, cap int }
-2. **Growth**: ~2x until 1024, then ~1.25x
-3. **Aliasing**: Multiple slices sharing backing array
-4. **make([]T, len, cap)**: Pre-allocate capacity
+- **Slice headers**: Pointer, length, capacity
+- **Capacity growth**: Doubling and growth strategies
+- **Memory allocation**: Understanding append behavior
+- **Performance implications**: Pre-allocation benefits
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/12-pointers-zero-values-nil-gotchas`.
+```bash
+go run ./cmd/dev/main.go
+```

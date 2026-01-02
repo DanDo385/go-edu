@@ -1,84 +1,36 @@
-# 12-proofs
+# 12: Merkle Proofs
 
-**Merkle-Patricia Proofs**
+## What Is This Project About?
 
-Fetch Merkle-Patricia trie proofs for accounts and storage slots.
+This module teaches you how Merkle proofs work in Ethereum for verifying account and storage state. You'll learn how to request proofs from nodes and verify them locally, which is fundamental for light clients and bridges.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Merkle-Patricia trie structure
-- Account proofs (balance, nonce, code hash, storage root)
-- Storage proofs (specific slot values)
-- Verifying proofs against state roots
+Merkle proofs enable:
+- Light client verification
+- Cross-chain bridges
+- Trustless state verification
+- Storage proof systems
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Fetch and inspect account/storage proofs |
+- **Account proofs**: Proving account existence and state
+- **Storage proofs**: Proving storage slot values
+- **Patricia Merkle Tries**: Ethereum's state tree structure
+- **eth_getProof**: RPC method for proof requests
 
-## Project Structure
+## Prerequisites
 
-```
-12-proofs/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/proofs/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/11-storage`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/12-proofs
-
-# Get account proof
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `ADDRESS` | Yes | Account to get proof for |
-| `STORAGE_KEYS` | No | Comma-separated storage keys |
-
-## Quick Copy & Paste
-
-```bash
-# Get account proof
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Account Proof**: Path through state trie to account
-2. **Storage Proof**: Path through storage trie to slot
-3. **eth_getProof**: Combined account and storage proofs
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/13-trace`.

@@ -1,65 +1,18 @@
-# 26-sync-once-singleton
+# 26: sync.Once Singleton
 
-**Singleton with sync.Once**
+## What Is This Project About?
 
-Implement thread-safe singleton initialization.
-
-## What You'll Learn
-
-- sync.Once for lazy initialization
-- Thread-safe singletons
-- Double-checked locking (don't do it!)
-- Initialization patterns
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Implement singleton pattern | Thread-safe lazy init |
-
-## Project Structure
-
-```
-26-sync-once-singleton/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/synconcesingleton/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/26-sync-once-singleton
-
-# Run demonstration
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run demo
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you how to use sync.Once for thread-safe initialization.
 
 ## Key Concepts
 
-1. **sync.Once**: Exactly once execution
-2. **Lazy Init**: Initialize on first use
-3. **Thread Safety**: Handles concurrent calls
-4. **No Double-Check**: Go's Once is the right way
+- **sync.Once**: Execute exactly once
+- **Singleton pattern**: Single instance creation
+- **Lazy initialization**: Deferred setup
+- **Thread safety**: Concurrent access during init
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/27-sync-pool-allocator`.
+```bash
+go run ./cmd/dev/main.go
+```

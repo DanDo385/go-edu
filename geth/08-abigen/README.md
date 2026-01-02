@@ -1,86 +1,48 @@
-# 08-abigen
+# 08: abigen - Typed Contract Bindings
 
-**Type-Safe Contract Bindings**
+## What Is This Project About?
 
-Use BoundContract for type-safe contract calls with automatic ABI encoding/decoding.
+This module teaches you how to use abigen-generated typed bindings for smart contract interaction. Instead of manually encoding/decoding ABI as in module 07, you'll use type-safe Go methods generated from contract ABIs. This is the production approach for contract interaction.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Using go-ethereum's ABI package
-- Creating BoundContract instances
-- Type-safe method calls
-- Comparing manual vs generated bindings
+Typed bindings provide:
+- Compile-time type checking
+- IDE autocompletion
+- Reduced boilerplate code
+- Fewer encoding/decoding errors
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, backend, cfg)` | Query contract using BoundContract |
-| `callString(contract, opts, method, params...)` | Type-safe string getter |
-| `callUint8(contract, opts, method, params...)` | Type-safe uint8 getter |
-| `callUint256(contract, opts, method, params...)` | Type-safe uint256 getter |
+- **Production contract integration**: Type-safe contract calls
+- **Rapid development**: Less boilerplate than manual encoding
+- **Error prevention**: Catch type mismatches at compile time
+- **Code maintainability**: Clear, readable contract interactions
 
-## Project Structure
+## Key Concepts You'll Learn
 
-```
-08-abigen/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/abigen/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- **abigen tool**: Generating Go bindings from ABI JSON
+- **Contract instances**: Creating typed contract handles
+- **Method calls**: Type-safe read and write operations
+- **Event parsing**: Working with generated event types
 
-## CLI Usage
+## Prerequisites
 
-### Run the CLI Application
+- Completion of `geth/06-smart-contracts` and `geth/07-eth-call`
+- Understanding of manual ABI encoding from module 07
+
+## How to Run
 
 ```bash
-cd geth/08-abigen
-
-# Query token with type-safe bindings
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
+go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
 
-## CLI Arguments
+## Additional Resources
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `TOKEN_ADDRESS` | Yes | ERC20 token contract address |
-
-## Quick Copy & Paste
-
-```bash
-# Query with bindings
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **abigen Tool**: Generate Go bindings from ABI
-2. **BoundContract**: Runtime binding without code generation
-3. **Type Safety**: Compile-time type checking
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/09-events`.
+- [go-ethereum abigen Documentation](https://geth.ethereum.org/docs/developers/dapp-developer/native-bindings)

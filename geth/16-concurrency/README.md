@@ -1,83 +1,37 @@
-# 16-concurrency
+# 16: Concurrent RPC Calls
 
-**Concurrent RPC Calls**
+## What Is This Project About?
 
-Probe multiple endpoints concurrently using a bounded worker pool.
+This module teaches you how to make concurrent RPC calls to improve performance when querying multiple pieces of data from Ethereum. You'll learn Go concurrency patterns applied to blockchain data fetching.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Bounded worker pools with semaphores
-- Concurrent RPC request patterns
-- Error aggregation from multiple workers
-- Context cancellation propagation
+Concurrent calls enable:
+- Faster data fetching
+- Efficient batch operations
+- Responsive UIs
+- High-throughput indexing
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, prober, cfg)` | Probe endpoints concurrently with bounded workers |
+- **Goroutines**: Concurrent execution of RPC calls
+- **Channels**: Collecting results from concurrent calls
+- **Error handling**: Managing errors in concurrent code
+- **Rate limiting**: Respecting RPC rate limits
 
-## Project Structure
+## Prerequisites
 
-```
-16-concurrency/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/concurrency/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/15-receipts`
+- Understanding of Go concurrency (goroutines, channels)
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/16-concurrency
-
-# Probe multiple endpoints
-go run ./cmd/app/main.go https://eth.llamarpc.com https://rpc.ankr.com/eth --workers 3
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URLS` | Yes | One or more RPC endpoints |
-| `--workers` | No | Number of concurrent workers (default: 5) |
-
-## Quick Copy & Paste
-
-```bash
-# Probe multiple endpoints
-go run ./cmd/app/main.go https://eth.llamarpc.com https://rpc.ankr.com/eth
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Worker Pool**: Fixed number of concurrent goroutines
-2. **Semaphore**: Bounded channel for concurrency control
-3. **Error Aggregation**: Collecting errors from workers
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/17-indexer`.

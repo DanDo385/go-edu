@@ -1,74 +1,41 @@
-# 19-devnets
+# 19: Development Networks
 
-**Development Networks**
+## What Is This Project About?
 
-Work with local development networks like Anvil and Hardhat.
+This module teaches you how to set up and work with local development networks for testing Ethereum applications. Devnets provide instant feedback and free gas for development.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Setting up local devnets
-- Using Anvil (Foundry) and Hardhat
-- Testing with funded accounts
-- Time manipulation for testing
+Development networks enable:
+- Fast iteration during development
+- Testing without real funds
+- Reproducible test scenarios
+- Isolated debugging environments
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run()` | Interact with development networks (placeholder) |
+- **Geth dev mode**: Local instant-mining chain
+- **Account management**: Pre-funded accounts
+- **Time manipulation**: Advancing block time
+- **State reset**: Starting fresh for tests
 
-## Project Structure
+## Prerequisites
 
-```
-19-devnets/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/devnets/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Geth installed locally
+- Completion of previous modules
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/19-devnets
+# Start local devnet first
+geth --dev --http --http.api eth,net,web3,personal
 
-go run ./cmd/app/main.go
+# Then run the demo
+go run ./cmd/app/main.go http://localhost:8545
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## Quick Copy & Paste
-
-```bash
-# Start Anvil first: anvil
-go run ./cmd/app/main.go http://127.0.0.1:8545
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Anvil**: Foundry's fast local Ethereum node
-2. **Hardhat Node**: JavaScript-based dev node
-3. **Funded Accounts**: Pre-funded test accounts
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/20-node`.

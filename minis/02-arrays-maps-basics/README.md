@@ -1,90 +1,36 @@
-# 02-arrays-maps-basics
+# 02: Arrays and Maps Basics
 
-**Word Frequency Counter**
+## What Is This Project About?
 
-Count word frequencies from text input and find the most common word.
+This module teaches you Go's fundamental collection types: arrays, slices, and maps. You'll learn how to store, access, and manipulate collections of data efficiently.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Maps for counting
-- Reading from io.Reader
-- String normalization (lowercase)
-- Finding max in a map
+Collections are core to any program:
+- Storing lists of items
+- Key-value lookups
+- Data aggregation
+- Algorithm implementation
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `FreqFromReader(r io.Reader) (map[string]int, string, error)` | Count words and return most common |
+- **Arrays**: Fixed-size collections
+- **Slices**: Dynamic-size views into arrays
+- **Maps**: Key-value dictionaries
+- **Iteration**: Ranging over collections
 
-## Project Structure
+## Prerequisites
 
-```
-02-arrays-maps-basics/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/arraysmapsbasics/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-├── testdata/
-│   └── input.txt        # Sample input file
-└── README.md
-```
+- Completion of `minis/01-hello-strings`
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/02-arrays-maps-basics
-
-# Count words from file
-go run ./cmd/app/main.go testdata/input.txt
-
-# Count words from stdin
-echo "hello world hello" | go run ./cmd/app/main.go -
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `FILE` | Path to text file, or `-` for stdin |
-
-## Quick Copy & Paste
-
-```bash
-# From file
-go run ./cmd/app/main.go testdata/input.txt
-
-# From stdin
-echo "the quick brown fox jumps over the lazy dog" | go run ./cmd/app/main.go -
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Maps**: Go's hash table implementation
-2. **bufio.Scanner**: Efficient line/word reading
-3. **strings.Fields**: Split on whitespace
-4. **strings.ToLower**: Normalize case
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/03-csv-stats`.

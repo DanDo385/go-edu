@@ -1,84 +1,44 @@
-# 04-accounts-balances
+# 04: Accounts and Balances
 
-**Account Balance Queries**
+## What Is This Project About?
 
-Query Ethereum account balances at various block heights. Understand state queries and Wei/Ether conversions.
+This module teaches you how to query Ethereum account state—specifically balances and nonces. You'll understand the difference between externally owned accounts (EOAs) and contract accounts, how Ether balances are stored and represented, and what transaction nonces are used for.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Querying account balances via RPC
-- Understanding historical state queries
-- Wei to Ether conversions
-- Handling big integers in Go
+Querying account state is fundamental to almost every Ethereum application:
+- Wallets display balances
+- DApps check if users can afford transactions
+- Transaction builders need nonces for sequencing
+- Analytics tools track account activity
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Query account balances and format results |
+- **Wallet balance display**: Show users their ETH holdings
+- **Transaction validation**: Ensure sufficient funds before sending
+- **Nonce management**: Get the correct nonce for new transactions
+- **Account monitoring**: Track account activity over time
 
-## Project Structure
+## Key Concepts You'll Learn
 
-```
-04-accounts-balances/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/accountsbalances/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- **Account types**: EOA vs Contract accounts
+- **Balance representation**: Wei (10^-18 ETH) as the base unit
+- **Nonces**: Sequential transaction counter for replay protection
+- **State queries**: eth_getBalance and eth_getTransactionCount
 
-## CLI Usage
+## Prerequisites
 
-### Run the CLI Application
+- Completion of `geth/01-stack` through `geth/03-keys-addresses`
+
+## How to Run
 
 ```bash
-cd geth/04-accounts-balances
-
-# Query balance
+# Query a specific address
 go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `ADDRESS` | Yes | Ethereum address to query |
-| `BLOCK` | No | Block number (default: latest) |
-
-## Quick Copy & Paste
-
-```bash
-# Query Vitalik's balance
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Wei**: Smallest unit of Ether (1 ETH = 10^18 Wei)
-2. **big.Int**: Go's arbitrary-precision integers
-3. **Historical State**: Querying balances at specific blocks
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/05-tx-nonces`.

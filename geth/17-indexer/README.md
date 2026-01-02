@@ -1,74 +1,36 @@
-# 17-indexer
+# 17: Block Indexer
 
-**Blockchain Indexer**
+## What Is This Project About?
 
-Index blockchain data for efficient querying.
+This module teaches you how to build a block indexer—a service that processes blocks and stores relevant data for efficient querying. Indexers are fundamental infrastructure for blockchain applications.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Block range processing strategies
-- Data persistence patterns
-- Incremental indexing
-- Checkpoint management
+Indexers enable:
+- Fast data queries without scanning chain
+- Custom data transformations
+- Historical data analysis
+- Backend for DApps
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run()` | Index blockchain data (placeholder) |
+- **Block processing**: Iterating through block history
+- **Data extraction**: Pulling relevant data from blocks
+- **State management**: Tracking indexer progress
+- **Recovery**: Handling restarts and gaps
 
-## Project Structure
+## Prerequisites
 
-```
-17-indexer/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/indexer/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of `geth/16-concurrency`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/17-indexer
-
-go run ./cmd/app/main.go
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## Quick Copy & Paste
-
-```bash
-# Run indexer
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Block Processing**: Sequential vs parallel
-2. **Checkpointing**: Resume from last position
-3. **Data Model**: Efficient storage for queries
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/18-reorgs`.

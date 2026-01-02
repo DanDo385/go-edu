@@ -1,87 +1,75 @@
-# 07-eth-call
+# 07: eth_call - Manual Contract Interaction
 
-**Read-Only Contract Calls**
+## What Is This Project About?
 
-Query ERC20 token metadata using manual ABI encoding/decoding with eth_call.
+This module teaches you how to interact with smart contracts using manual ABI encoding and decoding. You'll learn to construct function selectors, build CallMsg structs, execute eth_call requests, and decode the returned bytes. This gives you deep understanding of what libraries like abigen abstract away.
 
-## What You'll Learn
+**Important**: Before starting this module, complete the console tutorial in `geth/06-smart-contracts`. The console experience provides the conceptual foundation that makes this Go implementation much clearer.
 
-- Making eth_call requests
-- ABI encoding for function calls
-- Decoding various return types
-- Understanding ERC20 standard interface
+## Why Is This Important?
 
-## Functions to Implement
+Understanding manual contract calls is essential for:
+- Debugging contract interaction issues
+- Building tools that work with any contract (not just those with bindings)
+- Understanding gas estimation and call simulation
+- Implementing custom encoding for non-standard ABIs
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Query ERC20 metadata via eth_call |
-| `selector(sig)` | Calculate function selector |
-| `decodeString(data)` | Decode ABI string |
-| `decodeUint8(data)` | Decode ABI uint8 |
-| `decodeUint256(data)` | Decode ABI uint256 |
+## Real-World Problems This Solves
+
+- **Universal contract queries**: Query any contract without pre-generated bindings
+- **ABI debugging**: Understand exactly what bytes are being sent/received
+- **Custom encoding**: Handle non-standard or dynamic ABIs
+- **MEV/arbitrage**: Build low-latency contract interaction tools
+
+## Key Concepts You'll Learn
+
+- **Function selectors**: keccak256(signature)[:4]
+- **ABI encoding**: How arguments are serialized to bytes
+- **ABI decoding**: How return values are parsed from bytes
+- **eth_call**: Read-only contract execution without state changes
+- **CallMsg**: Structure describing a contract call
+
+## Prerequisites
+
+- Completion of `geth/06-smart-contracts` (console tutorial)
+- Completion of `geth/01-stack` through `geth/06-eip1559`
 
 ## Project Structure
 
 ```
-07-eth-call/
+geth/07-eth-call/
 ├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/ethcall/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
+│   ├── app/
+│   │   └── main.go
+│   └── dev/
+│       └── main.go
+├── internal/
+│   └── ethcall/
+│       ├── exercise.go      # Manual ABI encoding/decoding
+│       ├── exercise_test.go
+│       ├── solution.reference.go
+│       └── types.go
+└── .vscode/
+    └── launch.json
 ```
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/07-eth-call
+# Query USDC token metadata
+go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 
-# Query ERC20 token
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
+# Query DAI token metadata
+go run ./cmd/app/main.go https://eth.llamarpc.com 0x6B175474E89094C44Da98b954EedeAC495271d0F
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
 
-## CLI Arguments
+## Additional Resources
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `TOKEN_ADDRESS` | Yes | ERC20 token contract address |
-
-## Quick Copy & Paste
-
-```bash
-# Query USDT
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **eth_call**: Simulate contract execution without transaction
-2. **View Functions**: Read-only contract methods
-3. **ERC20 Interface**: name(), symbol(), decimals(), totalSupply()
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/08-abigen`.
+- [Ethereum ABI Specification](https://docs.soliditylang.org/en/latest/abi-spec.html)
+- [go-ethereum CallContract](https://pkg.go.dev/github.com/ethereum/go-ethereum/ethclient#Client.CallContract)

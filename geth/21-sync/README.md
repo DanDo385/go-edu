@@ -1,82 +1,36 @@
-# 21-sync
+# 21: Sync Status
 
-**Sync Progress Monitoring**
+## What Is This Project About?
 
-Inspect sync progress to determine if your Ethereum node is fully synced.
+This module teaches you how to monitor node synchronization status and understand different sync modes. Knowing whether your node is synced is crucial for data reliability.
 
-## What You'll Learn
+## Why Is This Important?
 
-- eth_syncing RPC method
-- Understanding sync modes (snap, full, archive)
-- Progress calculation
-- Detecting sync completion
+Sync monitoring enables:
+- Service health checks
+- Data reliability verification
+- Sync progress tracking
+- Troubleshooting sync issues
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Query and analyze sync progress |
+- **Sync status**: Current vs highest block
+- **Sync progress**: Percentage completion
+- **Sync modes**: Snap, full, light
+- **eth_syncing**: RPC method for status
 
-## Project Structure
+## Prerequisites
 
-```
-21-sync/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/sync/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/20-node`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/21-sync
-
-# Check sync status
 go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-
-## Quick Copy & Paste
-
-```bash
-# Check if node is synced
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **eth_syncing**: Returns false when synced, object when syncing
-2. **Starting/Current/Highest Block**: Sync progress indicators
-3. **Snap Sync**: Fast sync by downloading state snapshots
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/22-peers`.

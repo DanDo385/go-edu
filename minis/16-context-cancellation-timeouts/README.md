@@ -1,65 +1,18 @@
-# 16-context-cancellation-timeouts
+# 16: Context Cancellation and Timeouts
 
-**Context Cancellation**
+## What Is This Project About?
 
-Use context for cancellation, timeouts, and request-scoped values.
-
-## What You'll Learn
-
-- context.WithCancel
-- context.WithTimeout
-- context.WithDeadline
-- Propagating cancellation
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Demonstrate context patterns | Cancellation and timeouts |
-
-## Project Structure
-
-```
-16-context-cancellation-timeouts/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/contextcancellationtimeouts/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/16-context-cancellation-timeouts
-
-# Run with timeout
-go run ./cmd/app/main.go --timeout 5s
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run with timeout
-go run ./cmd/app/main.go --timeout 5s
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you how to use context for cancellation and timeouts in Go.
 
 ## Key Concepts
 
-1. **context.Background()**: Root context
-2. **WithTimeout**: Auto-cancel after duration
-3. **ctx.Done()**: Channel that closes on cancel
-4. **ctx.Err()**: Returns Canceled or DeadlineExceeded
+- **context.Background()**: Root context
+- **context.WithTimeout**: Deadline-based cancellation
+- **context.WithCancel**: Manual cancellation
+- **Propagation**: Passing context through call chains
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/17-file-streaming-bufio`.
+```bash
+go run ./cmd/dev/main.go
+```

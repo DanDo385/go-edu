@@ -1,82 +1,72 @@
-# 02-rpc-basics
+# 02: RPC Basics
 
-**JSON-RPC Fundamentals**
+## What Is This Project About?
 
-Learn the fundamentals of Ethereum JSON-RPC by fetching blocks, transactions, and understanding the RPC layer mechanics.
+This module deepens your understanding of how Ethereum clients communicate via JSON-RPC. You'll learn the structure of RPC requests and responses, common RPC methods, and how the go-ethereum library abstracts these calls. Understanding the RPC layer is crucial for debugging, optimizing, and building custom tooling.
 
-## What You'll Learn
+## Why Is This Important?
 
-- JSON-RPC protocol fundamentals
-- Fetching blocks and transactions
-- Understanding retry patterns
-- Error handling in RPC calls
+While libraries like ethclient abstract RPC calls, understanding the underlying protocol helps you:
+- Debug connection and response issues
+- Build custom RPC methods for specialized nodes
+- Optimize batch requests for performance
+- Understand rate limiting and error handling
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Execute fundamental RPC queries with retry logic |
+- **Custom node integration**: Work with nodes that have non-standard RPC methods
+- **Performance optimization**: Batch multiple RPC calls to reduce latency
+- **Error debugging**: Understand RPC error codes and responses
+- **Protocol compliance**: Ensure your tools work with any Ethereum-compatible node
+
+## Key Concepts You'll Learn
+
+- **JSON-RPC 2.0 protocol**: Request/response format
+- **Common RPC methods**: eth_blockNumber, eth_getBlockByNumber, etc.
+- **Error handling**: Understanding RPC error responses
+- **Batch requests**: Sending multiple requests in one call
+
+## Prerequisites
+
+- Completion of `geth/01-stack`
+- Understanding of JSON format
 
 ## Project Structure
 
 ```
-02-rpc-basics/
+geth/02-rpc-basics/
 ├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/rpcbasics/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
+│   ├── app/
+│   │   └── main.go
+│   └── dev/
+│       └── main.go
+├── internal/
+│   └── rpcbasics/
+│       ├── exercise.go
+│       ├── exercise_test.go
+│       ├── solution.reference.go
+│       └── solution_no_err.reference.go
+└── .vscode/
+    └── launch.json
 ```
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/02-rpc-basics
-
-# Query RPC basics
+# Using CLI
 go run ./cmd/app/main.go https://eth.llamarpc.com
-```
 
-### Run the Debug Harness
-
-```bash
+# Using debug harness
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
 
-## CLI Arguments
+## Additional Resources
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-
-## Quick Copy & Paste
-
-```bash
-# Mainnet
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# With retry demonstration
-go run ./cmd/app/main.go https://mainnet.infura.io/v3/YOUR_KEY
-```
-
-## Key Concepts
-
-1. **JSON-RPC 2.0**: The protocol Ethereum nodes use
-2. **Retry Patterns**: Handling transient failures
-3. **Request/Response**: Understanding the RPC lifecycle
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/03-keys-addresses`.
+- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
+- [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification)

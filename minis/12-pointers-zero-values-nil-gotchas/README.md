@@ -1,65 +1,18 @@
-# 12-pointers-zero-values-nil-gotchas
+# 12: Pointers, Zero Values, and Nil Gotchas
 
-**Pointers and Nil Gotchas**
+## What Is This Project About?
 
-Master pointers, zero values, and common nil pitfalls.
-
-## What You'll Learn
-
-- Pointer vs value semantics
-- Zero values for all types
-- nil interface gotcha
-- Safe nil handling
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Demonstrate pointer patterns | Show common nil pitfalls and fixes |
-
-## Project Structure
-
-```
-12-pointers-zero-values-nil-gotchas/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/pointerszerovaluesnilgotchas/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/12-pointers-zero-values-nil-gotchas
-
-# Run demonstration
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run demo
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you about Go's pointer semantics, zero values, and common nil-related pitfalls.
 
 ## Key Concepts
 
-1. **Zero Values**: 0, "", false, nil
-2. **nil Interface**: Interface with nil concrete value is NOT nil
-3. **Pointer Receivers**: Can be called on nil
-4. **Safe Dereference**: Check nil before accessing
+- **Pointers**: Address-of and dereference operators
+- **Zero values**: Default values for all types
+- **Nil**: Special value for pointers, slices, maps, etc.
+- **Common gotchas**: Nil map writes, nil interface checks
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/13-interfaces-duck-typing`.
+```bash
+go run ./cmd/dev/main.go
+```

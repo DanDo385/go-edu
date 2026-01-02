@@ -1,104 +1,36 @@
-# 05-cli-todo-files
+# 05: CLI Todo with Files
 
-**Persistent TODO List**
+## What Is This Project About?
 
-Build a persistent TODO list with JSON file storage.
+This module teaches you how to build a command-line todo application with file persistence. You'll learn CLI argument parsing, file-based storage, and basic CRUD operations.
 
-## What You'll Learn
+## Why Is This Important?
 
-- File-based persistence
-- JSON encoding/decoding
-- Interface-based design
-- CRUD operations
+CLI tool development teaches:
+- User interface design
+- Data persistence
+- State management
+- Error handling
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `NewFileStore(path string) Store` | Create new file-backed store |
-| `Load() error` | Load items from file |
-| `Save() error` | Save items to file |
-| `Add(text string) Item` | Add new item |
-| `Toggle(id int) (Item, bool)` | Toggle item completion |
-| `List(onlyPending bool) []Item` | List items |
+- **CLI arguments**: Parsing os.Args
+- **File persistence**: JSON file storage
+- **CRUD operations**: Create, Read, Update, Delete
+- **User experience**: Helpful error messages
 
-## Project Structure
+## Prerequisites
 
-```
-05-cli-todo-files/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/clitodofiles/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of `minis/04-jsonl-log-filter`
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/05-cli-todo-files
-
-# Add a todo
-go run ./cmd/app/main.go add "Buy groceries"
-
-# List all todos
-go run ./cmd/app/main.go list
-
-# List only pending
-go run ./cmd/app/main.go list --pending
-
-# Toggle completion
-go run ./cmd/app/main.go toggle 1
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Command | Arguments | Description |
-|---------|-----------|-------------|
-| `add` | `TEXT` | Add new todo item |
-| `list` | `--pending` | List todos (optionally only pending) |
-| `toggle` | `ID` | Toggle item completion |
-
-## Quick Copy & Paste
-
-```bash
-# Add items
-go run ./cmd/app/main.go add "Learn Go"
-go run ./cmd/app/main.go add "Build something"
-
-# List all
-go run ./cmd/app/main.go list
-
-# Mark as done
-go run ./cmd/app/main.go toggle 1
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **json.Marshal/Unmarshal**: Serialization
-2. **os.ReadFile/WriteFile**: Simple file I/O
-3. **Interface Design**: Abstraction over storage
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/06-worker-pool-wordcount`.

@@ -1,68 +1,18 @@
-# 24-sync-mutex-vs-rwmutex
+# 24: sync.Mutex vs sync.RWMutex
 
-**Mutex vs RWMutex**
+## What Is This Project About?
 
-Compare sync.Mutex and sync.RWMutex for different workloads.
-
-## What You'll Learn
-
-- sync.Mutex for exclusive access
-- sync.RWMutex for read-heavy workloads
-- When to use each
-- Benchmarking lock contention
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Compare mutex types | Benchmark different workloads |
-
-## Project Structure
-
-```
-24-sync-mutex-vs-rwmutex/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/syncmutexvsrwmutex/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/24-sync-mutex-vs-rwmutex
-
-# Run comparison
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run comparison demo
-go run ./cmd/app/main.go
-
-# Run benchmarks
-go test -bench=. -benchmem ./internal/syncmutexvsrwmutex/
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you the difference between Mutex and RWMutex.
 
 ## Key Concepts
 
-1. **sync.Mutex**: One reader OR one writer
-2. **sync.RWMutex**: Many readers OR one writer
-3. **Read-Heavy**: RWMutex wins
-4. **Write-Heavy**: Mutex may be better
+- **Mutex**: Exclusive lock
+- **RWMutex**: Read-write lock
+- **When to use**: Read-heavy vs write-heavy workloads
+- **Performance**: Benchmarking the difference
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/25-atomic-counters-vs-mutex`.
+```bash
+go run ./cmd/dev/main.go
+```

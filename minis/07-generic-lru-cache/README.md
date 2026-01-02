@@ -1,90 +1,37 @@
-# 07-generic-lru-cache
+# 07: Generic LRU Cache
 
-**Generic LRU Cache**
+## What Is This Project About?
 
-Implement a thread-safe LRU cache with generics and TTL.
+This module teaches you how to implement a Least Recently Used (LRU) cache using Go generics. You'll learn cache design patterns and generic type parameters.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Go generics (type parameters)
-- LRU eviction algorithm
-- Thread-safe design with mutex
-- TTL expiration
+Caching is essential for:
+- Performance optimization
+- Reducing external calls
+- Memory management
+- Rate limiting
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `New[K, V](capacity, ttl) *Cache[K, V]` | Create new cache |
-| `Get(key K) (V, bool)` | Get value (updates access time) |
-| `Set(key K, val V)` | Set value (evicts if needed) |
+- **LRU algorithm**: Evicting least recently used items
+- **Go generics**: Type parameters for reusability
+- **Data structures**: Linked lists for O(1) operations
+- **Thread safety**: Safe concurrent access
 
-## Project Structure
+## Prerequisites
 
-```
-07-generic-lru-cache/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/genericlrucache/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── cache_bench_test.go # Benchmarks
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of previous minis projects
+- Understanding of generics (Go 1.18+)
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/07-generic-lru-cache
-
-# Demo the cache
-go run ./cmd/app/main.go --capacity 100 --ttl 5s
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests and Benchmarks
+## Testing
 
 ```bash
 go test -v ./...
-go test -bench=. -benchmem ./...
 ```
-
-## CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `--capacity` | Max items (default: 100) |
-| `--ttl` | Time to live (default: 5m) |
-
-## Quick Copy & Paste
-
-```bash
-# Run cache demo
-go run ./cmd/app/main.go --capacity 10 --ttl 5s
-
-# Run benchmarks
-go test -bench=. -benchmem ./internal/genericlrucache/
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Generics**: `[K comparable, V any]`
-2. **LRU Algorithm**: Doubly-linked list + map
-3. **sync.Mutex**: Thread safety
-4. **container/list**: Standard library linked list
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/08-http-client-retries`.

@@ -1,68 +1,18 @@
-# 31-static-file-server
+# 31: Static File Server
 
-**Static File Server**
+## What Is This Project About?
 
-Build an HTTP static file server.
-
-## What You'll Learn
-
-- http.FileServer
-- Custom handlers
-- Security considerations
-- Embedding files
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Implement static server | Serve files from directory |
-
-## Project Structure
-
-```
-31-static-file-server/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness
-├── internal/staticfileserver/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/31-static-file-server
-
-# Serve current directory
-go run ./cmd/app/main.go --port 8080 --dir .
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Serve files on port 8080
-go run ./cmd/app/main.go --port 8080 --dir ./public
-
-# Test it
-curl http://localhost:8080/
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you how to build an HTTP server that serves static files.
 
 ## Key Concepts
 
-1. **http.FileServer**: Serves static files
-2. **http.StripPrefix**: URL path manipulation
-3. **embed.FS**: Embed files in binary
-4. **Directory Traversal**: Security prevention
+- **http.FileServer**: Built-in file serving
+- **Path handling**: Secure file paths
+- **Caching headers**: Cache-Control, ETag
+- **MIME types**: Content-Type handling
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/32-websocket-chatroom`.
+```bash
+go run ./cmd/dev/main.go
+```

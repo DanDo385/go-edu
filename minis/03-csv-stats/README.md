@@ -1,83 +1,36 @@
-# 03-csv-stats
+# 03: CSV Statistics
 
-**CSV Statistics**
+## What Is This Project About?
 
-Compute per-category statistics from a CSV of financial transactions.
+This module teaches you how to parse CSV files and compute statistics on the data. You'll learn file I/O, CSV parsing, and basic statistical calculations.
 
-## What You'll Learn
+## Why Is This Important?
 
-- CSV parsing with encoding/csv
-- Aggregating data by category
-- Float parsing and arithmetic
-- Error handling for malformed data
+CSV processing is essential for:
+- Data analysis
+- Import/export functionality
+- Report generation
+- ETL pipelines
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `SummarizeCSV(r io.Reader) (map[string]Stat, error)` | Parse CSV and compute category stats |
+- **File I/O**: Reading files in Go
+- **CSV parsing**: Using encoding/csv
+- **Statistics**: Computing averages, sums, etc.
+- **Error handling**: Managing parse errors
 
-## Project Structure
+## Prerequisites
 
-```
-03-csv-stats/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/csvstats/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-├── testdata/
-│   └── transactions.csv # Sample CSV file
-└── README.md
-```
+- Completion of `minis/02-arrays-maps-basics`
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/03-csv-stats
-
-# Summarize CSV file
-go run ./cmd/app/main.go testdata/transactions.csv
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `FILE` | Path to CSV file |
-
-## Quick Copy & Paste
-
-```bash
-# Summarize transactions
-go run ./cmd/app/main.go testdata/transactions.csv
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **encoding/csv**: Standard library CSV parser
-2. **Struct Aggregation**: Count, Sum, Average
-3. **strconv.ParseFloat**: Convert strings to floats
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/04-jsonl-log-filter`.

@@ -1,65 +1,18 @@
-# 17-file-streaming-bufio
+# 17: File Streaming with bufio
 
-**File Streaming with bufio**
+## What Is This Project About?
 
-Efficiently read large files using buffered I/O.
-
-## What You'll Learn
-
-- bufio.Scanner for line reading
-- bufio.Reader for buffered reading
-- Memory-efficient file processing
-- Custom split functions
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Stream and process file | Line-by-line processing |
-
-## Project Structure
-
-```
-17-file-streaming-bufio/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/filestreamingbufio/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/17-file-streaming-bufio
-
-# Process file
-go run ./cmd/app/main.go input.txt
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Process file
-go run ./cmd/app/main.go input.txt
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you efficient file streaming using bufio for line-by-line processing.
 
 ## Key Concepts
 
-1. **bufio.Scanner**: Line-by-line reading
-2. **bufio.Reader**: Buffered byte reading
-3. **O(1) Memory**: Process files larger than RAM
-4. **Custom Split**: ScanLines, ScanWords, custom
+- **bufio.Scanner**: Line-by-line reading
+- **bufio.Reader**: Buffered reading
+- **Memory efficiency**: Processing without loading entire file
+- **Error handling**: Managing read errors
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/18-goroutines-1M-demo`.
+```bash
+go run ./cmd/dev/main.go
+```

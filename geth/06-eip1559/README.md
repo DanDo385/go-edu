@@ -1,83 +1,47 @@
-# 06-eip1559
+# 06: EIP-1559 Fee Market
 
-**EIP-1559 Transactions**
+## What Is This Project About?
 
-Build and sign EIP-1559 dynamic fee transactions with proper fee estimation.
+This module teaches you the EIP-1559 transaction fee mechanism introduced in the London hard fork. You'll understand base fees, priority fees (tips), max fees, and how the fee market creates more predictable gas costs while burning a portion of fees.
 
-## What You'll Learn
+## Why Is This Important?
 
-- EIP-1559 fee mechanism (base fee + priority fee)
-- Building dynamic fee transactions
-- Fee estimation strategies
-- Transaction signing with go-ethereum
+EIP-1559 fundamentally changed how transaction fees work:
+- More predictable gas pricing
+- Better user experience with fee estimation
+- ETH burning mechanism affects tokenomics
+- Transaction replacement strategies changed
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Build and sign EIP-1559 transactions with fee estimation |
+- **Gas estimation**: Calculate appropriate max and priority fees
+- **Fee optimization**: Minimize costs while ensuring timely inclusion
+- **Transaction management**: Understand why txs get stuck or replaced
+- **Economic analysis**: Track base fee trends and ETH burning
 
-## Project Structure
+## Key Concepts You'll Learn
 
-```
-06-eip1559/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/eip1559/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- **Base fee**: Protocol-determined fee, burned on inclusion
+- **Priority fee (tip)**: Incentive for validators to include tx
+- **Max fee**: Maximum total fee you're willing to pay
+- **Fee calculation**: Effective gas price = min(base_fee + priority_fee, max_fee)
 
-## CLI Usage
+## Prerequisites
 
-### Run the CLI Application
+- Completion of `geth/01-stack` through `geth/05-tx-nonces`
+
+## How to Run
 
 ```bash
-cd geth/06-eip1559
-
-# Estimate fees
 go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
 
-## CLI Arguments
+## Additional Resources
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-
-## Quick Copy & Paste
-
-```bash
-# Estimate current fees
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Base Fee**: Protocol-determined minimum fee
-2. **Priority Fee (Tip)**: Incentive for validators
-3. **Max Fee**: Upper bound on total fee
-4. **Fee Burning**: Base fee is burned (EIP-1559)
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/06-smart-contracts`.
+- [EIP-1559: Fee Market Change](https://eips.ethereum.org/EIPS/eip-1559)

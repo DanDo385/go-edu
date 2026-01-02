@@ -1,68 +1,18 @@
-# 25-atomic-counters-vs-mutex
+# 25: Atomic Counters vs Mutex
 
-**Atomic vs Mutex**
+## What Is This Project About?
 
-Compare atomic operations with mutex for counters.
-
-## What You'll Learn
-
-- sync/atomic package
-- Lock-free programming
-- When atomics are faster
-- Memory ordering
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Compare atomic vs mutex | Benchmark counters |
-
-## Project Structure
-
-```
-25-atomic-counters-vs-mutex/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/atomiccountersvsmutex/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/25-atomic-counters-vs-mutex
-
-# Run comparison
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Quick Copy & Paste
-
-```bash
-# Run comparison demo
-go run ./cmd/app/main.go
-
-# Run benchmarks
-go test -bench=. -benchmem ./internal/atomiccountersvsmutex/
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module compares atomic operations with mutex-based synchronization.
 
 ## Key Concepts
 
-1. **atomic.AddInt64**: Lock-free increment
-2. **atomic.LoadInt64**: Safe read
-3. **atomic.StoreInt64**: Safe write
-4. **Compare-and-Swap**: Conditional update
+- **sync/atomic**: Lock-free operations
+- **Atomic operations**: Add, Load, Store, Swap
+- **Performance**: Atomic vs mutex overhead
+- **When to use**: Simple counters vs complex state
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/26-sync-once-singleton`.
+```bash
+go run ./cmd/dev/main.go
+```

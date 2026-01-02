@@ -1,77 +1,19 @@
-# 28-pprof-cpu-mem-benchmarks
+# 28: pprof CPU and Memory Benchmarks
 
-**Profiling with pprof**
+## What Is This Project About?
 
-Profile Go programs for CPU and memory optimization.
-
-## What You'll Learn
-
-- CPU profiling
-- Memory profiling
-- Benchmark profiling
-- Flame graphs
-
-## Functions to Implement
-
-| Function | Description |
-|----------|-------------|
-| Profile code performance | CPU and memory analysis |
-
-## Project Structure
-
-```
-28-pprof-cpu-mem-benchmarks/
-├── cmd/
-│   ├── app/main.go      # CLI demonstration
-│   └── dev/main.go      # Debug harness
-├── internal/pprofcpumembenchmarks/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests (with benchmarks)
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
-
-## CLI Usage
-
-```bash
-cd minis/28-pprof-cpu-mem-benchmarks
-
-# Run with CPU profile
-go run ./cmd/app/main.go --cpuprofile cpu.prof
-
-# Run with memory profile
-go run ./cmd/app/main.go --memprofile mem.prof
-
-# Analyze profile
-go tool pprof cpu.prof
-```
-
-## Quick Copy & Paste
-
-```bash
-# Generate CPU profile
-go run ./cmd/app/main.go --cpuprofile cpu.prof
-
-# Generate memory profile
-go run ./cmd/app/main.go --memprofile mem.prof
-
-# Analyze with pprof
-go tool pprof -http=:8080 cpu.prof
-
-# Benchmark with profiling
-go test -bench=. -cpuprofile cpu.prof -memprofile mem.prof ./...
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
+This module teaches you how to profile Go applications using pprof.
 
 ## Key Concepts
 
-1. **CPU Profile**: Where time is spent
-2. **Memory Profile**: Where allocations happen
-3. **go tool pprof**: Analysis tool
-4. **Flame Graphs**: Visual call stack
+- **CPU profiling**: Finding hot spots
+- **Memory profiling**: Allocation analysis
+- **Benchmarks**: Performance testing
+- **Visualization**: Flame graphs
 
-## Next Steps
+## How to Run
 
-After completing this exercise, proceed to `minis/29-escape-analysis-inlining`.
+```bash
+go run ./cmd/dev/main.go
+go test -bench=. -cpuprofile=cpu.prof
+```

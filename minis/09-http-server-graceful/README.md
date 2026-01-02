@@ -1,88 +1,36 @@
-# 09-http-server-graceful
+# 09: HTTP Server with Graceful Shutdown
 
-**Graceful HTTP Server**
+## What Is This Project About?
 
-Build an HTTP server with graceful shutdown support.
+This module teaches you how to build an HTTP server that shuts down gracefully, allowing in-flight requests to complete before stopping. This is essential for production deployments.
 
-## What You'll Learn
+## Why Is This Important?
 
-- HTTP server setup
-- Signal handling (SIGINT, SIGTERM)
-- Graceful shutdown patterns
-- Connection draining
+Graceful shutdown ensures:
+- No dropped requests
+- Clean resource cleanup
+- Safe rolling deployments
+- Better user experience
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, cfg) error` | Start server with graceful shutdown |
+- **HTTP server**: Building with net/http
+- **Signal handling**: Catching SIGINT/SIGTERM
+- **Graceful shutdown**: Completing in-flight requests
+- **Context cancellation**: Propagating shutdown
 
-## Project Structure
+## Prerequisites
 
-```
-09-http-server-graceful/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/httpservergraceful/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of `minis/08-http-client-retries`
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/09-http-server-graceful
-
-# Start server on port 8080
-go run ./cmd/app/main.go --port 8080
-
-# Press Ctrl+C to trigger graceful shutdown
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `--port` | Port to listen on (default: 8080) |
-| `--shutdown-timeout` | Max shutdown time (default: 30s) |
-
-## Quick Copy & Paste
-
-```bash
-# Start server
-go run ./cmd/app/main.go --port 8080
-
-# In another terminal, test it
-curl http://localhost:8080/health
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **signal.Notify**: Catch OS signals
-2. **Server.Shutdown**: Graceful shutdown
-3. **Context with Timeout**: Limit shutdown time
-4. **Connection Draining**: Wait for active requests
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/10-grpc-telemetry-service`.

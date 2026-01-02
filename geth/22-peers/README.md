@@ -1,82 +1,36 @@
-# 22-peers
+# 22: Peer Management
 
-**Peer Discovery**
+## What Is This Project About?
 
-Query the number of connected peers to assess node connectivity health.
+This module teaches you about Ethereum's P2P networking layer and peer management. Understanding peer connections is important for node operators and network researchers.
 
-## What You'll Learn
+## Why Is This Important?
 
-- net_peerCount RPC method
-- Understanding peer connections
-- Network health assessment
-- P2P protocol basics
+Peer management enables:
+- Network topology analysis
+- Connection troubleshooting
+- Privacy considerations
+- Network research
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Query peer count and connectivity info |
+- **Peer discovery**: How nodes find each other
+- **Connection management**: Max peers, trusted peers
+- **Network protocols**: devp2p, discv5
+- **admin_peers**: RPC method for peer info
 
-## Project Structure
+## Prerequisites
 
-```
-22-peers/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/peers/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/21-sync`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/22-peers
-
-# Check peer count
 go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-
-## Quick Copy & Paste
-
-```bash
-# Get peer count
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **net_peerCount**: Number of connected peers
-2. **Peer Limits**: Default max 50 peers for Geth
-3. **Bootstrap Nodes**: Initial peer discovery
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/23-mempool`.

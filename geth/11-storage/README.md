@@ -1,86 +1,36 @@
-# 11-storage
+# 11: Contract Storage
 
-**Contract Storage Access**
+## What Is This Project About?
 
-Read raw storage slots from Ethereum contracts, including mapping slots.
+This module teaches you how to read raw storage slots directly from smart contracts. Understanding Solidity's storage layout allows you to inspect contract state without relying on view functions, which is invaluable for debugging and analysis.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Storage slot layout in Solidity
-- Calculating mapping slot positions
-- Reading arbitrary storage slots
-- Keccak256 for slot computation
+Direct storage access enables:
+- Reading private state variables
+- Debugging storage-related issues
+- Analyzing contract state without ABI
+- Building storage verification tools
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Read storage slots from contract |
-| `slotToHash(slot)` | Convert big.Int slot to 32-byte hash |
-| `mappingSlotHash(key, slot)` | Calculate slot for mapping entry |
+- **Storage slots**: 32-byte slots addressed by position
+- **Solidity storage layout**: How variables map to slots
+- **Mappings and arrays**: Dynamic storage slot calculation
+- **eth_getStorageAt**: RPC method for storage reads
 
-## Project Structure
+## Prerequisites
 
-```
-11-storage/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/storage/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/01-stack` through `geth/10-filters`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/11-storage
-
-# Read storage slot 0 from contract
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7 0
+go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `CONTRACT` | Yes | Contract address |
-| `SLOT` | Yes | Storage slot number |
-
-## Quick Copy & Paste
-
-```bash
-# Read slot 0
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xdAC17F958D2ee523a2206206994597C13D831ec7 0
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Storage Layout**: Fixed slots for state variables
-2. **Mapping Slots**: keccak256(key || slot)
-3. **eth_getStorageAt**: Raw storage access
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/12-proofs`.

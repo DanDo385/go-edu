@@ -1,88 +1,37 @@
-# 10-grpc-telemetry-service
+# 10: gRPC Telemetry Service
 
-**gRPC Telemetry Service**
+## What Is This Project About?
 
-Build a gRPC service for collecting telemetry data.
+This module teaches you how to build a gRPC service for collecting telemetry data. You'll learn protocol buffers, gRPC streaming, and service design.
 
-## What You'll Learn
+## Why Is This Important?
 
-- gRPC service definition
-- Protocol Buffers
-- Streaming RPC
-- gRPC server/client
+gRPC is used for:
+- Microservice communication
+- High-performance APIs
+- Streaming data
+- Cross-language services
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| Implement gRPC service | Handle telemetry data collection |
+- **Protocol Buffers**: Defining service contracts
+- **gRPC**: High-performance RPC framework
+- **Streaming**: Server and client streaming
+- **Error handling**: gRPC status codes
 
-## Project Structure
+## Prerequisites
 
-```
-10-grpc-telemetry-service/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/grpctelemetryservice/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-├── proto/
-│   ├── telemetry.proto  # Protocol definition
-│   └── telemetry.pb.go  # Generated code
-└── README.md
-```
+- Completion of `minis/09-http-server-graceful`
+- protoc compiler installed
 
-## CLI Usage
-
-### Run the CLI Application
-
-```bash
-cd minis/10-grpc-telemetry-service
-
-# Start gRPC server
-go run ./cmd/app/main.go --port 50051
-```
-
-### Run the Debug Harness
+## How to Run
 
 ```bash
 go run ./cmd/dev/main.go
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `--port` | gRPC port (default: 50051) |
-
-## Quick Copy & Paste
-
-```bash
-# Start server
-go run ./cmd/app/main.go --port 50051
-
-# Run benchmarks
-go test -bench=. -benchmem ./internal/grpctelemetryservice/
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Protocol Buffers**: Binary serialization
-2. **gRPC**: High-performance RPC framework
-3. **Streaming**: Client/server/bidirectional streams
-4. **Code Generation**: protoc + go plugins
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/11-slices-internals-capacity-growth`.

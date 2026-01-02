@@ -1,74 +1,36 @@
-# 18-reorgs
+# 18: Chain Reorganizations
 
-**Chain Reorganization Handling**
+## What Is This Project About?
 
-Detect and handle blockchain reorganizations.
+This module teaches you how to handle chain reorganizations (reorgs) in Ethereum applications. Reorgs occur when the canonical chain changes, invalidating previously confirmed blocks.
 
-## What You'll Learn
+## Why Is This Important?
 
-- What chain reorgs are
-- Detecting reorgs via parent hash comparison
-- Safe block confirmation depths
-- Handling reorgs in indexers
+Handling reorgs is critical for:
+- Data integrity in indexers
+- Transaction confirmation safety
+- Finality-aware applications
+- Exchange and payment systems
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run()` | Detect and handle chain reorgs (placeholder) |
+- **What causes reorgs**: Network latency, competing blocks
+- **Detecting reorgs**: Comparing block hashes
+- **Recovery strategies**: Rolling back and replaying
+- **Confirmation depth**: Waiting for finality
 
-## Project Structure
+## Prerequisites
 
-```
-18-reorgs/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/reorgs/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of `geth/17-indexer`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/18-reorgs
-
-go run ./cmd/app/main.go
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## Quick Copy & Paste
-
-```bash
-# Run reorg handler
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Chain Reorg**: When chain tip changes
-2. **Canonical Chain**: The "main" chain
-3. **Confirmation Depth**: Blocks to wait before considering final
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/19-devnets`.

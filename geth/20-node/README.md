@@ -1,74 +1,37 @@
-# 20-node
+# 20: Node Configuration
 
-**Node Interaction**
+## What Is This Project About?
 
-Deep interaction with Ethereum node internals.
+This module teaches you how to configure and operate Ethereum nodes. You'll learn about sync modes, pruning, networking options, and operational best practices.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Admin RPC methods
-- Node info queries
-- Peer management
-- Node configuration
+Node operation knowledge enables:
+- Running infrastructure for DApps
+- Optimizing node performance
+- Debugging sync issues
+- Building node management tools
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run()` | Interact with node admin APIs (placeholder) |
+- **Sync modes**: Snap, full, archive
+- **Pruning**: Managing disk usage
+- **Networking**: P2P configuration
+- **Monitoring**: Node health metrics
 
-## Project Structure
+## Prerequisites
 
-```
-20-node/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/node/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
-```
+- Completion of previous modules
+- Basic sysadmin knowledge
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/20-node
-
 go run ./cmd/app/main.go
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## Quick Copy & Paste
-
-```bash
-# Query node info
-go run ./cmd/app/main.go
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **admin_nodeInfo**: Node identity and protocols
-2. **admin_peers**: Connected peer information
-3. **web3_clientVersion**: Node client version
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/21-sync`.

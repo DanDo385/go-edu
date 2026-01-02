@@ -1,83 +1,36 @@
-# 13-trace
+# 13: Transaction Tracing
 
-**Transaction Tracing**
+## What Is This Project About?
 
-Trace transaction execution to see opcode-level details and gas usage.
+This module teaches you how to trace transaction execution to understand internal calls, state changes, and debug contract interactions. Tracing is an advanced debugging technique that shows exactly what happened during transaction execution.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Debug tracing via debug_traceTransaction
-- Understanding EVM opcodes
-- Gas profiling at instruction level
-- Call graph analysis
+Transaction tracing enables:
+- Debugging failed transactions
+- Understanding internal calls
+- Analyzing gas usage
+- MEV research and analysis
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Trace transaction and analyze execution |
+- **Call traces**: Internal message calls during execution
+- **State diffs**: Storage changes made by transactions
+- **Gas tracing**: Per-opcode gas consumption
+- **debug_traceTransaction**: RPC method for tracing
 
-## Project Structure
+## Prerequisites
 
-```
-13-trace/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/trace/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/01-stack` through `geth/12-proofs`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/13-trace
-
-# Trace a transaction (requires archive node with debug API)
-go run ./cmd/app/main.go https://your-archive-node 0x<tx_hash>
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint (archive node with debug API) |
-| `TX_HASH` | Yes | Transaction hash to trace |
-
-## Quick Copy & Paste
-
-```bash
-# Trace transaction (requires archive node)
-go run ./cmd/app/main.go https://your-archive-node 0xTRANSACTION_HASH
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **debug_traceTransaction**: Full execution trace
-2. **Struct Logs**: Opcode-by-opcode execution
-3. **Gas Analysis**: Understanding gas consumption
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/14-explorer`.

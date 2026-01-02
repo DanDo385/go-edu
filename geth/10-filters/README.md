@@ -1,92 +1,36 @@
-# 10-filters
+# 10: Event Filters
 
-**Log Filtering & Subscriptions**
+## What Is This Project About?
 
-Subscribe to new block headers and implement polling vs subscription patterns.
+This module teaches you how to create and use event filters for querying historical events and subscribing to new events in real-time. Filters allow you to efficiently query large ranges of blocks for specific events.
 
-## What You'll Learn
+## Why Is This Important?
 
-- WebSocket subscriptions vs HTTP polling
-- Block header notifications
-- Implementing fallback patterns
-- Resource management for subscriptions
+Filters are essential for:
+- Efficiently querying event history
+- Real-time event subscriptions
+- Building responsive DApps
+- Indexer performance optimization
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Subscribe to or poll for new headers |
-| `subscribeHeads(ctx, client, cfg)` | WebSocket subscription approach |
-| `pollHeads(ctx, client, cfg)` | HTTP polling fallback |
+- **FilterQuery**: Specifying filter criteria
+- **Block ranges**: FromBlock and ToBlock parameters
+- **Topic filtering**: Matching events by indexed parameters
+- **Address filtering**: Matching events by emitting contract
 
-## Project Structure
+## Prerequisites
 
-```
-10-filters/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/filters/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/09-events`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/10-filters
-
-# Subscribe to new blocks (WebSocket required)
-go run ./cmd/app/main.go wss://eth.llamarpc.com
-
-# Poll mode with HTTP
-go run ./cmd/app/main.go https://eth.llamarpc.com --poll
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint (ws/wss for subscriptions) |
-| `--poll` | No | Force polling mode |
-| `--max` | No | Maximum headers to collect (default: 5) |
-
-## Quick Copy & Paste
-
-```bash
-# WebSocket subscription
-go run ./cmd/app/main.go wss://eth.llamarpc.com
-
-# HTTP polling fallback
-go run ./cmd/app/main.go https://eth.llamarpc.com --poll
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **eth_subscribe**: WebSocket-based real-time notifications
-2. **Polling**: HTTP-based fallback for providers without WS
-3. **Graceful Degradation**: Handle subscription failures
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/11-storage`.

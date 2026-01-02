@@ -1,83 +1,42 @@
-# 05-tx-nonces
+# 05: Transaction Nonces
 
-**Transaction Nonces**
+## What Is This Project About?
 
-Understand transaction nonces, the anti-replay mechanism for Ethereum transactions.
+This module deep-dives into transaction nonces—the sequential counter that orders transactions from an account. You'll learn the difference between confirmed and pending nonces, common nonce-related issues, and strategies for managing nonces in concurrent applications.
 
-## What You'll Learn
+## Why Is This Important?
 
-- What nonces are and why they matter
-- Querying pending vs confirmed nonces
-- Nonce management strategies
-- Building and signing legacy transactions
+Nonce management is one of the most common sources of bugs in Ethereum applications:
+- Transactions get stuck when nonces are skipped
+- Double-spending attempts are prevented by nonce checking
+- Concurrent transaction sending requires careful nonce coordination
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Query nonces and demonstrate transaction building |
+- **Stuck transactions**: Diagnose and fix nonce gaps
+- **Transaction replacement**: Use same nonce to replace pending txs
+- **Concurrent sending**: Safely send multiple transactions in parallel
+- **Transaction ordering**: Ensure transactions execute in desired order
 
-## Project Structure
+## Key Concepts You'll Learn
 
-```
-05-tx-nonces/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/txnonces/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- **Confirmed nonce**: Number of mined transactions
+- **Pending nonce**: Next nonce including mempool transactions
+- **Nonce gaps**: What happens when nonces are skipped
+- **Transaction replacement**: Using nonce for tx replacement (EIP-1559)
 
-## CLI Usage
+## Prerequisites
 
-### Run the CLI Application
+- Completion of `geth/01-stack` through `geth/04-accounts-balances`
+
+## How to Run
 
 ```bash
-cd geth/05-tx-nonces
-
-# Query nonce for address
 go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `ADDRESS` | Yes | Address to query nonce for |
-
-## Quick Copy & Paste
-
-```bash
-# Query nonce
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Nonce**: Sequential counter per account
-2. **Pending vs Confirmed**: Different nonce views
-3. **Replay Protection**: How nonces prevent double-spending
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/06-eip1559`.

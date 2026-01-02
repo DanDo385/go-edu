@@ -1,99 +1,66 @@
-# 01-hello-strings
+# 01: Hello Strings
 
-**UTF-8 String Utilities**
+## What Is This Project About?
 
-Implement UTF-8-aware string utilities that correctly handle multi-byte characters.
+This is your first Go project in the series. You'll learn fundamental string operations including case conversion, string manipulation, and building string utilities. Strings are one of the most commonly used types in programming, and mastering string operations is essential for any Go developer.
 
-## What You'll Learn
+## Why Is This Important?
 
-- UTF-8 encoding in Go
-- Runes vs bytes
-- strings and unicode packages
-- Proper string manipulation
+String manipulation is foundational to:
+- Text processing and parsing
+- User input handling
+- Data formatting
+- Building CLI tools
 
-## Functions to Implement
+## Real-World Problems This Solves
 
-| Function | Description |
-|----------|-------------|
-| `TitleCase(s string) string` | Capitalize first letter of each word |
-| `Reverse(s string) string` | Reverse string character-by-character |
-| `RuneLen(s string) int` | Count characters (runes), not bytes |
+- **Text normalization**: Convert user input to consistent format
+- **Title case generation**: Format titles and headers
+- **String validation**: Check and transform text data
+
+## Key Concepts You'll Learn
+
+- **String basics**: Immutable byte sequences in Go
+- **Unicode handling**: Working with runes vs bytes
+- **strings package**: Standard library string utilities
+- **Test-driven development**: Writing tests first
+
+## Prerequisites
+
+- Go 1.21+ installed
+- Basic programming knowledge
 
 ## Project Structure
 
 ```
-01-hello-strings/
+minis/01-hello-strings/
 ├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/hellostrings/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   └── solution.reference.go # Reference solution
-└── README.md
+│   ├── app/
+│   │   └── main.go
+│   └── dev/
+│       └── main.go
+├── internal/
+│   └── hellostrings/
+│       ├── exercise.go
+│       ├── exercise_test.go
+│       ├── solution.reference.go
+│       └── solution_no_err.reference.go
+└── .vscode/
+    └── launch.json
 ```
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd minis/01-hello-strings
-
-# Title case a string
-go run ./cmd/app/main.go titlecase "hello world"
-
-# Reverse a string
-go run ./cmd/app/main.go reverse "hello 世界"
-
-# Count runes
-go run ./cmd/app/main.go runelen "hello 👋"
-```
-
-### Run the Debug Harness
-
-```bash
-# Auto-runs all functions with sample inputs
+# Using debug harness
 go run ./cmd/dev/main.go
+
+# Using CLI (if implemented)
+go run ./cmd/app/main.go "hello world"
 ```
 
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Command | Argument | Description |
-|---------|----------|-------------|
-| `titlecase` | `TEXT` | Text to title-case |
-| `reverse` | `TEXT` | Text to reverse |
-| `runelen` | `TEXT` | Text to count runes |
-
-## Quick Copy & Paste
-
-```bash
-# Title case
-go run ./cmd/app/main.go titlecase "hello world"
-
-# Reverse with emoji
-go run ./cmd/app/main.go reverse "Hi👋"
-
-# Count runes in UTF-8 string
-go run ./cmd/app/main.go runelen "café 世界"
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Runes**: int32 representing Unicode code points
-2. **UTF-8**: Variable-width encoding (1-4 bytes per rune)
-3. **len(s)**: Returns bytes, not characters!
-4. **utf8.RuneCountInString**: Returns character count
-
-## Next Steps
-
-After completing this exercise, proceed to `minis/02-arrays-maps-basics`.

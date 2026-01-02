@@ -1,86 +1,36 @@
-# 14-explorer
+# 14: Block Explorer
 
-**Block Explorer**
+## What Is This Project About?
 
-Build a simple block explorer that retrieves and displays block information.
+This module teaches you how to build block explorer functionality—querying blocks, transactions, and displaying chain data in a human-readable format. You'll combine skills from previous modules to create a comprehensive chain data viewer.
 
-## What You'll Learn
+## Why Is This Important?
 
-- Fetching full blocks with transactions
-- Transaction inspection
-- Block navigation (parent/child)
-- Formatting blockchain data for display
+Block explorers are essential tools for:
+- Debugging transactions
+- Verifying contract deployments
+- Analyzing chain activity
+- User-facing blockchain UIs
 
-## Functions to Implement
+## Key Concepts You'll Learn
 
-| Function | Description |
-|----------|-------------|
-| `Run(ctx, client, cfg)` | Fetch and format block data for exploration |
+- **Block queries**: Getting full blocks with transactions
+- **Transaction details**: Decoding tx data and receipts
+- **Data formatting**: Human-readable display of chain data
+- **Pagination**: Handling large result sets
 
-## Project Structure
+## Prerequisites
 
-```
-14-explorer/
-├── cmd/
-│   ├── app/main.go      # CLI with custom arguments
-│   └── dev/main.go      # Debug harness with fixed inputs
-├── internal/explorer/
-│   ├── exercise.go      # YOUR CODE HERE
-│   ├── exercise_test.go # Tests
-│   ├── solution.reference.go # Reference solution
-│   └── types.go         # Types and interfaces
-└── README.md
-```
+- Completion of `geth/01-stack` through `geth/13-trace`
 
-## CLI Usage
-
-### Run the CLI Application
+## How to Run
 
 ```bash
-cd geth/14-explorer
-
-# Explore a block
-go run ./cmd/app/main.go https://eth.llamarpc.com 18000000
+go run ./cmd/app/main.go https://eth.llamarpc.com
 ```
 
-### Run the Debug Harness
-
-```bash
-go run ./cmd/dev/main.go
-```
-
-### Run Tests
+## Testing
 
 ```bash
 go test -v ./...
 ```
-
-## CLI Arguments
-
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `RPC_URL` | Yes | Ethereum RPC endpoint URL |
-| `BLOCK` | No | Block number or "latest" (default: latest) |
-
-## Quick Copy & Paste
-
-```bash
-# Explore block 18000000
-go run ./cmd/app/main.go https://eth.llamarpc.com 18000000
-
-# Explore latest block
-go run ./cmd/app/main.go https://eth.llamarpc.com latest
-
-# Debug harness
-go run ./cmd/dev/main.go
-```
-
-## Key Concepts
-
-1. **Block Structure**: Header + transactions
-2. **Transaction Types**: Legacy, EIP-2930, EIP-1559
-3. **Block Navigation**: Using parent hash
-
-## Next Steps
-
-After completing this exercise, proceed to `geth/15-receipts`.
