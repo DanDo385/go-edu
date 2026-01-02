@@ -1,58 +1,178 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Debug Current Package",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${fileDirname}",
-            "showLog": true,
-            "env": {},
-            "args": []
-        },
-        {
-            "name": "Debug Tests (Current Package)",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${fileDirname}",
-            "args": [
-                "-test.v"
-            ],
-            "showLog": true
-        },
-        {
-            "name": "Debug cmd/dev (Debug Harness)",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/dev",
-            "showLog": true,
-            "env": {},
-            "args": []
-        },
-        {
-            "name": "Debug cmd/app (CLI)",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/cmd/app",
-            "showLog": true,
-            "env": {},
-            "args": []
-        },
-        {
-            "name": "Debug Tests with Reference",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${fileDirname}",
-            "args": [
-                "-test.v"
-            ],
-            "buildFlags": "-tags=reference",
-            "showLog": true
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Current Package (App)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}",
+      "cwd": "${fileDirname}",
+      "env": {},
+      "args": [],
+      "showLog": false,
+      "trace": "verbose",
+      "logOutput": "debugger",
+      "presentation": {
+        "group": "1_current",
+        "order": 1
+      }
+    },
+    {
+      "name": "Debug Current File",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "env": {},
+      "args": [],
+      "showLog": false,
+      "presentation": {
+        "group": "1_current",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug Tests (Current Package)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "cwd": "${fileDirname}",
+      "env": {},
+      "args": ["-v", "-race"],
+      "showLog": false,
+      "presentation": {
+        "group": "2_tests",
+        "order": 1
+      }
+    },
+    {
+      "name": "Debug Test (Current Function)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "cwd": "${fileDirname}",
+      "env": {},
+      "args": [
+        "-v",
+        "-race",
+        "-run",
+        "^${selectedText}$"
+      ],
+      "showLog": false,
+      "presentation": {
+        "group": "2_tests",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug cmd/app/main.go",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/app",
+      "cwd": "${workspaceFolder}",
+      "env": {},
+      "args": [],
+      "showLog": false,
+      "preLaunchTask": "",
+      "presentation": {
+        "group": "3_app",
+        "order": 1
+      }
+    },
+    {
+      "name": "Debug cmd/dev/main.go (Dev Harness)",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/dev",
+      "cwd": "${workspaceFolder}",
+      "env": {},
+      "args": [],
+      "showLog": false,
+      "presentation": {
+        "group": "3_app",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug with Build Tags (reference)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}",
+      "cwd": "${fileDirname}",
+      "buildFlags": "-tags=reference",
+      "env": {},
+      "args": [],
+      "showLog": false,
+      "presentation": {
+        "group": "4_advanced",
+        "order": 1
+      }
+    },
+    {
+      "name": "Attach to Process",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": "${command:pickProcess}",
+      "presentation": {
+        "group": "4_advanced",
+        "order": 2
+      }
+    },
+    {
+      "name": "Connect to Remote Delve",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "remotePath": "${workspaceFolder}",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "showLog": true,
+      "presentation": {
+        "group": "4_advanced",
+        "order": 3
+      }
+    },
+    {
+      "name": "Debug Benchmark",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "cwd": "${fileDirname}",
+      "env": {},
+      "args": [
+        "-bench",
+        ".",
+        "-benchmem",
+        "-benchtime=1s"
+      ],
+      "showLog": false,
+      "presentation": {
+        "group": "4_advanced",
+        "order": 4
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug App + Tests",
+      "configurations": [
+        "Debug cmd/app/main.go",
+        "Debug Tests (Current Package)"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "group": "5_compound",
+        "order": 1
+      }
+    }
+  ]
 }

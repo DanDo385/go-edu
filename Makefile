@@ -1,4 +1,5 @@
-.PHONY: setup list list-minis list-geth test bench run run-minis run-geth clean help reset lint check
+.PHONY: setup list list-minis list-geth test bench run clean help reset lint check dev
+.DEFAULT_GOAL := help
 
 # Colors for output
 CYAN := \033[0;36m
@@ -11,6 +12,12 @@ NC := \033[0m # No Color
 ROOT_DIR := $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
 CURRENT_DIR := $(shell pwd)
 REL_DIR := $(shell realpath --relative-to=$(ROOT_DIR) $(CURRENT_DIR) 2>/dev/null || echo ".")
+
+# Detect current context
+IN_PROJECT := $(shell test -f "$(CURRENT_DIR)/go.mod" || test -d "$(CURRENT_DIR)/cmd" && echo "yes" || echo "no")
+PROJECT_NAME := $(shell basename $(CURRENT_DIR))
+IS_GETH := $(shell echo $(REL_DIR) | grep -q "^geth/" && echo "yes" || echo "no")
+IS_MINIS := $(shell echo $(REL_DIR) | grep -q "^minis/" && echo "yes" || echo "no")
 
 # ============================================================================
 # SETUP & DISCOVERY
@@ -55,61 +62,65 @@ list-geth:
 # ============================================================================
 
 run:
-	@if [ -z "$(P)" ]; then \
+	@if [ "$(IN_PROJECT)" = "yes" ] && [ -z "$(P)" ]; then \
+		if [ -d "$(CURRENT_DIR)/cmd/app" ]; then \
+			echo "$(CYAN)Running current project: $(PROJECT_NAME)$(NC)"; \
+			go run $(CURRENT_DIR)/cmd/app/main.go; \
+		else \
+			echo "$(YELLOW)No cmd/app directory in current project$(NC)"; \
+			echo "Try: make test"; \
+		fi; \
+	elif [ -z "$(P)" ]; then \
 		echo "$(YELLOW)Usage: make run P=<project>$(NC)"; \
-		echo "Examples:"; \
+		echo ""; \
+		echo "From root: Specify project path"; \
 		echo "  make run P=minis/01-hello-strings"; \
 		echo "  make run P=geth/01-stack"; \
-		echo "  make run P=01-hello-strings  (assumes minis/)"; \
+		echo ""; \
+		echo "From project directory: Just run 'make run'"; \
 		exit 1; \
-	fi
-	@PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
-	if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
-		PROJECT_PATH="$(ROOT_DIR)/minis/$(P)"; \
-	fi; \
-	if [ ! -d "$$PROJECT_PATH" ]; then \
-		echo "$(YELLOW)Error: Project '$(P)' not found$(NC)"; \
-		echo "Run 'make list' to see available projects"; \
-		exit 1; \
-	fi; \
-	if [ -d "$$PROJECT_PATH/cmd" ]; then \
-		echo "$(CYAN)Running $$PROJECT_PATH/cmd/...$(NC)"; \
-		go run $$PROJECT_PATH/cmd/...; \
 	else \
-		echo "$(YELLOW)No cmd/ directory found$(NC)"; \
-		echo "Try: make test P=$(P)"; \
+		PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
+		if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
+			PROJECT_PATH="$(ROOT_DIR)/minis/$(P)"; \
+		fi; \
+		if [ ! -d "$$PROJECT_PATH" ]; then \
+			echo "$(YELLOW)Error: Project '$(P)' not found$(NC)"; \
+			echo "Run 'make list' to see available projects"; \
+			exit 1; \
+		fi; \
+		if [ -d "$$PROJECT_PATH/cmd/app" ]; then \
+			echo "$(CYAN)Running $$PROJECT_PATH$(NC)"; \
+			go run $$PROJECT_PATH/cmd/app/main.go; \
+		else \
+			echo "$(YELLOW)No cmd/app directory found$(NC)"; \
+			echo "Try: make test P=$(P)"; \
+		fi; \
 	fi
 
-run-minis:
-	@if [ -z "$(P)" ]; then \
-		echo "$(YELLOW)Usage: make run-minis P=<project-name>$(NC)"; \
-		exit 1; \
-	fi
-	@if [ ! -d "$(ROOT_DIR)/minis/$(P)" ]; then \
-		echo "$(YELLOW)Error: Project 'minis/$(P)' not found$(NC)"; \
-		exit 1; \
-	fi
-	@if [ -d "$(ROOT_DIR)/minis/$(P)/cmd" ]; then \
-		echo "$(CYAN)Running minis/$(P)/cmd/...$(NC)"; \
-		go run $(ROOT_DIR)/minis/$(P)/cmd/...; \
+dev:
+	@if [ "$(IN_PROJECT)" = "yes" ]; then \
+		if [ -d "$(CURRENT_DIR)/cmd/dev" ]; then \
+			echo "$(CYAN)Running dev harness: $(PROJECT_NAME)$(NC)"; \
+			go run $(CURRENT_DIR)/cmd/dev/main.go; \
+		else \
+			echo "$(YELLOW)No cmd/dev directory in current project$(NC)"; \
+		fi; \
+	elif [ ! -z "$(P)" ]; then \
+		PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
+		if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
+			PROJECT_PATH="$(ROOT_DIR)/minis/$(P)"; \
+		fi; \
+		if [ -d "$$PROJECT_PATH/cmd/dev" ]; then \
+			echo "$(CYAN)Running dev harness: $(P)$(NC)"; \
+			go run $$PROJECT_PATH/cmd/dev/main.go; \
+		else \
+			echo "$(YELLOW)No cmd/dev directory found$(NC)"; \
+		fi; \
 	else \
-		echo "$(YELLOW)No cmd/ directory found$(NC)"; \
-	fi
-
-run-geth:
-	@if [ -z "$(P)" ]; then \
-		echo "$(YELLOW)Usage: make run-geth P=<project-name>$(NC)"; \
-		exit 1; \
-	fi
-	@if [ ! -d "$(ROOT_DIR)/geth/$(P)" ]; then \
-		echo "$(YELLOW)Error: Project 'geth/$(P)' not found$(NC)"; \
-		exit 1; \
-	fi
-	@if [ -d "$(ROOT_DIR)/geth/$(P)/cmd" ]; then \
-		echo "$(CYAN)Running geth/$(P)/cmd/...$(NC)"; \
-		go run $(ROOT_DIR)/geth/$(P)/cmd/...; \
-	else \
-		echo "$(YELLOW)No cmd/ directory found$(NC)"; \
+		echo "$(YELLOW)Usage:$(NC)"; \
+		echo "  From project directory: make dev"; \
+		echo "  From root: make dev P=minis/01-hello-strings"; \
 	fi
 
 # ============================================================================
@@ -117,9 +128,12 @@ run-geth:
 # ============================================================================
 
 test:
-	@if [ -z "$(P)" ]; then \
-		echo "$(CYAN)Running all tests...$(NC)"; \
+	@if [ "$(IN_PROJECT)" = "yes" ] && [ -z "$(P)" ]; then \
+		echo "$(CYAN)Testing current project: $(PROJECT_NAME)$(NC)"; \
 		go test -v ./...; \
+	elif [ -z "$(P)" ]; then \
+		echo "$(CYAN)Running all tests...$(NC)"; \
+		cd $(ROOT_DIR) && go test -v ./...; \
 	else \
 		PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
 		if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
@@ -134,9 +148,12 @@ test:
 	fi
 
 bench:
-	@if [ -z "$(P)" ]; then \
-		echo "$(CYAN)Running all benchmarks...$(NC)"; \
+	@if [ "$(IN_PROJECT)" = "yes" ] && [ -z "$(P)" ]; then \
+		echo "$(CYAN)Benchmarking current project: $(PROJECT_NAME)$(NC)"; \
 		go test -bench=. -benchmem ./...; \
+	elif [ -z "$(P)" ]; then \
+		echo "$(CYAN)Running all benchmarks...$(NC)"; \
+		cd $(ROOT_DIR) && go test -bench=. -benchmem ./...; \
 	else \
 		PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
 		if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
@@ -242,49 +259,89 @@ clean:
 
 help:
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
-	@echo "$(CYAN)  go-edu - Makefile Commands$(NC)"
+	@if [ "$(IN_PROJECT)" = "yes" ]; then \
+		echo "$(CYAN)  📍 Current Project: $(PROJECT_NAME)$(NC)"; \
+	else \
+		echo "$(CYAN)  go-edu - Makefile Commands$(NC)"; \
+	fi
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
 	@echo ""
-	@echo "$(GREEN)Setup & Discovery:$(NC)"
-	@echo "  make setup           Initialize dependencies and verify builds"
-	@echo "  make list            Show all available projects"
-	@echo "  make list-minis      Show only minis/ projects"
-	@echo "  make list-geth       Show only geth/ projects"
+	@if [ "$(IN_PROJECT)" = "yes" ]; then \
+		echo "$(GREEN)Project Commands (you are in a project directory):$(NC)"; \
+		echo "  make run             Run this project's CLI (cmd/app)"; \
+		echo "  make dev             Run debug harness (cmd/dev)"; \
+		echo "  make test            Run tests for this project"; \
+		echo "  make bench           Run benchmarks for this project"; \
+		echo ""; \
+		echo "$(GREEN)Direct Go Commands:$(NC)"; \
+		echo "  go test -v ./...                    Run tests"; \
+		echo "  go run ./cmd/app/main.go [args]     Run CLI"; \
+		echo "  go run ./cmd/dev/main.go            Run debug harness"; \
+		echo ""; \
+		if [ "$(IS_GETH)" = "yes" ]; then \
+			echo "$(YELLOW)💡 Geth Project Tips:$(NC)"; \
+			echo "  - Set RPC URL: export INFURA_RPC_URL=https://..."; \
+			echo "  - See README.md for CLI argument examples"; \
+			echo ""; \
+		fi; \
+		if [ "$(IS_MINIS)" = "yes" ]; then \
+			echo "$(YELLOW)💡 Minis Project Tips:$(NC)"; \
+			echo "  - See README.md for CLI argument examples"; \
+			echo "  - Use VS Code debugger (F5) for stepping through code"; \
+			echo ""; \
+		fi; \
+		echo "$(GREEN)Exercise Management:$(NC)"; \
+		echo "  make reset T=$(REL_DIR)             Reset this exercise"; \
+		echo ""; \
+		echo "$(GREEN)Navigation:$(NC)"; \
+		echo "  cd $(ROOT_DIR)                       Go to repository root"; \
+		echo "  make list                            List all projects"; \
+		echo ""; \
+	else \
+		echo "$(GREEN)Setup & Discovery:$(NC)"; \
+		echo "  make setup           Initialize dependencies and verify builds"; \
+		echo "  make list            Show all available projects"; \
+		echo "  make list-minis      Show only minis/ projects"; \
+		echo "  make list-geth       Show only geth/ projects"; \
+		echo ""; \
+		echo "$(GREEN)Running Projects:$(NC)"; \
+		echo "  make run P=<path>    Run specific project"; \
+		echo "                       Examples:"; \
+		echo "                         make run P=minis/01-hello-strings"; \
+		echo "                         make run P=geth/01-stack"; \
+		echo "  make dev P=<path>    Run project debug harness"; \
+		echo ""; \
+		echo "$(GREEN)Testing:$(NC)"; \
+		echo "  make test            Run all tests"; \
+		echo "  make test P=<path>   Test specific project"; \
+		echo "  make bench           Run all benchmarks"; \
+		echo "  make bench P=<path>  Benchmark specific project"; \
+		echo ""; \
+		echo "$(GREEN)Code Quality:$(NC)"; \
+		echo "  make lint            Run golangci-lint on all projects"; \
+		echo "  make check           Run go vet and staticcheck"; \
+		echo ""; \
+		echo "$(GREEN)Exercise Management:$(NC)"; \
+		echo "  make reset T=all              Reset all exercises to TODO state"; \
+		echo "  make reset T=geth             Reset all geth exercises"; \
+		echo "  make reset T=minis            Reset all minis exercises"; \
+		echo "  make reset T=geth/01-stack    Reset specific project"; \
+		echo ""; \
+		echo "$(GREEN)Cleanup:$(NC)"; \
+		echo "  make clean           Clean build cache and artifacts"; \
+		echo ""; \
+		echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"; \
+		echo "$(YELLOW)Quick Start:$(NC)"; \
+		echo "  1. make setup                         # Initialize"; \
+		echo "  2. make list                          # See all projects"; \
+		echo "  3. cd minis/01-hello-strings          # Pick a project"; \
+		echo "  4. make help                          # See project-specific help"; \
+		echo "  5. make run                           # Run the project"; \
+		echo "  6. make test                          # Run tests"; \
+		echo ""; \
+	fi
+	@echo "$(GREEN)Additional Help:$(NC)"
+	@echo "  README.md            Project documentation"
+	@echo "  .vscode/README.md    VS Code setup and debugging guide"
 	@echo ""
-	@echo "$(GREEN)Running Projects:$(NC)"
-	@echo "  make run P=<path>    Run specific project"
-	@echo "                       Examples:"
-	@echo "                         make run P=minis/01-hello-strings"
-	@echo "                         make run P=geth/01-stack"
-	@echo "                         make run P=01-hello-strings  (assumes minis/)"
-	@echo ""
-	@echo "$(GREEN)Testing:$(NC)"
-	@echo "  make test            Run all tests"
-	@echo "  make test P=<path>   Test specific project"
-	@echo "  make bench           Run all benchmarks"
-	@echo "  make bench P=<path>  Benchmark specific project"
-	@echo ""
-	@echo "$(GREEN)Code Quality:$(NC)"
-	@echo "  make lint            Run golangci-lint"
-	@echo "  make check           Run go vet and staticcheck"
-	@echo ""
-	@echo "$(GREEN)Exercise Management:$(NC)"
-	@echo "  make reset T=all              Reset all exercises to TODO state"
-	@echo "  make reset T=geth             Reset all geth exercises"
-	@echo "  make reset T=minis            Reset all minis exercises"
-	@echo "  make reset T=geth/01-stack    Reset specific project"
-	@echo ""
-	@echo "$(GREEN)Cleanup:$(NC)"
-	@echo "  make clean           Clean build cache and artifacts"
-	@echo ""
-	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
-	@echo "$(YELLOW)Quick Start:$(NC)"
-	@echo "  1. make setup                         # Initialize"
-	@echo "  2. make list                          # See all projects"
-	@echo "  3. cd minis/01-hello-strings          # Pick a project"
-	@echo "  4. code internal/hellostrings/exercise.go  # Implement TODOs"
-	@echo "  5. go test -v ./...                   # Run tests"
-	@echo ""
-	@echo "$(YELLOW)For geth/ projects:$(NC)"
-	@echo "  export INFURA_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY"
 	@echo "$(CYAN)═══════════════════════════════════════════════════════════$(NC)"
