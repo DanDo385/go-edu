@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/11-storage/internal/storage"
+	"github.com/example/go-10x-minis/geth/11-storage/internal/storage"
 )
 
 /*

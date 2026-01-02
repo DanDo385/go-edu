@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"os"
+	
+	// Import the internal package
+	_ "github.com/example/go-10x-minis/minis/38-config-loader-env-yaml/internal/configloaderenvyaml"
+)
 
 func main() {
-	fmt.Println("minis/38-config-loader-env-yaml: cmd/app")
+	// Custom CLI Arguments
+	// TODO: Add your custom flags here.
+	// Example:
+	// var input = flag.String("input", "", "Input value")
+	
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Println("\nExamples:")
+		fmt.Println("  go run ./cmd/app/main.go --help")
+	}
+	
+	flag.Parse()
+
+	fmt.Println("Running 38-config-loader-env-yaml...")
+	
+	// TODO: Call your internal package function here using the flags
+	// Example:
+	// configloaderenvyaml.Run(*input)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/06-smart-contracts/internal/smartcontracts"
+	"github.com/example/go-10x-minis/geth/06-smart-contracts/internal/smartcontracts"
 )
 
 /*

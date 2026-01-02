@@ -1,7 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"os"
+	
+	// Import the internal package
+	_ "github.com/example/go-10x-minis/minis/29-escape-analysis-inlining/internal/escapeanalysisinlining"
+)
 
 func main() {
-	fmt.Println("minis/29-escape-analysis-inlining: cmd/app")
+	// Custom CLI Arguments
+	// TODO: Add your custom flags here.
+	// Example:
+	// var input = flag.String("input", "", "Input value")
+	
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Println("\nExamples:")
+		fmt.Println("  go run ./cmd/app/main.go --help")
+	}
+	
+	flag.Parse()
+
+	fmt.Println("Running 29-escape-analysis-inlining...")
+	
+	// TODO: Call your internal package function here using the flags
+	// Example:
+	// escapeanalysisinlining.Run(*input)
 }

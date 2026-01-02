@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/17-indexer/internal/indexer"
+	"github.com/example/go-10x-minis/geth/17-indexer/internal/indexer"
 )
 
 /*

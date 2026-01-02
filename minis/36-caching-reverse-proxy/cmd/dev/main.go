@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	
+	// Import the internal package
+	_ "github.com/example/go-10x-minis/minis/36-caching-reverse-proxy/internal/cachingreverseproxy"
+)
 
 func main() {
-	fmt.Println("minis/36-caching-reverse-proxy: cmd/dev")
+	fmt.Println("Dev Harness: 36-caching-reverse-proxy")
+	fmt.Println("---------------------------------------------------")
+	fmt.Println("This harness runs the code with predefined arguments.")
+	
+	// TODO: Call your internal package function here with hardcoded args
+	// Example:
+	// cachingreverseproxy.Run("dev-input-value")
 }
