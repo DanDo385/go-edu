@@ -53,7 +53,6 @@ func Run(ctx context.Context, client MonitorClient, cfg Config) (*Result, error)
 	//
 	// Building on module 01: Same HeaderByNumber pattern, different use case.
 	// Module 01 used header for chain metadata; here we use it for health monitoring.
-	header, err := client.HeaderByNumber(ctx, cfg.BlockNumber)
 	if err != nil {
 		return nil, fmt.Errorf("header by number: %w", err)
 	}
