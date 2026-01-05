@@ -1,5 +1,33 @@
 # 01: Hello, Strings!
 
+This project is your introduction to Go's powerful and nuanced approach to strings. It's designed to build a solid foundation for handling text, which is a critical skill in virtually all areas of software development.
+
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [The Big Picture: Why Start with Strings?](#the-big-picture-why-start-with-strings)
+- [Computer Science First Principles: What Is a String?](#computer-science-first-principles-what-is-a-string)
+- [Go's String Implementation: Immutability and the String Header](#gos-string-implementation-immutability-and-the-string-header)
+- [Project Structure](#project-structure)
+- [Key Concepts in This Project](#key-concepts-in-this-project)
+- [Common Pitfalls: The Gotchas of Go Strings](#common-pitfalls-the-gotchas-of-go-strings)
+- [Visualizing the Difference: "Hi 👋"](#visualizing-the-difference-hi-)
+- [Progression: Where We Go from Here](#progression-where-we-go-from-here)
+- [How to Run and Test](#how-to-run-and-test)
+- [Key Takeaways](#key-takeaways)
+- [Further Reading](#further-reading)
+
+## Learning Objectives
+
+By the end of this project, you will be able to:
+
+-   **Explain the difference between bytes and runes** in Go.
+-   **Understand and articulate why UTF-8 is a variable-width encoding**.
+-   **Use `string` and `[]rune` appropriately** for different tasks.
+-   **Avoid common pitfalls** like incorrect character counting and iteration.
+-   **Implement basic string manipulation functions** that correctly handle Unicode characters.
+-   **Write and run tests** for your Go code.
+
 ## The Big Picture: Why Start with Strings?
 
 Welcome to your first Go project! We're starting with strings because they are the bedrock of modern computing. Nearly every application, from a simple command-line tool to a complex web service, communicates with the world through text. Understanding how to manipulate strings efficiently and correctly is not just a basic skill—it is a critical one.
@@ -46,6 +74,22 @@ stringHeader = {
 
 When you pass a string to a function, you are only copying this small header, not the entire byte array. This makes string passing very efficient.
 
+## Project Structure
+
+This project follows a standard Go project layout:
+
+```
+.
+├── cmd/
+│   └── dev/
+│       └── main.go   # A simple program to test your functions manually.
+└── internal/
+    └── strings.go    # Where you will implement your string functions.
+```
+
+-   **`cmd/dev`**: This is the entry point for a small development harness. You can run `go run ./cmd/dev` to see your functions in action with sample inputs.
+-   **`internal/`**: This directory contains the core logic of your project. The `internal` name is a Go convention: code in this directory can only be imported by code within the same project (`01-hello-strings`), not by other projects. This is where you'll write your code.
+
 ## Key Concepts in This Project
 
 This project requires you to implement three common string utilities, forcing you to confront the byte vs. character distinction.
@@ -70,6 +114,73 @@ This project requires you to implement three common string utilities, forcing yo
 *   Use `string` for storing and passing text. This is the default and most efficient choice.
 *   Convert to `[]rune` only when you need to inspect or modify individual characters within a string.
 
+### Common Pitfalls: The Gotchas of Go Strings
+
+When working with strings in Go, developers often encounter a few common traps, especially when coming from other languages. Awareness is the first step to avoiding them.
+
+1.  **Incorrect Character Counting with `len()`**:
+    *   **The Trap**: Using `len(s)` to find the number of characters in a string.
+    *   **The Reality**: `len(s)` returns the number of **bytes**, not characters (runes). For pure ASCII, this is the same, but for any other character, it's not.
+    *   **The Fix**: Use `utf8.RuneCountInString(s)` for an efficient character count.
+    
+    ```go
+    s := "gö"
+    fmt.Println(len(s)) // "3" (bytes)
+    fmt.Println(utf8.RuneCountInString(s)) // "2" (characters/runes)
+    ```
+
+2.  **Incorrect Iteration with `for i := 0; i < len(s); i++`**:
+    *   **The Trap**: Accessing `s[i]` in a loop to get the i-th character.
+    *   **The Reality**: This accesses the i-th **byte**. For a multi-byte character, this will lead to corrupt or partial character data.
+    *   **The Fix**: Use a `for range` loop (`for i, r := range s`). Go automatically decodes one rune per iteration, giving you the correct character and its starting byte index.
+
+    ```go
+    s := "gö"
+    for i := 0; i < len(s); i++ {
+        fmt.Printf("Byte at index %d: %c\n", i, s[i]) 
+        // Output will be broken for 'ö'
+    }
+    // Correct way:
+    for i, r := range s {
+        fmt.Printf("Rune at byte index %d: %c\n", i, r)
+    }
+    ```
+
+3.  **Slicing in the Middle of a Rune**:
+    *   **The Trap**: Slicing a string with byte indices, like `s[0:3]`, without knowing the character boundaries.
+    *   **The Reality**: If a slice boundary falls in the middle of a multi-byte rune, you will get invalid UTF-8, often represented as the replacement character ().
+    *   **The Fix**: If you must slice at the byte level, be careful. If you need to slice based on character count, convert to a `[]rune` slice first: `string([]rune(s)[0:2])`.
+
+    ```go
+    s := "Hello, 世界" // "世界" are 3 bytes each
+    fmt.Println(s[0:7]) // "Hello, " - Safe
+    fmt.Println(s[0:8]) // "Hello, " - Corrupted!
+    
+    // Correct way to get first 8 characters:
+    runes := []rune(s)
+    fmt.Println(string(runes[0:8])) // "Hello, 世"
+    ```
+
+### Visualizing the Difference: "Hi 👋"
+
+Let's visualize the string `"Hi 👋"` to make the distinction between bytes and runes crystal clear.
+
+*   **Characters (Runes)**: 4
+*   **Bytes (in UTF-8)**: 8
+
+| Character | H | i | (space) | 👋 |
+| :--- | :---: | :---: | :---: | :---: |
+| **Unicode Code Point (Rune)** | `U+0048` | `U+0069` | `U+0020` | `U+1F44B` |
+| **Rune (int32 value)** | `72` | `105` | `32` | `128075` |
+| **UTF-8 Bytes (Hex)** | `48` | `69` | `20` | `F0 9F 91 8B` |
+| **Byte Length** | 1 | 1 | 1 | 4 |
+
+When you have the string `s := "Hi 👋"`:
+*   `len(s)` returns **8** (the total number of bytes).
+*   `utf8.RuneCountInString(s)` returns **4** (the number of runes).
+*   `[]byte(s)` is `[72, 105, 32, 240, 159, 145, 139]`
+*   `[]rune(s)` is `[72, 105, 32, 128075]`
+
 ## Progression: Where We Go from Here
 
 Mastering strings is the first step. The concepts you learn here are foundational for many of the projects that follow:
@@ -90,3 +201,19 @@ go run ./cmd/dev
 # Run the provided tests to check your implementation for correctness
 go test -v ./...
 ```
+
+## Key Takeaways
+
+-   **Strings are immutable byte slices.**
+-   **Go source code is UTF-8 by default.**
+-   **`len()` gives byte count, not character count.**
+-   **Use `for range` to iterate over runes in a string.**
+-   **Convert to `[]rune` for character-level manipulation.**
+
+## Further Reading
+
+To dive deeper into the topics covered in this project, check out these official Go resources:
+*   [**Blog Post: Strings, bytes, runes and characters in Go**](https://go.dev/blog/strings): The canonical and most important read on this topic.
+*   [**Effective Go: Strings**](https://go.dev/doc/effective_go#strings): A great summary of idiomatic string usage in Go.
+*   [**Package `unicode/utf8`**](https://pkg.go.dev/unicode/utf8): The official documentation for the `utf8` package, with functions for working with UTF-8 encoded text.
+*   [**Package `strings`**](https://pkg.go.dev/strings): The standard library's main package for string manipulation.

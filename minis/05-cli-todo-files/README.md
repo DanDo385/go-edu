@@ -1,61 +1,145 @@
 # 05: Command-Line Todo App with File Persistence
 
+This project marks a major milestone: you will build your first **complete, interactive application**. You will assemble all the skills you've learned—strings, slices, structs, and JSON processing—to create a command-line (CLI) todo manager. The central challenge is **persistence**: making your application remember data between runs by saving it to a file.
+
+## Table of Contents
+
+- [Learning Objectives](#learning-objectives)
+- [The Big Picture: Building a Complete Application](#the-big-picture-building-a-complete-application)
+- [Application Architecture: Separation of Concerns](#application-architecture-separation-of-concerns)
+- [First Principles: CLIs, Persistence, and CRUD](#first-principles-clis-persistence-and-crud)
+- [Project Structure](#project-structure)
+- [Key Go Concepts in This Project](#key-go-concepts-in-this-project)
+  - [Parsing User Input: The `flag` Package](#parsing-user-input-the-flag-package)
+  - [Interfaces for Abstraction: The `Store`](#interfaces-for-abstraction-the-store)
+  - [JSON for Data Serialization](#json-for-data-serialization)
+- [Progression: Tying It All Together](#progression-tying-it-all-together)
+- [How to Run and Test](#how-to-run-and-test)
+- [Key Takeaways](#key-takeaways)
+- [Further Reading](#further-reading)
+
+## Learning Objectives
+
+By the end of this project, you will be able to:
+
+-   **Build a complete, interactive CLI application** from scratch.
+-   **Parse command-line arguments and flags** using Go's standard `flag` package.
+-   **Implement persistence** by saving and loading application state to a JSON file.
+-   **Design a clean application architecture** using interfaces to separate concerns (UI vs. data).
+-   **Implement the Dependency Inversion Principle** to create testable and flexible code.
+-   **Apply CRUD (Create, Read, Update, Delete) principles** in a real application.
+
 ## The Big Picture: Building a Complete Application
 
 So far, you've been building libraries—small, reusable pieces of code that process data. Now, you'll assemble those skills to build your first **complete, interactive application**: a command-line (CLI) todo manager.
 
 This project is a major step. It introduces the fundamental challenge of **persistence**: how does your application remember data between runs? You'll solve this by creating a data "store" that saves your todo items to a JSON file, introducing you to application architecture, interfaces, and the full lifecycle of data management.
 
+## Application Architecture: Separation of Concerns
+
+This project introduces a clean, layered architecture. Understanding this separation of concerns is key to building maintainable software.
+
+```
++--------------------------------+
+|           CLI Layer            |  <-- Knows what the user wants.
+|           (main.go)            |      (e.g., "add an item", "list items")
+|                                |      Knows NOTHING about files or JSON.
++--------------------------------+
+               |
+               | Calls methods on the Store interface.
+               | Example: store.Add("Buy milk")
+               v
++--------------------------------+
+|      Abstraction Layer         |  <-- The "Contract".
+|      (Store interface)         |      Defines WHAT can be done, not HOW.
+|                                |      (e.g., "a Store must have an Add method")
++--------------------------------+
+               ^
+               | The fileStore struct IMPLEMENTS the Store interface.
+               | It promises to fulfill the contract.
+               |
++--------------------------------+
+|     Data Persistence Layer     |  <-- Knows how to handle data.
+|       (fileStore struct)       |      (e.g., read/write a JSON file)
+|                                |      Knows NOTHING about CLI flags.
++--------------------------------+
+```
+
+-   The **CLI Layer** is the user-facing part.
+-   The **Data Persistence Layer** is the data-handling part.
+-   The **`Store` interface** is the glue that allows them to be developed and tested independently.
+
 ## First Principles: CLIs, Persistence, and CRUD
 
-1.  **Command-Line Interface (CLI)**: A way for users to interact with a program by typing text commands. A CLI takes input via **arguments** (positional inputs) and **flags** (named, optional inputs like `-verbose` or `-user=admin`). Designing a good CLI is a UI/UX challenge: it should be intuitive, helpful, and "do what the user expects."
+1.  **Command-Line Interface (CLI)**: A way for users to interact with a program by typing text commands, arguments, and flags (e.g., `-add "My Task"`).
+2.  **Persistence**: The ability of an application to save its **state** (data) so that it survives when the application closes. Our choice, a simple JSON file, is a very common and effective persistence strategy.
+3.  **CRUD Operations**: A foundational concept in data management, representing the four basic functions you can perform on data: **C**reate, **R**ead, **U**pdate, **D**elete.
 
-2.  **Persistence**: The ability of an application to save its **state** (data) so that it survives when the application closes.
-    *   **In-Memory Storage**: Data is stored in RAM (e.g., in a slice or map). It is fast but **volatile**—it disappears when the program ends.
-    *   **Persistent Storage**: Data is stored on a non-volatile medium like a hard drive. Our choice here, a simple JSON file, is a very common and effective persistence strategy.
+## Project Structure
 
-3.  **CRUD Operations**: A foundational concept in data management, representing the four basic functions you can perform on data:
-    *   **C**reate: Add a new todo item.
-    *   **R**ead: List the existing todo items.
-    *   **U**pdate: Mark a todo item as complete or not complete.
-    *   **D**elete: Remove a todo item (in our case, we'll focus on the 'Update' part).
+```
+.
+├── cmd/
+│   └── app/
+│       └── main.go       # Entry point. Parses flags and drives the app.
+├── internal/
+│   ├── store.go      # Defines the Store interface and fileStore implementation.
+│   └── item.go       # Defines the Item struct.
+└── testdata/
+    └── todos.json    # The file where your todo items will be saved.
+```
 
-This project requires you to implement a full CRUD lifecycle for your todo items.
+-   **`cmd/app`**: The main application package. Its only job is to interpret user commands and call the appropriate `Store` methods.
+-   **`internal/`**: The core business logic and data persistence implementation.
 
 ## Key Go Concepts in This Project
 
-### Parsing User Input: `os.Args` and the `flag` Package
+### Parsing User Input: The `flag` Package
 
-Go gives you two main ways to read from the command line:
-*   `os.Args`: A raw slice of strings (`[]string`) containing everything the user typed. `os.Args[0]` is the program name, `os.Args[1]` is the first argument, and so on. It's simple but requires manual parsing and validation.
-*   `flag` package: The idiomatic Go way to define and parse command-line flags. It's more robust, handles type conversions (e.g., parsing strings into `bool` or `int`), and automatically generates help text. This is the preferred method for any real application.
+The `flag` package is the idiomatic Go way to define and parse command-line flags. It's more robust than parsing `os.Args` manually, handles type conversions, and automatically generates help text.
 
-### Persistence with `os.ReadFile` and `os.WriteFile`
+```go
+add := flag.Bool("add", false, "Add a new todo item")
+list := flag.Bool("list", false, "List all todo items")
+flag.Parse() // Parses the user's input and populates the variables.
 
-You'll use two key functions from the `os` package:
-*   `os.ReadFile(path)`: Reads an entire file into a byte slice (`[]byte`). It's simple and perfect for configuration files or small data files like our todo list.
-*   `os.WriteFile(path, data, perms)`: Writes a byte slice to a file with specified permissions (e.g., `0644`).
-
-**Pro Tip: Atomic Writes**. A simple `os.WriteFile` can be risky. If your program crashes mid-write, the file can become corrupted and empty. A more robust "atomic" pattern is to write to a temporary file first, and only if that succeeds, rename the temporary file to the final destination. This ensures you never have a partially written file.
+if *add {
+    // ... logic to add an item
+}
+```
 
 ### Interfaces for Abstraction: The `Store`
 
-This is the most important architectural concept in this project. We define a `Store` **interface** that describes *what* our data store must be able to do (Load, Save, Add, etc.).
+This is the most important architectural concept in this project. We define a `Store` **interface** that describes *what* our data store must be able to do.
 
 ```go
 type Store interface {
     Load() error
     Save() error
-    Add(text string) Item
-    // ...
+    Add(text string)
+    Toggle(id int) error
+    List(pendingOnly bool) []Item
 }
 ```
-
 We then create a `fileStore` **struct** that *implements* this interface.
 
-**Why is this so powerful?**
-1.  **Testability**: In our tests, we can create a fake "mock" store that doesn't touch the filesystem, making tests fast and reliable.
-2.  **Flexibility**: The `main` part of our application only knows about the `Store` interface. It doesn't care if the data is stored in a JSON file, a database, or a cloud service. We can completely change the persistence layer later without changing the CLI logic, simply by creating a new struct that satisfies the `Store` interface. This is a form of **dependency injection**.
+**Why is this so powerful? Decoupling and Dependency Injection.**
+
+The `main` function of our application depends only on the `Store` interface, not the concrete `fileStore` implementation. This means we can "inject" any type that satisfies the interface.
+
+```go
+// In production, we inject the real file-based store:
+var s Store = NewFileStore("path/to/todos.json")
+runApp(s)
+
+// In our tests, we can inject a completely different, in-memory mock store:
+var mock Store = NewMockStore()
+// Add some test data
+mock.Add("A test item")
+// Now we can test the `runApp` logic without touching the file system!
+runApp(mock)
+```
+This pattern of "programming to an interface" is one of the most important principles of modern software design. It makes your code flexible, modular, and easy to test.
 
 ### JSON for Data Serialization
 
@@ -67,24 +151,19 @@ This process of converting in-memory objects to a storable format is called **se
 
 ## Progression: Tying It All Together
 
-This project is a synthesis of everything you've learned:
-*   You'll manage text with **strings** (Project 01).
-*   Your core data structure will be a **slice** of `Item` structs (Project 02).
-*   You'll use the `encoding/json` package to **serialize** your data for persistence (Project 04).
-*   You'll parse data from a file, a skill you practiced with CSV and JSONL (Projects 03 & 04).
-
-You are moving from writing data-processing pipelines to building interactive, stateful applications. The architectural patterns here—separating concerns with interfaces, a clear persistence layer—are the same ones used to build large-scale systems.
+This project is a synthesis of everything you've learned so far. You are moving from writing data-processing pipelines to building interactive, stateful applications. The architectural patterns here—separating concerns with interfaces, a clear persistence layer—are the same ones used to build large-scale systems.
 
 ## How to Run and Test
 
-This project is designed to be run from your terminal to see the CLI in action. You'll build the binary and then interact with it.
+This project is designed to be run from your terminal.
 
 ```bash
 # Build the application binary
 go build -o todo ./cmd/app
 
-# Examples of how to use it:
-# Add a new item
+# --- Examples of how to use it ---
+
+# Add a new item (the text is the first argument after flags)
 ./todo -add "Write a great README"
 
 # List all items
@@ -99,3 +178,18 @@ go build -o todo ./cmd/app
 # Run the provided tests
 go test -v ./...
 ```
+
+## Key Takeaways
+
+-   **Separate your application's concerns** into layers (e.g., UI, business logic, data storage).
+-   **Use interfaces as contracts** to decouple these layers.
+-   This "dependency injection" makes your code **testable and flexible**.
+-   The `flag` package is the standard way to parse CLI flags.
+-   **Persistence** is the act of saving application state; `json.Marshal` and `os.WriteFile` is a simple and effective way to do it.
+
+## Further Reading
+
+-   [**Go by Example: Command-Line Flags**](https://gobyexample.com/command-line-flags): A guide to using the `flag` package.
+-   [**Go by Example: Interfaces**](https://gobyexample.com/interfaces): A concise introduction to interfaces in Go.
+-   [**SOLID Design Principles**](https://en.wikipedia.org/wiki/SOLID): The "D" in SOLID stands for Dependency Inversion, which is exactly the principle our `Store` interface demonstrates.
+-   [**Twelve-Factor App**](https://12factor.net/): A methodology for building robust, scalable applications. This project touches on several factors, including treating backing services (our JSON file) as attached resources.
