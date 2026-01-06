@@ -78,7 +78,14 @@
             "stopOnEntry": true,
             "env": {},
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "dlvLoadConfig": {
+                "followPointers": true,
+                "maxVariableRecurse": 1,
+                "maxStringLen": 64,
+                "maxArrayValues": 64,
+                "maxStructFields": -1
+            }
         },
         {
             "name": "Debug cmd/dev with Reference Solution",
