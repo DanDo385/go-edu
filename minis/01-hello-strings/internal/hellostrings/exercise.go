@@ -22,9 +22,20 @@ import (
 
 // TitleCase - TODO: implement this function
 func TitleCase(s string) string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return ""
+	// split input string into words
+	words := strings.Fields(s)
+	// iterate through words, converting to runes
+	for i, word := range words {
+		runes := []rune(word)
+		// capitalize non-empty words
+		if len(runes) > 0 {
+			runes[0] = unicode.ToUpper(runes[0])
+		}
+		// convert runes back to a string
+		words[i] = string(runes)
+	}
+	
+	return strings.Join(words, " ")
 }
 
 // Reverse - TODO: implement this function

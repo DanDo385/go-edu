@@ -56,6 +56,55 @@
             "cwd": "${workspaceFolder}"
         },
         {
+            "name": "Debug Single Test with Reference (TitleCase)",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${fileDirname}",
+            "args": ["-test.v", "-test.run", "TestTitleCase"],
+            "buildFlags": "-tags=reference",
+            "showLog": true,
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug cmd/dev with Reference (Stop at Entry)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/minis/01-hello-strings/cmd/dev",
+            "buildFlags": "-tags=reference",
+            "showLog": true,
+            "stopOnEntry": true,
+            "env": {},
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug cmd/dev with Reference Solution",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/${relativeFileDirname}/../../../cmd/dev",
+            "buildFlags": "-tags=reference",
+            "showLog": true,
+            "env": {},
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Selected Mini Project (cmd/dev) with Reference",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/minis/${input:miniProject}/cmd/dev",
+            "buildFlags": "-tags=reference",
+            "showLog": true,
+            "env": {},
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
             "name": "Debug Selected Mini Project (cmd/dev)",
             "type": "go",
             "request": "launch",
