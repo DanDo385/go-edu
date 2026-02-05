@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/01-stack/internal/stack"
+	"github.com/example/go-10x-minis/geth/01-stack/internal/stack"
 )
 
 /*
@@ -52,15 +52,15 @@ func main() {
 	// BREAKPOINT: Step into DialContext to see connection establishment
 	fmt.Printf("Connecting to %s...\n", rpcURL)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second) // background context with a timeout of 30 seconds
+	defer cancel() // cancel the context if the function returns
 
-	client, err := ethclient.DialContext(ctx, rpcURL)
-	if err != nil {
-		fmt.Printf("Failed to connect: %v\n", err)
-		os.Exit(1)
+	client, err := ethclient.DialContext(ctx, rpcURL) // dial the Ethereum node
+	if err != nil { // if the connection fails, print the error and exit the program
+		fmt.Printf("Failed to connect: %v\n", err) // print the error
+		os.Exit(1) // exit the program with a status code of 1
 	}
-	defer client.Close()
+	defer client.Close() // close the connection when the function returns
 
 	fmt.Println("Connected!")
 	fmt.Println()
