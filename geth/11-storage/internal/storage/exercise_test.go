@@ -27,6 +27,7 @@ func (m *mockStorageClient) StorageAt(ctx context.Context, contract common.Addre
 	return m.value, nil
 }
 
+// TestRunSimpleSlot verifies direct slot resolution and read-path correctness.
 func TestRunSimpleSlot(t *testing.T) {
 	client := &mockStorageClient{
 		value: common.Hex2Bytes("deadbeef"),
@@ -52,6 +53,7 @@ func TestRunSimpleSlot(t *testing.T) {
 	}
 }
 
+// TestRunMappingSlot verifies keccak-based mapping slot derivation before storage read.
 func TestRunMappingSlot(t *testing.T) {
 	client := &mockStorageClient{
 		value: common.LeftPadBytes([]byte{1}, 32),
@@ -78,6 +80,7 @@ func TestRunMappingSlot(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects validation and upstream storage RPC failure handling.
 func TestRunErrors(t *testing.T) {
 	client := &mockStorageClient{err: errors.New("boom")}
 	if _, err := Run(context.Background(), client, Config{

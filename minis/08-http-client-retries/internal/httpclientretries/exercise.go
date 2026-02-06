@@ -2,54 +2,87 @@
 
 package httpclientretries
 
-/*
-Problem: Build a resilient HTTP client with retries and exponential backoff
-Requirements:
-1. Retry failed requests automatically
-2. Exponential backoff: delay increases exponentially
-3. Jitter: add randomness to prevent thundering herd
-Algorithm: Exponential Backoff with Jitter
-- Attempt request
-- If fails and retryable: wait backoff duration, retry
-- If fails and non-retryable: return error immediately
-- Backoff formula: BaseDelay * 2^attempt ± 20% jitter
-- Repeat up to MaxRetries times
-*/
-
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
 	"time"
 )
 
-type Client struct {
-	HTTP       *http.Client
-	MaxRetries int
-	BaseDelay  time.Duration
+// retryRoundTripper is a struct that implements the http.RoundTripper interface
+// to provide retry logic.
+type retryRoundTripper struct {
+	next       http.RoundTripper
+	maxRetries int
+	baseDelay  time.Duration
+	jitter     float64
 }
 
-// GetJSON - TODO: implement this function
-func GetJSON[T any](ctx context.Context, c *Client, url string) (T, error) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+// NewRetryClient creates a new http.Client that automatically retries failed
+// requests using exponential backoff with jitter.
+func NewRetryClient(maxRetries int, baseDelay time.Duration, jitter float64) *http.Client {
+	if maxRetries < 0 {
+		maxRetries = 0
+	}
+	if jitter < 0 {
+		jitter = 0
+	}
+	return &http.Client{
+		Transport: &retryRoundTripper{
+			next:       http.DefaultTransport,
+			maxRetries: maxRetries,
+			baseDelay:  baseDelay,
+			jitter:     jitter,
+		},
+	}
+}
+
+// isRetryable checks if an error or response indicates that a request is retryable.
+func isRetryable(err error, resp *http.Response) bool {
+	if err != nil {
+		return true
+	}
+	if resp == nil {
+		return false
+	}
+	switch resp.StatusCode {
+	case http.StatusTooManyRequests, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+// RoundTrip executes a single HTTP transaction, adding retry logic.
+func (rt *retryRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	for attempt := 0; attempt <= rt.maxRetries; attempt++ {
+		resp, err := rt.next.RoundTrip(req)
+		if !isRetryable(err, resp) || attempt == rt.maxRetries {
+			return resp, err
+		}
+
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+
+		backoff := rt.baseDelay * time.Duration(1<<attempt)
+		delay := backoff
+		if rt.jitter > 0 && backoff > 0 {
+			maxJitter := time.Duration(float64(backoff) * rt.jitter)
+			j := time.Duration(rand.Int63n(int64(maxJitter)*2+1)) - maxJitter
+			delay += j
+			if delay < 0 {
+				delay = 0
+			}
+		}
+
+		timer := time.NewTimer(delay)
+		select {
+		case <-req.Context().Done():
+			timer.Stop()
+			return nil, req.Context().Err()
+		case <-timer.C:
+		}
+	}
+
 	return nil, nil
 }
-
-// doRequest - TODO: implement this function
-func doRequest[T any](ctx context.Context, client *http.Client, url string) (T, error) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
-}
-
-// isRetryable - TODO: implement this function
-func isRetryable(err error) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return false
-}
-

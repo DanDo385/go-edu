@@ -1,36 +1,59 @@
-# 18: Chain Reorganizations
+# 18: Reorg Handling
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to handle chain reorganizations (reorgs) in Ethereum applications. Reorgs occur when the canonical chain changes, invalidating previously confirmed blocks.
+- Problem framing for Reorg Handling: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Handling reorgs is critical for:
-- Data integrity in indexers
-- Transaction confirmation safety
-- Finality-aware applications
-- Exchange and payment systems
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Key Concepts You'll Learn
+## End-State Understanding
 
-- **What causes reorgs**: Network latency, competing blocks
-- **Detecting reorgs**: Comparing block hashes
-- **Recovery strategies**: Rolling back and replaying
-- **Confirmation depth**: Waiting for finality
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Prerequisites
+## Why This Lesson Now
 
-- Completion of `geth/17-indexer`
+Indexers are incomplete without reorg safety.
 
-## How to Run
+Problem statement:
+Detect fork divergence and rollback/reapply canonical state.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Pointers/slices to canonical chain snapshots must be copied at rollback boundaries to prevent historical corruption.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

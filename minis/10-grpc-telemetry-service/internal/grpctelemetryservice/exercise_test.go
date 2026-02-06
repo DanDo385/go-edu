@@ -2,94 +2,89 @@ package grpctelemetryservice
 
 import (
 	"context"
+	"log"
+	"net"
 	"testing"
-	"time"
 
 	pb "github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
 )
 
-func TestAggregator_BasicStats(t *testing.T) {
-	agg := NewAggregator(1 * time.Hour)
-	ctx := context.Background()
+// startTestServer starts an in-memory gRPC server for testing.
+func startTestServer(t *testing.T) (*grpc.ClientConn, *bufconn.Listener) {
+	lis := bufconn.Listen(1024 * 1024)
+	s := grpc.NewServer()
+	pb.RegisterTelemetryServiceServer(s, &Server{})
 
-	points := []*pb.Point{
-		{Metric: "cpu", Value: 10.0, Timestamp: time.Now().Unix()},
-		{Metric: "cpu", Value: 20.0, Timestamp: time.Now().Unix()},
-		{Metric: "cpu", Value: 30.0, Timestamp: time.Now().Unix()},
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("Server exited with error: %v", err)
+		}
+	}()
+
+	dialer := func(context.Context, string) (net.Conn, error) {
+		return lis.Dial()
 	}
 
+	conn, err := grpc.DialContext(context.Background(), "bufnet", grpc.WithContextDialer(dialer), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatalf("Failed to dial bufnet: %v", err)
+	}
+
+	return conn, lis
+}
+
+func TestRecordTelemetry(t *testing.T) {
+	conn, lis := startTestServer(t)
+	defer lis.Close()
+	client := pb.NewTelemetryServiceClient(conn)
+
+	stream, err := client.RecordTelemetry(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to call RecordTelemetry: %v", err)
+	}
+
+	points := []float64{10.5, 20.0, 5.5}
 	for _, p := range points {
-		agg.PushPoint(ctx, p)
+		if err := stream.Send(&pb.TelemetryData{Value: p}); err != nil {
+			t.Fatalf("Failed to send point to stream: %v", err)
+		}
 	}
 
-	report := agg.Summary(ctx)
-	summary := report.Metrics["cpu"]
+	summary, err := stream.CloseAndRecv()
+	if err != nil {
+		t.Fatalf("Failed to receive summary: %v", err)
+	}
 
 	if summary.Count != 3 {
-		t.Errorf("Expected count=3, got %d", summary.Count)
+		t.Errorf("Expected count 3, got %d", summary.Count)
 	}
-	if summary.Sum != 60.0 {
-		t.Errorf("Expected sum=60, got %.2f", summary.Sum)
-	}
-	if summary.Avg != 20.0 {
-		t.Errorf("Expected avg=20, got %.2f", summary.Avg)
-	}
-	if summary.Min != 10.0 {
-		t.Errorf("Expected min=10, got %.2f", summary.Min)
-	}
-	if summary.Max != 30.0 {
-		t.Errorf("Expected max=30, got %.2f", summary.Max)
+	if summary.Sum != 36.0 {
+		t.Errorf("Expected sum 36.0, got %f", summary.Sum)
 	}
 }
 
-func TestAggregator_TimeWindow(t *testing.T) {
-	agg := NewAggregator(100 * time.Millisecond)
-	ctx := context.Background()
+func TestRecordTelemetry_EmptyStream(t *testing.T) {
+	conn, lis := startTestServer(t)
+	defer lis.Close()
+	client := pb.NewTelemetryServiceClient(conn)
 
-	// Old point (will expire)
-	oldPoint := &pb.Point{
-		Metric:    "cpu",
-		Value:     10.0,
-		Timestamp: time.Now().Add(-200 * time.Millisecond).Unix(),
-	}
-	agg.PushPoint(ctx, oldPoint)
-
-	// New point (within window)
-	newPoint := &pb.Point{
-		Metric:    "cpu",
-		Value:     20.0,
-		Timestamp: time.Now().Unix(),
-	}
-	agg.PushPoint(ctx, newPoint)
-
-	report := agg.Summary(ctx)
-	summary := report.Metrics["cpu"]
-
-	if summary.Count != 1 {
-		t.Errorf("Expected count=1 (old point expired), got %d", summary.Count)
-	}
-	if summary.Avg != 20.0 {
-		t.Errorf("Expected avg=20 (only new point), got %.2f", summary.Avg)
-	}
-}
-
-func TestAggregator_MultipleMetrics(t *testing.T) {
-	agg := NewAggregator(1 * time.Hour)
-	ctx := context.Background()
-
-	agg.PushPoint(ctx, &pb.Point{Metric: "cpu", Value: 50.0, Timestamp: time.Now().Unix()})
-	agg.PushPoint(ctx, &pb.Point{Metric: "memory", Value: 1024.0, Timestamp: time.Now().Unix()})
-
-	report := agg.Summary(ctx)
-
-	if len(report.Metrics) != 2 {
-		t.Errorf("Expected 2 metrics, got %d", len(report.Metrics))
+	stream, err := client.RecordTelemetry(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to call RecordTelemetry: %v", err)
 	}
 
-	if report.Metrics["cpu"].Avg != 50.0 {
-		t.Error("CPU metric incorrect")
+	summary, err := stream.CloseAndRecv()
+	if err != nil {
+		t.Fatalf("Failed to receive summary: %v", err)
 	}
-	if report.Metrics["memory"].Avg != 1024.0 {
-		t.Error("Memory metric incorrect")
+
+	if summary.Count != 0 {
+		t.Errorf("Expected count 0, got %d", summary.Count)
+	}
+	if summary.Sum != 0.0 {
+		t.Errorf("Expected sum 0.0, got %f", summary.Sum)
 	}
 }

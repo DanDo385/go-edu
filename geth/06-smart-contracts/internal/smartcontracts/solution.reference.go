@@ -13,78 +13,72 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-/*
-Reference implementation for smart contract interaction.
+var (
+	errNilClient     = errors.New("nil contract caller")
+	errShortABIValue = errors.New("abi value too short")
+)
 
-This is the complete, tested solution for the exercise.
-Run tests with: go test -tags=reference -v ./...
+/*
+Reference Solution
+
+Structure:
+- Build four read-only call payloads using function selectors.
+- Execute eth_call for each selector.
+- Decode ABI-encoded return values.
+
+Invariant:
+- Contract must be non-zero address and client must be non-nil.
 */
 func Run(ctx context.Context, client ContractCaller, cfg Config) (*Result, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	if client == nil {
-		return nil, errors.New("client is nil")
+		return nil, errNilClient
 	}
-
 	if cfg.Contract == (common.Address{}) {
-		return nil, errors.New("contract address required")
+		return nil, errors.New("contract address is required")
 	}
 
-	// Define selectors
-	selectorName := selector("name()")
-	selectorSymbol := selector("symbol()")
-	selectorDecimals := selector("decimals()")
-	selectorTotalSupply := selector("totalSupply()")
-
-	// Helper for contract calls
 	call := func(sel []byte) ([]byte, error) {
-		msg := ethereum.CallMsg{
-			To:   &cfg.Contract,
-			Data: sel,
+		payload, err := client.CallContract(ctx, ethereum.CallMsg{To: &cfg.Contract, Data: sel}, cfg.BlockNumber)
+		if err != nil {
+			return nil, err
 		}
-		return client.CallContract(ctx, msg, cfg.BlockNumber)
+		return payload, nil
 	}
 
-	// Query name()
-	nameBytes, err := call(selectorName)
+	nameRaw, err := call(selector("name()"))
 	if err != nil {
-		return nil, fmt.Errorf("call name(): %w", err)
+		return nil, fmt.Errorf("call name: %w", err)
 	}
-	name, err := decodeString(nameBytes)
+	name, err := decodeString(nameRaw)
 	if err != nil {
-		return nil, fmt.Errorf("decode name(): %w", err)
-	}
-
-	// Query symbol()
-	symbolBytes, err := call(selectorSymbol)
-	if err != nil {
-		return nil, fmt.Errorf("call symbol(): %w", err)
-	}
-	symbol, err := decodeString(symbolBytes)
-	if err != nil {
-		return nil, fmt.Errorf("decode symbol(): %w", err)
+		return nil, fmt.Errorf("decode name: %w", err)
 	}
 
-	// Query decimals()
-	decBytes, err := call(selectorDecimals)
+	symbolRaw, err := call(selector("symbol()"))
 	if err != nil {
-		return nil, fmt.Errorf("call decimals(): %w", err)
+		return nil, fmt.Errorf("call symbol: %w", err)
 	}
-	decimals, err := decodeUint8(decBytes)
+	symbol, err := decodeString(symbolRaw)
 	if err != nil {
-		return nil, fmt.Errorf("decode decimals(): %w", err)
+		return nil, fmt.Errorf("decode symbol: %w", err)
 	}
 
-	// Query totalSupply()
-	supplyBytes, err := call(selectorTotalSupply)
+	decimalsRaw, err := call(selector("decimals()"))
 	if err != nil {
-		return nil, fmt.Errorf("call totalSupply(): %w", err)
+		return nil, fmt.Errorf("call decimals: %w", err)
 	}
-	totalSupply, err := decodeUint256(supplyBytes)
+	decimals, err := decodeUint8(decimalsRaw)
 	if err != nil {
-		return nil, fmt.Errorf("decode totalSupply(): %w", err)
+		return nil, fmt.Errorf("decode decimals: %w", err)
+	}
+
+	supplyRaw, err := call(selector("totalSupply()"))
+	if err != nil {
+		return nil, fmt.Errorf("call totalSupply: %w", err)
+	}
+	totalSupply, err := decodeUint256(supplyRaw)
+	if err != nil {
+		return nil, fmt.Errorf("decode totalSupply: %w", err)
 	}
 
 	return &Result{
@@ -96,45 +90,51 @@ func Run(ctx context.Context, client ContractCaller, cfg Config) (*Result, error
 }
 
 func selector(sig string) []byte {
-	hash := crypto.Keccak256([]byte(sig))
-	return hash[:4]
+	h := crypto.Keccak256([]byte(sig))
+	return append([]byte(nil), h[:4]...)
 }
 
 func decodeString(data []byte) (string, error) {
 	if len(data) < 64 {
-		return "", errors.New("data too short for string")
+		return "", errShortABIValue
 	}
-	offset := new(big.Int).SetBytes(data[:32]).Int64()
-	if offset < 0 || offset+32 > int64(len(data)) {
-		return "", errors.New("invalid offset")
+	offset := new(big.Int).SetBytes(data[:32])
+	if !offset.IsInt64() || offset.Int64() < 0 {
+		return "", errors.New("invalid string offset")
 	}
-	lengthStart := int(offset)
-	lengthEnd := lengthStart + 32
-	if lengthEnd > len(data) {
-		return "", errors.New("invalid length data")
+	off := int(offset.Int64())
+	if off+32 > len(data) {
+		return "", errors.New("string offset out of bounds")
 	}
-	length := new(big.Int).SetBytes(data[lengthStart:lengthEnd]).Int64()
-	if length < 0 {
-		return "", errors.New("negative length")
+
+	length := new(big.Int).SetBytes(data[off : off+32])
+	if !length.IsInt64() || length.Int64() < 0 {
+		return "", errors.New("invalid string length")
 	}
-	dataStart := lengthEnd
-	dataEnd := dataStart + int(length)
-	if dataEnd > len(data) {
-		return "", errors.New("string exceeds data bounds")
+	n := int(length.Int64())
+	start := off + 32
+	end := start + n
+	if end > len(data) {
+		return "", errors.New("string length out of bounds")
 	}
-	return string(data[dataStart:dataEnd]), nil
+
+	return string(data[start:end]), nil
 }
 
 func decodeUint8(data []byte) (uint8, error) {
-	if len(data) < 32 {
-		return 0, errors.New("data too short for uint8")
+	v, err := decodeUint256(data)
+	if err != nil {
+		return 0, err
 	}
-	return uint8(data[len(data)-1]), nil
+	if !v.IsUint64() || v.Uint64() > 255 {
+		return 0, errors.New("uint8 out of range")
+	}
+	return uint8(v.Uint64()), nil
 }
 
 func decodeUint256(data []byte) (*big.Int, error) {
 	if len(data) < 32 {
-		return nil, errors.New("data too short for uint256")
+		return nil, errShortABIValue
 	}
-	return new(big.Int).SetBytes(data[len(data)-32:]), nil
+	return new(big.Int).SetBytes(data[:32]), nil
 }

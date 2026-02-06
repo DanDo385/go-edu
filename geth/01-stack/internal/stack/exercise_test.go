@@ -33,6 +33,8 @@ func (m *mockRPC) HeaderByNumber(ctx context.Context, number *big.Int) (*types.H
 	return m.header, m.headerErr
 }
 
+// TestRunSuccess protects the core contract: read chain/network/header and
+// return defensively copied results so caller mutation cannot corrupt source data.
 func TestRunSuccess(t *testing.T) {
 	header := &types.Header{
 		Number:     big.NewInt(123),
@@ -74,6 +76,8 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects boundary behavior: nil client and upstream RPC failures
+// must surface as errors instead of panics or silent partial results.
 func TestRunErrors(t *testing.T) {
 	if _, err := Run(context.Background(), nil, Config{}); err == nil {
 		t.Fatalf("expected error for nil client")

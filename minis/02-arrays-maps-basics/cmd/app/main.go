@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/example/go-10x-minis/minis/02-arrays-maps-basics/internal/arraysmapsbasics"
 )
@@ -12,15 +11,18 @@ import (
 Word Frequency Counter CLI
 
 Usage:
-  go run ./cmd/app/main.go <file>
-  echo "text" | go run ./cmd/app/main.go -
+
+	go run ./cmd/app/main.go <file>
+	echo "text" | go run ./cmd/app/main.go -
 
 Arguments:
-  file   Path to text file, or "-" for stdin
+
+	file   Path to text file, or "-" for stdin
 
 Examples:
-  go run ./cmd/app/main.go testdata/input.txt
-  echo "hello world hello" | go run ./cmd/app/main.go -
+
+	go run ./cmd/app/main.go testdata/input.txt
+	echo "hello world hello" | go run ./cmd/app/main.go -
 */
 func main() {
 	if len(os.Args) < 2 {

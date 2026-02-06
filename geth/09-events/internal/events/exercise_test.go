@@ -25,6 +25,8 @@ func (m *mockLogClient) FilterLogs(ctx context.Context, q ethereum.FilterQuery) 
 	return m.logs, nil
 }
 
+// TestRunDecodesLogs verifies topic filtering and log decoding invariants for
+// ERC20 Transfer events, including indexed addresses and value extraction.
 func TestRunDecodesLogs(t *testing.T) {
 	token := common.HexToAddress("0x000000000000000000000000000000000000dead")
 	from := common.HexToAddress("0x0000000000000000000000000000000000000001")
@@ -66,6 +68,7 @@ func TestRunDecodesLogs(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects nil-client/input validation and upstream filter error propagation.
 func TestRunErrors(t *testing.T) {
 	token := common.HexToAddress("0xdead")
 	mock := &mockLogClient{

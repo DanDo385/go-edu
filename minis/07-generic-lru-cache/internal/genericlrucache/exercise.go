@@ -2,82 +2,78 @@
 
 package genericlrucache
 
-/*
-Problem: Implement a thread-safe LRU cache with generics and TTL
-Requirements:
-1. O(1) Get and Set operations
-2. Thread-safe (concurrent access from multiple goroutines)
-3. LRU eviction when capacity is reached
-Time/Space Complexity:
-- Get: O(1) average (map lookup + list move)
-- Set: O(1) average (map insert + list append/evict)
-- Space: O(capacity) for map + list
-Algorithm: LRU Eviction Policy
-- Track access order in doubly-linked list
-- Most recent items at front
-- Least recent items at back
-- Evict from back when capacity exceeded
-*/
-
 import (
 	"container/list"
 	"sync"
-	"time"
 )
 
+// Cache is a thread-safe, generic LRU cache.
 type Cache[K comparable, V any] struct {
-	mu         sync.Mutex          // Protects all fields
-	capacity   int                 // Maximum number of items
-	defaultTTL time.Duration       // Default expiration time
-	items      map[K]*list.Element // Key → list element
-	evictList  *list.List          // Doubly-linked list (front = most recent)
+	mu        sync.Mutex
+	capacity  int
+	items     map[K]*list.Element
+	evictList *list.List
 }
 
+// entry is used to store a key-value pair in the linked list.
 type entry[K comparable, V any] struct {
-	key       K
-	value     V
-	expiresAt time.Time
+	key   K
+	value V
 }
 
-// New - TODO: implement this function
-func New[K comparable, V any](capacity int, defaultTTL time.Duration) *Cache[K, V] {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+// New creates a new LRU cache with the given capacity.
+func New[K comparable, V any](capacity int) *Cache[K, V] {
+	if capacity <= 0 {
+		capacity = 1
+	}
+	return &Cache[K, V]{
+		capacity:  capacity,
+		items:     make(map[K]*list.Element, capacity),
+		evictList: list.New(),
+	}
 }
 
-// Get - TODO: implement this function
+// Get retrieves a value from the cache.
 func (c *Cache[K, V]) Get(key K) (V, bool) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if elem, ok := c.items[key]; ok {
+		c.evictList.MoveToFront(elem)
+		return elem.Value.(*entry[K, V]).value, true
+	}
+
+	var zeroV V
+	return zeroV, false
 }
 
-// Set - TODO: implement this function
-func (c *Cache[K, V]) Set(key K, val V) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+// Set adds a value to the cache.
+func (c *Cache[K, V]) Set(key K, value V) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if elem, ok := c.items[key]; ok {
+		elem.Value.(*entry[K, V]).value = value
+		c.evictList.MoveToFront(elem)
+		return
+	}
+
+	if len(c.items) >= c.capacity {
+		back := c.evictList.Back()
+		if back != nil {
+			ent := back.Value.(*entry[K, V])
+			delete(c.items, ent.key)
+			c.evictList.Remove(back)
+		}
+	}
+
+	elem := c.evictList.PushFront(&entry[K, V]{key: key, value: value})
+	c.items[key] = elem
 }
 
-// SetWithTTL - TODO: implement this function
-func (c *Cache[K, V]) SetWithTTL(key K, val V, ttl time.Duration) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
-}
-
-// Len - TODO: implement this function
+// Len returns the number of items in the cache.
 func (c *Cache[K, V]) Len() int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return len(c.items)
 }
-
-// removeElement - TODO: implement this function
-func (c *Cache[K, V]) removeElement(elem *list.Element) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
-}
-

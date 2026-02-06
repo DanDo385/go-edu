@@ -13,6 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+// TestRunCreatesKeystore verifies identity correctness: generated address,
+// decrypted private key, and stored keystore file must describe the same account.
 func TestRunCreatesKeystore(t *testing.T) {
 	t.Parallel()
 
@@ -64,6 +66,8 @@ func TestRunCreatesKeystore(t *testing.T) {
 	}
 }
 
+// TestRunUsesDefaults protects default config behavior so learners can run the
+// lesson without preconfiguring output paths or passphrases.
 func TestRunUsesDefaults(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("relative path permissions behave differently on Windows")

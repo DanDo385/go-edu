@@ -74,6 +74,8 @@ func mustKey(t *testing.T) *ecdsa.PrivateKey {
 	return key
 }
 
+// TestRunSuccessDefaults validates canonical EIP-1559 fee math:
+// feeCap = 2*baseFee + tip, with nonce/tip suggestions invoked as needed.
 func TestRunSuccessDefaults(t *testing.T) {
 	header := &types.Header{BaseFee: big.NewInt(30_000_000_000)}
 	client := &mockFeeClient{
@@ -110,6 +112,8 @@ func TestRunSuccessDefaults(t *testing.T) {
 	}
 }
 
+// TestRunOverridesNoSend verifies explicit overrides short-circuit suggestions
+// and preserve dry-run semantics (sign but do not send).
 func TestRunOverridesNoSend(t *testing.T) {
 	client := &mockFeeClient{
 		chainID: big.NewInt(11155111),
@@ -143,6 +147,8 @@ func TestRunOverridesNoSend(t *testing.T) {
 	}
 }
 
+// TestRunErrors ensures each RPC dependency failure path is surfaced clearly,
+// including missing base fee and send-stage errors.
 func TestRunErrors(t *testing.T) {
 	key := mustKey(t)
 	to := common.HexToAddress("0x1")

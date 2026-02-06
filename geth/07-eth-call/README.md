@@ -1,75 +1,59 @@
-# 07: eth_call - Manual Contract Interaction
+# 07: eth_call ABI Decoding
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to interact with smart contracts using manual ABI encoding and decoding. You'll learn to construct function selectors, build CallMsg structs, execute eth_call requests, and decode the returned bytes. This gives you deep understanding of what libraries like abigen abstract away.
+- Problem framing for eth_call ABI Decoding: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-**Important**: Before starting this module, complete the console tutorial in `geth/06-smart-contracts`. The console experience provides the conceptual foundation that makes this Go implementation much clearer.
+## CS Connection
 
-## Why Is This Important?
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-Understanding manual contract calls is essential for:
-- Debugging contract interaction issues
-- Building tools that work with any contract (not just those with bindings)
-- Understanding gas estimation and call simulation
-- Implementing custom encoding for non-standard ABIs
+## End-State Understanding
 
-## Real-World Problems This Solves
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-- **Universal contract queries**: Query any contract without pre-generated bindings
-- **ABI debugging**: Understand exactly what bytes are being sent/received
-- **Custom encoding**: Handle non-standard or dynamic ABIs
-- **MEV/arbitrage**: Build low-latency contract interaction tools
+## Why This Lesson Now
 
-## Key Concepts You'll Learn
+This reinforces low-level ABI reasoning used by tracing, events, and tooling.
 
-- **Function selectors**: keccak256(signature)[:4]
-- **ABI encoding**: How arguments are serialized to bytes
-- **ABI decoding**: How return values are parsed from bytes
-- **eth_call**: Read-only contract execution without state changes
-- **CallMsg**: Structure describing a contract call
+Problem statement:
+Use `eth_call` to fetch token metadata and decode dynamic/static ABI values.
 
-## Prerequisites
+## Step-by-Step Build Path
 
-- Completion of `geth/06-smart-contracts` (console tutorial)
-- Completion of `geth/01-stack` through `geth/06-eip1559`
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
 
-## Project Structure
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
 
-```
-geth/07-eth-call/
-├── cmd/
-│   ├── app/
-│   │   └── main.go
-│   └── dev/
-│       └── main.go
-├── internal/
-│   └── ethcall/
-│       ├── exercise.go      # Manual ABI encoding/decoding
-│       ├── exercise_test.go
-│       ├── solution.reference.go
-│       └── types.go
-└── .vscode/
-    └── launch.json
-```
+### Step 3: Memory / Pointer Impact
+Dynamic string decoding follows pointer-like offsets in ABI data; explain that offsets are indexes into byte slices, not Go pointers.
 
-## How to Run
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Query USDC token metadata
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-
-# Query DAI token metadata
-go run ./cmd/app/main.go https://eth.llamarpc.com 0x6B175474E89094C44Da98b954EedeAC495271d0F
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Additional Resources
-
-- [Ethereum ABI Specification](https://docs.soliditylang.org/en/latest/abi-spec.html)
-- [go-ethereum CallContract](https://pkg.go.dev/github.com/ethereum/go-ethereum/ethclient#Client.CallContract)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

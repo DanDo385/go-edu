@@ -1,44 +1,59 @@
-# 04: Accounts and Balances
+# 04: Account Balance and Code Classification
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to query Ethereum account state—specifically balances and nonces. You'll understand the difference between externally owned accounts (EOAs) and contract accounts, how Ether balances are stored and represented, and what transaction nonces are used for.
+- Problem framing for Account Balance and Code Classification: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Querying account state is fundamental to almost every Ethereum application:
-- Wallets display balances
-- DApps check if users can afford transactions
-- Transaction builders need nonces for sequencing
-- Analytics tools track account activity
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Real-World Problems This Solves
+## End-State Understanding
 
-- **Wallet balance display**: Show users their ETH holdings
-- **Transaction validation**: Ensure sufficient funds before sending
-- **Nonce management**: Get the correct nonce for new transactions
-- **Account monitoring**: Track account activity over time
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Key Concepts You'll Learn
+## Why This Lesson Now
 
-- **Account types**: EOA vs Contract accounts
-- **Balance representation**: Wei (10^-18 ETH) as the base unit
-- **Nonces**: Sequential transaction counter for replay protection
-- **State queries**: eth_getBalance and eth_getTransactionCount
+This builds the mental model for account state before transaction and contract workflows.
 
-## Prerequisites
+Problem statement:
+Classify addresses as EOAs/contracts using `BalanceAt` and `CodeAt`.
 
-- Completion of `geth/01-stack` through `geth/03-keys-addresses`
+## Step-by-Step Build Path
 
-## How to Run
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Balances arrive as `*big.Int` and code as `[]byte`; both require defensive copying to avoid alias-driven bugs.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Query a specific address
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

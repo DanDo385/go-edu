@@ -2,18 +2,6 @@
 
 package jsonllogfilter
 
-/*
-Problem: Parse and filter JSONL (JSON Lines) log entries by severity level
-Constraints:
-- JSONL format: one JSON object per line (not a JSON array!)
-- Timestamps are RFC3339 format (e.g., "2024-01-01T12:00:00Z")
-- Level is a string ("debug", "info", "warn", "error") that must map to an enum
-- Malformed lines should be skipped, not cause total failure
-Time/Space Complexity:
-- Time: O(n log n) where n = number of valid entries (O(n) parse + O(n log n) sort)
-- Space: O(n) to store filtered entries
-*/
-
 import (
 	"bufio"
 	"encoding/json"
@@ -26,24 +14,104 @@ import (
 
 type Level int
 
+// These are the log levels, created using iota.
 const (
+	Debug Level = iota // 0
+	Info               // 1
+	Warn               // 2
+	Error              // 3
+)
+
+// Backward-compatible constant names used by cmd/app.
+const (
+	LevelDebug = Debug
+	LevelInfo  = Info
+	LevelWarn  = Warn
+	LevelError = Error
+)
+
+// SortField defines the field to sort by.
+type SortField int
+
+const (
+	SortByTimestamp SortField = iota
+	SortByLevel
+)
+
 type Entry struct {
-	TS    time.Time `json:"ts"`    // RFC3339 timestamp, parsed by time package
-	Level Level     `json:"level"` // Uses our custom UnmarshalJSON below
-	Msg   string    `json:"msg"`   // String data lives on heap, referenced by 16-byte header
+	TS    time.Time `json:"ts"`
+	Level Level     `json:"level"`
+	Msg   string    `json:"msg"`
 }
 
-// UnmarshalJSON - TODO: implement this function
+// UnmarshalJSON implements the json.Unmarshaler interface for the Level type.
+// This method is a pointer receiver because it needs to modify the Level value.
 func (l *Level) UnmarshalJSON(data []byte) error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	var raw string
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	switch strings.ToLower(raw) {
+	case "debug":
+		*l = Debug
+	case "info":
+		*l = Info
+	case "warn":
+		*l = Warn
+	case "error":
+		*l = Error
+	default:
+		return fmt.Errorf("unknown level %q", raw)
+	}
 	return nil
 }
 
-// FilterLogs - TODO: implement this function
-func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+// FilterAndSort is the main function you need to implement.
+func FilterAndSort(r io.Reader, minLevel Level, sortBy SortField) ([]Entry, error) {
+	scanner := bufio.NewScanner(r)
+	entries := make([]Entry, 0)
+	skipped := 0
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+
+		var entry Entry
+		if err := json.Unmarshal([]byte(line), &entry); err != nil {
+			skipped++
+			continue
+		}
+		if entry.Level >= minLevel {
+			entries = append(entries, entry)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		switch sortBy {
+		case SortByLevel:
+			if entries[i].Level == entries[j].Level {
+				return entries[i].TS.Before(entries[j].TS)
+			}
+			return entries[i].Level < entries[j].Level
+		case SortByTimestamp:
+			fallthrough
+		default:
+			return entries[i].TS.Before(entries[j].TS)
+		}
+	})
+
+	if skipped > 0 {
+		return entries, fmt.Errorf("skipped %d malformed log lines", skipped)
+	}
+	return entries, nil
 }
 
+// FilterLogs preserves the older API used by tests and cmd/app.
+func FilterLogs(r io.Reader, minLevel Level) ([]Entry, error) {
+	return FilterAndSort(r, minLevel, SortByTimestamp)
+}

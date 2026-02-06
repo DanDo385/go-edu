@@ -1,36 +1,59 @@
-# 15: Transaction Receipts
+# 15: Receipt and Log Normalization
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to work with transaction receipts—the post-execution record of what happened when a transaction was mined. Receipts contain gas usage, status, logs, and other execution metadata.
+- Problem framing for Receipt and Log Normalization: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Transaction receipts are essential for:
-- Confirming transaction success
-- Extracting emitted events
-- Calculating actual gas costs
-- Building confirmation workflows
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Key Concepts You'll Learn
+## End-State Understanding
 
-- **Receipt structure**: Status, gas used, logs, etc.
-- **Transaction status**: Success vs revert detection
-- **Cumulative gas**: Understanding gas accounting
-- **Log extraction**: Getting events from receipts
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Prerequisites
+## Why This Lesson Now
 
-- Completion of `geth/01-stack` through `geth/14-explorer`
+Receipts complete the transaction lifecycle after submission.
 
-## How to Run
+Problem statement:
+Fetch receipts and convert logs into stable, testable summaries.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Receipt logs contain nested slices and pointers; deep-copy topics/data to avoid shared-memory surprises.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

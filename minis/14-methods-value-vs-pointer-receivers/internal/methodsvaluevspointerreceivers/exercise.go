@@ -2,156 +2,161 @@
 
 package methodsvaluevspointerreceivers
 
-/*
-Problem: Understanding method receivers in Go (value vs pointer)
-Requirements:
-1. Choose correct receiver type for mutation
-2. Understand interface satisfaction rules
-3. Handle nil receivers safely
-Algorithm: Receiver Selection
-- Mutation needed: Use pointer receiver
-- Large struct (>64 bytes): Use pointer receiver
-- Small immutable value: Use value receiver
-- Interface satisfaction: Consider both T and *T
-*/
-
-// DepositSolution - TODO: implement this function
 func (b *BankAccount) DepositSolution(amount int) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if b == nil {
+		return
+	}
+	b.balance += amount
 }
 
-// BalanceSolution - TODO: implement this function
 func (b *BankAccount) BalanceSolution() int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if b == nil {
+		return 0
+	}
+	return b.balance
 }
 
-// WithdrawSolution - TODO: implement this function
 func (b *BankAccount) WithdrawSolution(amount int) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if b == nil {
+		return
+	}
+	b.balance -= amount
 }
 
-// AreaSolution - TODO: implement this function
 func (r Rectangle) AreaSolution() float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return r.Width * r.Height
 }
 
-// AreaSolution - TODO: implement this function
 func (c *Circle) AreaSolution() float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if c == nil {
+		return 0
+	}
+	return 3.14159 * c.Radius * c.Radius
 }
 
-// TotalAreaSolution - TODO: implement this function
 func TotalAreaSolution(shapes []Shape) float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0.0
+	total := 0.0
+	for _, shape := range shapes {
+		total += shape.Area()
+	}
+	return total
 }
 
-// AppendSolution - TODO: implement this function
 func (l *StringList) AppendSolution(value string) *StringList {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if l == nil {
+		return &StringList{value: value}
+	}
+	if l.next == nil {
+		l.next = &StringList{value: value}
+		return l
+	}
+	l.next = l.next.AppendSolution(value)
+	return l
 }
 
-// ContainsSolution - TODO: implement this function
 func (l *StringList) ContainsSolution(value string) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if l == nil {
+		return false
+	}
+	if l.value == value {
+		return true
+	}
+	return l.next.ContainsSolution(value)
 }
 
-// FirstSolution - TODO: implement this function
 func (l *StringList) FirstSolution() string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if l == nil {
+		return ""
+	}
+	return l.value
 }
 
-// ValidateSolution - TODO: implement this function
 func (c SmallConfig) ValidateSolution() bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return c.ID > 0 && c.Name != ""
 }
 
-// SumSolution - TODO: implement this function
 func (l *LargeConfig) SumSolution() int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if l == nil {
+		return 0
+	}
+	total := 0
+	for _, v := range l.Data {
+		total += v
+	}
+	return total
 }
 
-// SetNameSolution - TODO: implement this function
 func (u *User) SetNameSolution(name string) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if u == nil {
+		return
+	}
+	u.Name = name
 }
 
-// SetEmailSolution - TODO: implement this function
 func (u *User) SetEmailSolution(email string) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if u == nil {
+		return
+	}
+	u.Email = email
 }
 
-// GetNameSolution - TODO: implement this function
 func (u *User) GetNameSolution() string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if u == nil {
+		return ""
+	}
+	return u.Name
 }
 
-// IsAdultSolution - TODO: implement this function
 func (u *User) IsAdultSolution() bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if u == nil {
+		return false
+	}
+	return u.Age >= 18
 }
 
-// EqualsSolution - TODO: implement this function
 func (p Point) EqualsSolution(other Comparable) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	switch v := other.(type) {
+	case Point:
+		return p.X == v.X && p.Y == v.Y
+	case *Point:
+		if v == nil {
+			return false
+		}
+		return p.X == v.X && p.Y == v.Y
+	default:
+		return false
+	}
 }
 
-// NewSafeCounterMapSolution - TODO: implement this function
 func NewSafeCounterMapSolution() SafeCounterMap {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return SafeCounterMap{counters: make(map[string]int)}
 }
 
-// IncrementSolution - TODO: implement this function
 func (m *SafeCounterMap) IncrementSolution(key string) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if m == nil {
+		return
+	}
+	if m.counters == nil {
+		m.counters = make(map[string]int)
+	}
+	m.counters[key]++
 }
 
-// GetSolution - TODO: implement this function
 func (m *SafeCounterMap) GetSolution(key string) int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if m == nil || m.counters == nil {
+		return 0
+	}
+	return m.counters[key]
 }
 
-// AppendIterative - TODO: implement this function
 func (l *StringList) AppendIterative(value string) *StringList {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if l == nil {
+		return &StringList{value: value}
+	}
+	cur := l
+	for cur.next != nil {
+		cur = cur.next
+	}
+	cur.next = &StringList{value: value}
+	return l
 }
-

@@ -24,6 +24,8 @@ func (m *mockTraceClient) TraceTransaction(ctx context.Context, txHash common.Ha
 	return m.resp, nil
 }
 
+// TestRunSuccess verifies trace retrieval plus defensive copying of raw JSON
+// so callers cannot mutate client-owned trace payloads.
 func TestRunSuccess(t *testing.T) {
 	payload := json.RawMessage(`{"calls":[{"type":"CALL"}]}`)
 	client := &mockTraceClient{resp: payload}
@@ -50,6 +52,7 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects nil-client/input validation and upstream trace failure propagation.
 func TestRunErrors(t *testing.T) {
 	if _, err := Run(context.Background(), nil, Config{TxHash: common.HexToHash("0x1")}); err == nil {
 		t.Fatalf("expected nil client error")

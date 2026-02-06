@@ -65,6 +65,8 @@ func mustKey(t *testing.T) *ecdsa.PrivateKey {
 	return key
 }
 
+// TestRunSuccessDefaults verifies default nonce/gas resolution and confirms a
+// signed transaction is broadcast when NoSend is not set.
 func TestRunSuccessDefaults(t *testing.T) {
 	client := &mockTXClient{
 		nonce:    7,
@@ -101,6 +103,8 @@ func TestRunSuccessDefaults(t *testing.T) {
 	}
 }
 
+// TestRunOverridesAndNoSend protects override precedence and dry-run behavior:
+// provided values must bypass suggestions and suppress SendTransaction.
 func TestRunOverridesAndNoSend(t *testing.T) {
 	client := &mockTXClient{
 		gasPrice: big.NewInt(99),
@@ -133,6 +137,8 @@ func TestRunOverridesAndNoSend(t *testing.T) {
 	}
 }
 
+// TestRunErrors ensures failures in nonce/chain/gas/send stages are all
+// propagated, preserving debuggability of transaction assembly.
 func TestRunErrors(t *testing.T) {
 	key := mustKey(t)
 	to := common.HexToAddress("0x123")

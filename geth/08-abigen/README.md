@@ -1,48 +1,59 @@
-# 08: abigen - Typed Contract Bindings
+# 08: BoundContract Typed Calls
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to use abigen-generated typed bindings for smart contract interaction. Instead of manually encoding/decoding ABI as in module 07, you'll use type-safe Go methods generated from contract ABIs. This is the production approach for contract interaction.
+- Problem framing for BoundContract Typed Calls: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Typed bindings provide:
-- Compile-time type checking
-- IDE autocompletion
-- Reduced boilerplate code
-- Fewer encoding/decoding errors
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Real-World Problems This Solves
+## End-State Understanding
 
-- **Production contract integration**: Type-safe contract calls
-- **Rapid development**: Less boilerplate than manual encoding
-- **Error prevention**: Catch type mismatches at compile time
-- **Code maintainability**: Clear, readable contract interactions
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Key Concepts You'll Learn
+## Why This Lesson Now
 
-- **abigen tool**: Generating Go bindings from ABI JSON
-- **Contract instances**: Creating typed contract handles
-- **Method calls**: Type-safe read and write operations
-- **Event parsing**: Working with generated event types
+After manual calls, learners compare abstraction tradeoffs and typed call ergonomics.
 
-## Prerequisites
+Problem statement:
+Use ABI parsing + `bind.BoundContract` for safer contract reads.
 
-- Completion of `geth/06-smart-contracts` and `geth/07-eth-call`
-- Understanding of manual ABI encoding from module 07
+## Step-by-Step Build Path
 
-## How to Run
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+`*bind.CallOpts` and `*big.Int` outputs require clear ownership: copy where long-lived, avoid mutating shared pointers.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Additional Resources
-
-- [go-ethereum abigen Documentation](https://geth.ethereum.org/docs/developers/dapp-developer/native-bindings)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

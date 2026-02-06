@@ -38,6 +38,8 @@ func (m *mockClient) BlockByNumber(ctx context.Context, number *big.Int) (*types
 	return m.block, nil
 }
 
+// TestRunSuccess verifies the happy path invariant: fetch network id, latest
+// block number, and full block exactly once when no retries are needed.
 func TestRunSuccess(t *testing.T) {
 	block := types.NewBlockWithHeader(&types.Header{
 		Number:     big.NewInt(123),
@@ -68,6 +70,8 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunRetries verifies resilience behavior: transient block fetch failures
+// should retry with delay and eventually return success.
 func TestRunRetries(t *testing.T) {
 	block := types.NewBlockWithHeader(&types.Header{
 		Number:     big.NewInt(100),
@@ -99,6 +103,8 @@ func TestRunRetries(t *testing.T) {
 	}
 }
 
+// TestRunPropagatesErrors ensures hard upstream failures are returned to callers
+// without being swallowed by retry logic for unrelated operations.
 func TestRunPropagatesErrors(t *testing.T) {
 	client := &mockClient{
 		blockNumberErr: errors.New("boom"),

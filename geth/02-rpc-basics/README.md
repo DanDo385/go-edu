@@ -1,72 +1,59 @@
-# 02: RPC Basics
+# 02: RPC Basics and Retry Semantics
 
-## What Is This Project About?
+## Core Concepts
 
-This module deepens your understanding of how Ethereum clients communicate via JSON-RPC. You'll learn the structure of RPC requests and responses, common RPC methods, and how the go-ethereum library abstracts these calls. Understanding the RPC layer is crucial for debugging, optimizing, and building custom tooling.
+- Problem framing for RPC Basics and Retry Semantics: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-While libraries like ethclient abstract RPC calls, understanding the underlying protocol helps you:
-- Debug connection and response issues
-- Build custom RPC methods for specialized nodes
-- Optimize batch requests for performance
-- Understand rate limiting and error handling
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Real-World Problems This Solves
+## End-State Understanding
 
-- **Custom node integration**: Work with nodes that have non-standard RPC methods
-- **Performance optimization**: Batch multiple RPC calls to reduce latency
-- **Error debugging**: Understand RPC error codes and responses
-- **Protocol compliance**: Ensure your tools work with any Ethereum-compatible node
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Key Concepts You'll Learn
+## Why This Lesson Now
 
-- **JSON-RPC 2.0 protocol**: Request/response format
-- **Common RPC methods**: eth_blockNumber, eth_getBlockByNumber, etc.
-- **Error handling**: Understanding RPC error responses
-- **Batch requests**: Sending multiple requests in one call
+After connectivity, learners need request/response discipline and failure recovery before signing or contract calls.
 
-## Prerequisites
+Problem statement:
+Read block metadata through JSON-RPC and handle transient failures with bounded retry.
 
-- Completion of `geth/01-stack`
-- Understanding of JSON format
+## Step-by-Step Build Path
 
-## Project Structure
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
 
-```
-geth/02-rpc-basics/
-├── cmd/
-│   ├── app/
-│   │   └── main.go
-│   └── dev/
-│       └── main.go
-├── internal/
-│   └── rpcbasics/
-│       ├── exercise.go
-│       ├── exercise_test.go
-│       ├── solution.reference.go
-│       └── solution_no_err.reference.go
-└── .vscode/
-    └── launch.json
-```
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
 
-## How to Run
+### Step 3: Memory / Pointer Impact
+The retry loop passes `*big.Int` block numbers; pointer values are copied, but pointee mutation can still alias if reused carelessly.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Using CLI
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# Using debug harness
-go run ./cmd/dev/main.go
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Additional Resources
-
-- [Ethereum JSON-RPC Specification](https://ethereum.org/en/developers/docs/apis/json-rpc/)
-- [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

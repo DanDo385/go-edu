@@ -15,14 +15,21 @@ import (
 const defaultMaxHeads = 5
 const defaultPollInterval = time.Second
 
-// Run contains the reference solution for module 10-filters.
+var errNilClient = errors.New("nil head client")
+
+/*
+Reference Solution
+
+Structure:
+- Resolve defaults and choose mode (subscription vs polling).
+- Normalize each header into HeadInfo.
+- Detect reorgs by parent/hash continuity.
+*/
 func Run(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	if client == nil {
-		return nil, errors.New("client is nil")
+		return nil, errNilClient
 	}
+
 	if cfg.MaxHeads <= 0 {
 		cfg.MaxHeads = defaultMaxHeads
 	}
@@ -37,81 +44,78 @@ func Run(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 }
 
 func subscribeHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
-	headCh := make(chan *types.Header)
-	sub, err := client.SubscribeNewHead(ctx, headCh)
+	ch := make(chan *types.Header, cfg.MaxHeads)
+	sub, err := client.SubscribeNewHead(ctx, ch)
 	if err != nil {
 		return nil, fmt.Errorf("subscribe new head: %w", err)
 	}
 	defer sub.Unsubscribe()
 
-	result := &Result{
-		Heads: make([]HeadInfo, 0, cfg.MaxHeads),
-		Mode:  "subscription",
-	}
-
-	var prevHash common.Hash
-	for len(result.Heads) < cfg.MaxHeads {
+	heads := make([]HeadInfo, 0, cfg.MaxHeads)
+	for len(heads) < cfg.MaxHeads {
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("context canceled: %w", ctx.Err())
-		case err := <-sub.Err():
+			return nil, ctx.Err()
+		case err, ok := <-sub.Err():
+			if !ok {
+				return &Result{Heads: heads, Mode: "subscription"}, nil
+			}
 			if err != nil {
 				return nil, fmt.Errorf("subscription error: %w", err)
 			}
-		case head := <-headCh:
-			if head == nil {
+		case h := <-ch:
+			if h == nil || h.Number == nil {
 				continue
 			}
-			hash := head.Hash()
-			reorg := (prevHash != (common.Hash{})) && (head.ParentHash != prevHash)
-			result.Heads = append(result.Heads, HeadInfo{
-				Number:     head.Number.Uint64(),
-				Hash:       hash,
-				ParentHash: head.ParentHash,
-				Reorg:      reorg,
-			})
-			prevHash = hash
+			heads = appendHeadInfo(heads, h)
 		}
 	}
-	return result, nil
+
+	return &Result{Heads: heads, Mode: "subscription"}, nil
 }
 
 func pollHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
-	result := &Result{
-		Heads: make([]HeadInfo, 0, cfg.MaxHeads),
-		Mode:  "polling",
-	}
-	var prevHash common.Hash
-	var prevNumber uint64
+	ticker := time.NewTicker(cfg.PollInterval)
+	defer ticker.Stop()
 
-	for len(result.Heads) < cfg.MaxHeads {
-		head, err := client.HeaderByNumber(ctx, nil)
+	heads := make([]HeadInfo, 0, cfg.MaxHeads)
+	seen := make(map[common.Hash]struct{}, cfg.MaxHeads)
+
+	for len(heads) < cfg.MaxHeads {
+		h, err := client.HeaderByNumber(ctx, nil)
 		if err != nil {
-			return nil, fmt.Errorf("header by number: %w", err)
+			return nil, fmt.Errorf("poll latest header: %w", err)
 		}
-		if head == nil {
-			return nil, errors.New("received nil header")
-		}
-		number := head.Number.Uint64()
-		hash := head.Hash()
-
-		if number == prevNumber {
-			select {
-			case <-ctx.Done():
-				return nil, fmt.Errorf("context canceled: %w", ctx.Err())
-			case <-time.After(cfg.PollInterval):
+		if h != nil {
+			hash := h.Hash()
+			if _, exists := seen[hash]; !exists {
+				heads = appendHeadInfo(heads, h)
+				seen[hash] = struct{}{}
+				if len(heads) >= cfg.MaxHeads {
+					break
+				}
 			}
-			continue
 		}
-		reorg := (prevHash != (common.Hash{})) && (head.ParentHash != prevHash)
-		result.Heads = append(result.Heads, HeadInfo{
-			Number:     number,
-			Hash:       hash,
-			ParentHash: head.ParentHash,
-			Reorg:      reorg,
-		})
-		prevHash = hash
-		prevNumber = number
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-ticker.C:
+		}
 	}
-	return result, nil
+
+	return &Result{Heads: heads, Mode: "polling"}, nil
+}
+
+func appendHeadInfo(existing []HeadInfo, h *types.Header) []HeadInfo {
+	info := HeadInfo{
+		Number:     h.Number.Uint64(),
+		Hash:       h.Hash(),
+		ParentHash: h.ParentHash,
+	}
+	if len(existing) > 0 {
+		prev := existing[len(existing)-1]
+		info.Reorg = prev.Hash != h.ParentHash
+	}
+	return append(existing, info)
 }

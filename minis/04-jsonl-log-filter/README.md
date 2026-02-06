@@ -1,130 +1,114 @@
-# 04: JSON Lines Log Filter
+# 04: Jsonl Log Filter
 
-This project introduces you to the world of structured logging, a cornerstone of modern application observability. You will build a practical command-line tool to parse, filter, and sort JSON Lines (`.jsonl`) data, a common format for logs. This is a crucial skill for debugging and monitoring production systems.
+## Core Concepts
 
-## Table of Contents
+- The concrete problem in Jsonl Log Filter and the correctness invariants it depends on.
+- How values, pointers, slices, maps, or channels behave in this module's runtime path.
+- Why this lesson's implementation pattern is the right next step in the learning arc.
 
-- [Learning Objectives](#learning-objectives)
-- [The Big Picture: The Power of Structured Logging](#the-big-picture-the-power-of-structured-logging)
-- [First Principles: Parsing and Data Mapping](#first-principles-parsing-and-data-mapping)
-- [Project Structure](#project-structure)
-- [Key Go Concepts in This Project](#key-go-concepts-in-this-project)
-  - [`encoding/json` and Struct Tags](#encodingjson-and-struct-tags)
-  - [Custom Unmarshaling with `json.Unmarshaler`](#custom-unmarshaling-with-jsonunmarshaler)
-  - [`iota` for Creating Enums](#iota-for-creating-enums)
-  - [`sort.Slice` with Closures](#sortslice-with-closures)
-- [Progression: From Parsing to APIs](#progression-from-parsing-to-apis)
-- [How to Run and Test](#how-to-run-and-test)
-- [Key Takeaways](#key-takeaways)
-- [Further Reading](#further-reading)
+## CS Connection
 
-## Learning Objectives
+- Data representation and state transitions: what is copied, what is shared, and what can race.
+- API boundaries: where we validate, where we propagate errors, and where we normalize output.
+- Algorithmic tradeoffs in this lesson (latency, throughput, memory, and complexity).
 
-By the end of this project, you will be able to:
+## End-State Understanding
 
--   **Parse JSON into Go structs** using `json.Unmarshal` and struct tags.
--   **Implement custom JSON parsing logic** by satisfying the `json.Unmarshaler` interface.
--   **Create type-safe enumerations (enums)** using `iota` for concepts like log levels.
--   **Write flexible sorting logic** using `sort.Slice` and closures.
--   **Understand the benefits of structured logging** and the JSON Lines format.
--   **Build a complete, practical tool** for processing log files.
+- Diagnose and implement Jsonl Log Filter patterns without relying on hidden framework behavior.
+- Explain memory and concurrency implications of the final implementation choices.
+- Compare learner code and reference code by invariants, not only by syntax.
 
-## The Big Picture: The Power of Structured Logging
+## Why This Lesson Exists Here
 
-Imagine trying to find a specific error in a massive text file filled with messy, inconsistent log messages. It's a nightmare. This is the problem that **structured logging** solves.
+Problem statement:
+This lesson turns the previous module's concepts into a reusable engineering pattern for jsonl log filter.
 
-Instead of writing plain text like `[ERROR] User login failed for 'admin'`, you write a machine-readable object, typically in JSON format:
+At this point in the arc:
+Lesson 04 introduces a sharper systems concern so later modules can assume this mental model is stable.
 
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Define the smallest valid behavior and reject invalid input or impossible state early.
+
+### Step 2: Why This Approach
+Pick a direct design that keeps control flow and data flow visible for debugging and testing.
+
+### Step 3: Memory / Pointer Impact
+Call out where data is copied versus aliased, and where mutable shared state needs synchronization.
+
+### Step 4: What Changed
+Produce a stable result shape and explicit error behavior that downstream code can rely on.
+
+## Pointer and Indirection
+
+- Explain * and & in this module when they appear in code or docs.
+- Show memory-before and memory-after when data ownership changes.
+- Clarify common misconceptions: Go stays pass-by-value even when pointer values are copied.
+- Primer link: docs/MEMORY_POINTERS_PRIMER.md
+
+## Verify
+
+
+a) learner path
+
+
+go test -v ./...
+
+
+b) reference path
+
+
+go test -tags=reference -v ./...
+
+
+This project introduces you to structured logging, a cornerstone of modern application observability. You will build a tool to parse, filter, and sort JSON Lines (`.jsonl`) data, a common format for logs.
+
+## CS Connection
+
+- Memory layout drives behavior: variables store values, and some values are addresses into other storage.
+- Go is pass-by-value, including pointers; copying a pointer value copies an address, not the pointee.
+- Correctness depends on understanding copying versus aliasing (`*T`, slices, maps, and channels) and enforcing synchronization when concurrent access exists.
+
+## End-State Understanding
+
+- Implement the exercise with explicit reasoning about correctness, edge cases, and error paths.
+
+## What You'll Learn
+
+- How to parse JSON into Go structs using `json.Unmarshal` and **struct tags**.
+- How to implement the `json.Unmarshaler` interface for **custom parsing logic**.
+- How to create type-safe **enums** using `iota`.
+- How to write flexible sorting logic using `sort.Slice` and **closures**.
+- Why a **pointer receiver** is used on methods that modify their receiver.
+
+## Core Concepts
+
+### Structured Logging and JSON Lines
+
+Instead of messy text, structured logging writes logs as machine-readable JSON objects.
 ```json
-{"level": "error", "ts": "2024-05-10T14:32:01Z", "msg": "User login failed", "username": "admin"}
+{"level": "error", "ts": "2024-05-10T14:32:01Z", "msg": "User login failed"}
 ```
+A **JSON Lines** (`.jsonl`) file is simply a file where each line is a separate JSON object, making it ideal for streaming.
 
-This is revolutionary because your logs are now a rich, queryable dataset. You can easily filter, aggregate, and visualize them using powerful tools. This project introduces you to **JSON Lines** (`.jsonl`), a common format for structured logs where each line is a self-contained JSON object. You will build a tool to parse, filter, and sort these logs—a core task in modern software operations.
+### `json.Unmarshal` and Struct Tags
 
-### JSON vs. JSON Lines (`.jsonl`)
-
--   **A standard JSON file** contains a *single* JSON object or array. The entire file must be read and parsed at once to be valid.
--   **A JSON Lines file** contains *multiple*, independent JSON objects, with exactly one object per line. Each line is a valid JSON object on its own, making it ideal for streaming.
-
-## First Principles: Parsing and Data Mapping
-
-1.  **JSON (JavaScript Object Notation)**: A lightweight, text-based data-interchange format. It represents data as key-value pairs (like Go maps) and ordered lists (like Go slices).
-2.  **Schema on Read**: The process of parsing a JSON object and mapping it into a typed Go `struct` is a form of applying a "schema on read." You are enforcing the structure you expect and deciding how to handle data that doesn't conform.
-3.  **Enumerations (Enums)**: Log levels (`DEBUG`, `INFO`, `WARN`, `ERROR`) represent a fixed set of distinct values. The best way to represent this in code is with an **enumeration**, which maps human-readable names to efficient integer constants.
-
-## Project Structure
-
-```
-.
-├── cmd/
-│   └── dev/
-│       └── main.go       # A simple program to test your functions manually.
-├── internal/
-│   └── filter.go     # Where you will implement the JSONL processing logic.
-└── testdata/
-    └── logs.jsonl    # Sample data used for testing.
-```
-
--   **`cmd/dev`**: An entry point for a development harness. Run `go run ./cmd/dev` to see your function in action.
--   **`internal/`**: Contains the core logic.
--   **`testdata/`**: Holds data files needed for your tests.
-
-## Key Go Concepts in This Project
-
-### `encoding/json` and Struct Tags
-
-Go's standard library makes JSON handling almost trivial. The `json.Unmarshal` function can automatically parse a JSON object into a Go `struct` using **reflection** and **struct tags**. A struct tag is a string literal that provides metadata to a package.
-
+Go can automatically parse JSON into a `struct`. You use `struct tags` to tell the `json` package which JSON key corresponds to which struct field.
 ```go
 type Entry struct {
-    // This tag tells Unmarshal to look for a JSON key named "ts"
-    // and put its value into the `TS` field of the struct.
-    TS    time.Time `json:"ts"`
+    TS    time.Time `json:"ts"` // The `json:"ts"` is the struct tag.
     Level Level     `json:"level"`
     Msg   string    `json:"msg"`
 }
 ```
 
-### Custom Unmarshaling with `json.Unmarshaler`
+### Enums with `iota`
 
-What happens when the default behavior isn't enough? In our logs, the `level` is a string (`"warn"`), but we want to store it as an efficient integer `Level` enum. To do this, we can implement the `json.Unmarshaler` interface.
-
-```go
-// By implementing this method on a *pointer* to Level,
-// we teach the json package how to parse a Level from a string.
-func (l *Level) UnmarshalJSON(data []byte) error {
-    var s string
-    // Step 1: Unmarshal the raw JSON (e.g., `"warn"`) into a plain string `s`.
-    if err := json.Unmarshal(data, &s); err != nil {
-        return fmt.Errorf("level must be a string: %w", err)
-    }
-
-    // Step 2: Convert the string to our internal integer representation.
-    switch strings.ToLower(s) {
-    case "debug":
-        *l = Debug
-    case "info":
-        *l = Info
-    case "warn":
-        *l = Warn
-    case "error":
-        *l = Error
-    default:
-        return fmt.Errorf("unknown level %q", s)
-    }
-    return nil
-}
-```
-When `json.Unmarshal` sees a field of type `Level`, it checks if `*Level` has an `UnmarshalJSON` method. If so, it calls our custom logic. This is a prime example of Go's philosophy of extending types with behavior via interfaces.
-
-### `iota` for Creating Enums
-
-Go doesn't have a dedicated `enum` keyword, but `iota` provides an idiomatic way to create them. `iota` is a special constant that acts as an incrementing counter in a `const` block.
-
+Go doesn't have a dedicated `enum` keyword, but `iota` provides a way to create them. `iota` is a special constant that increments in a `const` block. This is perfect for log levels.
 ```go
 type Level int
 
-// iota starts at 0 and increments for each line in the const block.
 const (
     Debug Level = iota // 0
     Info               // 1
@@ -132,55 +116,57 @@ const (
     Error              // 3
 )
 ```
-This is far better than using raw strings (`"warn"`), as it's type-safe, memory-efficient, and allows for trivial comparisons (`if level >= Warn`).
 
-### `sort.Slice` with Closures
+### Custom Parsing with `json.Unmarshaler` and Pointer Receivers
 
-Once you have a slice of `Entry` structs, how do you sort them? Go's `sort.Slice` is the perfect tool. It takes a slice and a "less" function. This function, often provided as a **closure** (an anonymous function), tells the sort algorithm how to compare any two elements.
+What if you want to parse the string `"warn"` into your integer `Warn` enum? You can teach Go's JSON parser how to do this by implementing the `json.Unmarshaler` interface.
 
 ```go
-// Primary sort by timestamp (ascending)
-sort.Slice(entries, func(i, j int) bool {
-    return entries[i].TS.Before(entries[j].TS)
-})
-
-// Want to sort by level (descending) instead? Just change the closure!
-sort.Slice(entries, func(i, j int) bool {
-    // Higher level value means more severe, so it should come first.
-    return entries[i].Level > entries[j].Level
-})
+func (l *Level) UnmarshalJSON(data []byte) error {
+    // ... your parsing logic ...
+}
 ```
-This is incredibly expressive and flexible. You can sort by any field or combination of fields simply by changing the logic inside the closure.
+This is where we must have a **deep explanation of the pointer receiver `(l *Level)`**.
 
-## Progression: From Parsing to APIs
+---
 
-The skills you learn here—especially `json.Unmarshal` and struct tags—are the **exact same skills** you will use to build web APIs, which almost universally use JSON as their data format. This project is your bridge from simple data processing to building web services.
+### 🚨 Deep Dive: Pointer Receivers (`*`)
 
--   **Project 03 (CSV)**: You parsed line-delimited, structured text.
--   **Project 04 (JSONL)**: You are again parsing line-delimited, structured text, but the structure is now nested and more complex, requiring a more powerful parsing strategy (`json.Unmarshal` vs. `csv.Reader`).
+Notice the `*` in `(l *Level)`. This is a **pointer receiver**. It means the `UnmarshalJSON` method gets a *pointer to* the `Level` variable it's being called on, not a copy of it.
 
-## How to Run and Test
+Let's break it down:
+1.  **The Goal:** When the `json.Unmarshal` function finds a `level` field in the JSON, it needs to change the value of our `Level` variable in the `Entry` struct.
+2.  **Passing by Value (The Problem):** If the method was `func (l Level) ...` (no `*`), `l` would be a *copy* of the `Level` variable. If we changed `l` inside the method, we would only be changing the copy. The original `Level` variable in the `Entry` struct would be unaffected.
+3.  **Passing by Reference (The Solution):** The pointer receiver `(l *Level)` solves this.
+    *   `l` is not the `Level` value itself, but a variable that holds the **memory address** of the original `Level` variable.
+    *   Inside the method, when we use the `*` operator again, as in `*l = Warn`, it means: "take the memory address stored in `l`, go to that address, and put the value `Warn` there."
+
+**In summary:** We use a pointer receiver because the method needs to **modify the original value**. Without the pointer, the method would operate on a copy, and its changes would be lost.
+
+---
+
+## Your Task
+
+Your task is to implement the `FilterAndSort(io.Reader, Level, SortField) ([]Entry, error)` function in `internal/jsonllogfilter/exercise.go`.
+
+This function should:
+1.  Read the `io.Reader` line by line.
+2.  For each line, use `json.Unmarshal` to parse the JSON object into an `Entry` struct. Your custom `UnmarshalJSON` method for the `Level` type will be called automatically.
+3.  Filter the entries, keeping only those at or above the `minLevel`.
+4.  Sort the resulting slice based on the `sortBy` field. Use `sort.Slice` with a closure to handle the different sort fields.
+5.  Return the final, filtered, and sorted slice of `Entry` structs.
+
+Open `internal/jsonllogfilter/exercise.go` and fill in the `// TODO` sections.
+
+## How to Verify Your Work
+
+Run the following command from this directory (`minis/04-jsonl-log-filter`):
 
 ```bash
-# The dev harness runs your function against a sample in-memory JSONL string.
-go run ./cmd/dev
-
-# The tests cover filtering, sorting, custom unmarshaling, and error handling.
 go test -v ./...
 ```
+If the tests pass, you have successfully completed the lesson.
 
-## Key Takeaways
-
--   **Structured logging is essential** for modern software observability.
--   **`json.Unmarshal` with struct tags** is the idiomatic way to parse JSON in Go.
--   Implement the **`json.Unmarshaler` interface** for full control over parsing.
--   Use **`iota` to create efficient, type-safe enums**.
--   **`sort.Slice` with a closure** provides a flexible and powerful way to sort data.
--   The skills for parsing JSON logs are directly transferable to building JSON APIs.
-
-## Further Reading
-
-*   [**JSON Lines Website**](https://jsonlines.org/): The official spec and rationale for the format.
-*   [**Blog Post: JSON and Go**](https://go.dev/blog/json): The Go team's guide to using the `encoding/json` package.
-*   [**Package `encoding/json`**](https://pkg.go.dev/encoding/json): Official documentation, including details on `Unmarshal` and struct tags.
-*   [**Go by Example: Sorting by Functions**](https://gobyexample.com/sorting-by-functions): A great example of using closures to implement custom sorts.
+## Related Lessons
+- Previous: `minis/03-csv-stats`
+- Next: `minis/05-cli-todo-files`

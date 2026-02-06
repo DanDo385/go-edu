@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/example/go-10x-minis/minis/07-generic-lru-cache/internal/genericlrucache"
 )
@@ -20,7 +19,7 @@ func main() {
 	fmt.Println()
 
 	// Create a cache with capacity 3 and 5 second TTL
-	cache := genericlrucache.New[string, int](3, 5*time.Second)
+	cache := genericlrucache.New[string, int](3)
 
 	fmt.Println("--- Adding Items (capacity: 3) ---")
 	cache.Set("one", 1)

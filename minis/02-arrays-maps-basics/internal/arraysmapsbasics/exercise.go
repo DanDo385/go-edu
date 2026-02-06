@@ -21,8 +21,27 @@ import (
 
 // FreqFromReader - TODO: implement this function
 func FreqFromReader(r io.Reader) (map[string]int, string, error) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, "", nil
-}
+	scanner := bufio.NewScanner(r)
+	freq := make(map[string]int)
+	for scanner.Scan() {
+		word := strings.ToLower(strings.TrimSpace(scanner.Text()))
+		if word == "" {
+			continue
+		}
+		freq[word]++
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, "", err
+	}
 
+	mostCommon := ""
+	maxCount := 0
+	for word, count := range freq {
+		if count > maxCount || (count == maxCount && (mostCommon == "" || word < mostCommon)) {
+			mostCommon = word
+			maxCount = count
+		}
+	}
+
+	return freq, mostCommon, nil
+}

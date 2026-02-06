@@ -34,6 +34,8 @@ func (m *mockContractCaller) CallContract(ctx context.Context, msg ethereum.Call
 	return resp, nil
 }
 
+// TestRunSuccess verifies the ABI call/decode pipeline for ERC20 metadata and
+// ensures all required selectors are executed.
 func TestRunSuccess(t *testing.T) {
 	contract := common.HexToAddress("0x1111111111111111111111111111111111111111")
 
@@ -74,6 +76,7 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunNilClient protects the dependency boundary: nil RPC clients must fail fast.
 func TestRunNilClient(t *testing.T) {
 	contract := common.HexToAddress("0x1111111111111111111111111111111111111111")
 	_, err := Run(context.Background(), nil, Config{Contract: contract})
@@ -82,6 +85,7 @@ func TestRunNilClient(t *testing.T) {
 	}
 }
 
+// TestRunEmptyContract enforces input validation for contract address presence.
 func TestRunEmptyContract(t *testing.T) {
 	mock := &mockContractCaller{}
 	_, err := Run(context.Background(), mock, Config{})
@@ -90,6 +94,7 @@ func TestRunEmptyContract(t *testing.T) {
 	}
 }
 
+// TestRunCallError ensures upstream eth_call failures propagate to callers.
 func TestRunCallError(t *testing.T) {
 	contract := common.HexToAddress("0x1111111111111111111111111111111111111111")
 	mock := &mockContractCaller{err: errors.New("rpc error")}
@@ -99,6 +104,7 @@ func TestRunCallError(t *testing.T) {
 	}
 }
 
+// TestDecodeString protects dynamic ABI string decoding edge cases.
 func TestDecodeString(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -137,6 +143,7 @@ func TestDecodeString(t *testing.T) {
 	}
 }
 
+// TestDecodeUint8 protects uint8 ABI decode bounds and payload-size checks.
 func TestDecodeUint8(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -175,6 +182,7 @@ func TestDecodeUint8(t *testing.T) {
 	}
 }
 
+// TestDecodeUint256 protects uint256 decoding for small and large values.
 func TestDecodeUint256(t *testing.T) {
 	tests := []struct {
 		name    string

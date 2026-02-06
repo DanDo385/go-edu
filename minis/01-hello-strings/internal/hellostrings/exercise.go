@@ -22,38 +22,28 @@ import (
 
 // TitleCase - TODO: implement this function
 func TitleCase(s string) string {
-	// split input string into words
 	words := strings.Fields(s)
-	// iterate through words, converting to runes
 	for i, word := range words {
 		runes := []rune(word)
-		// capitalize non-empty words
-		if len(runes) > 0 {
-			runes[0] = unicode.ToUpper(runes[0])
+		if len(runes) == 0 {
+			continue
 		}
-		// convert runes back to a string
+		runes[0] = unicode.ToUpper(runes[0])
 		words[i] = string(runes)
 	}
-	
 	return strings.Join(words, " ")
 }
 
 // Reverse - TODO: implement this function
 func Reverse(s string) string {
-	runes := []rune(s) // convert string to runes
-	// iterate through runes in reverse order
+	runes := []rune(s)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		// swap runes
 		runes[i], runes[j] = runes[j], runes[i]
 	}
-	// convert runes back to a string
 	return string(runes)
-}	
+}
 
 // RuneLen - TODO: implement this function
 func RuneLen(s string) int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return utf8.RuneCountInString(s)
 }
-

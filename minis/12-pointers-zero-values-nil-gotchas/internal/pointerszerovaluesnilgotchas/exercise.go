@@ -17,35 +17,48 @@ Algorithm: Nil-Safe Operations
 
 // SafeDeref - TODO: implement this function
 func SafeDeref(p *int, defaultValue int) int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0
+	if p == nil {
+		return defaultValue
+	}
+	return *p
 }
 
 // Swap - TODO: implement this function
 func Swap(a, b *int) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	if a == nil || b == nil {
+		return
+	}
+	*a, *b = *b, *a
 }
 
 // InitializeMap - TODO: implement this function
 func InitializeMap(m map[string]int) map[string]int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if m == nil {
+		return make(map[string]int)
+	}
+	return m
 }
 
 // AppendNode - TODO: implement this function
 func AppendNode(head *Node, value int) *Node {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	newNode := &Node{Value: value}
+	if head == nil {
+		return newNode
+	}
+
+	current := head
+	for current.Next != nil {
+		current = current.Next
+	}
+	current.Next = newNode
+	return head
 }
 
 // ListLength - TODO: implement this function
 func ListLength(head *Node) int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0
+	length := 0
+	for current := head; current != nil; current = current.Next {
+		length++
+	}
+	return length
 }
-

@@ -2,62 +2,32 @@
 
 package grpctelemetryservice
 
-/*
-Problem: Build a gRPC telemetry aggregator with streaming and time windows
-Requirements:
-1. Accept streaming telemetry points (metric name, value, timestamp)
-2. Aggregate statistics per metric (count, sum, avg, min, max)
-3. Support rolling time window (exclude old data)
-Algorithm: Rolling Time Window Aggregation
-- Store points with timestamps
-- Filter points within time window on Summary
-- Calculate statistics on filtered points
-- Use RWMutex for concurrent access
-*/
-
 import (
-	"context"
-	"math"
-	"sync"
-	"time"
+	"io"
 
 	pb "github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/proto"
 )
 
-type Aggregator interface {
-	PushPoint(ctx context.Context, p *pb.Point) error
-	Summary(ctx context.Context) *pb.Report
+// Server is the struct that will implement the gRPC server interface.
+type Server struct {
+	// You must embed the UnimplementedTelemetryServiceServer on your struct to satisfy
+	// the interface for forward compatibility.
+	pb.UnimplementedTelemetryServiceServer
 }
 
-type aggregator struct {
-	mu     sync.RWMutex
-	window time.Duration
-	points map[string][]pointWithTime
-}
-
-type pointWithTime struct {
-	value     float64
-	timestamp time.Time
-}
-
-// NewAggregator - TODO: implement this function
-func NewAggregator(window time.Duration) Aggregator {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+// RecordTelemetry is the method that handles the client-side streaming RPC.
+func (s *Server) RecordTelemetry(stream pb.TelemetryService_RecordTelemetryServer) error {
+	// TODO:
+	// 1. Initialize variables to hold the aggregated results (count and sum).
+	// 2. Start a `for` loop to receive messages from the stream.
+	// 3. Inside the loop, call `stream.Recv()`.
+	//    a. If the error is `io.EOF`, the client has finished sending.
+	//       - Use `stream.SendAndClose()` to send a `TelemetrySummary` message
+	//         back to the client with the final count and sum.
+	//       - Return `nil` to indicate success.
+	//    b. If there is any other error, return it.
+	//    c. If there is no error, process the received `TelemetryData` message:
+	//       - Increment your count.
+	//       - Add the message's value to your sum.
 	return nil
 }
-
-// PushPoint - TODO: implement this function
-func (a *aggregator) PushPoint(ctx context.Context, p *pb.Point) error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
-}
-
-// Summary - TODO: implement this function
-func (a *aggregator) Summary(ctx context.Context) *pb.Report {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
-}
-

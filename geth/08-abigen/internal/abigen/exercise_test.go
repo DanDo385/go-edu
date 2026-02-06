@@ -63,6 +63,8 @@ func (m *mockBackend) CodeAt(ctx context.Context, contract common.Address, block
 	return []byte{0x1}, nil
 }
 
+// TestRunSuccess verifies bound-contract calls decode typed ERC20 outputs and
+// include optional holder balance in one coherent result.
 func TestRunSuccess(t *testing.T) {
 	mock := newMockBackend(t)
 	holder := common.HexToAddress("0x1000000000000000000000000000000000000001")
@@ -91,6 +93,8 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunErrors ensures backend, config, and ABI parsing failures are surfaced
+// as actionable errors instead of partial typed outputs.
 func TestRunErrors(t *testing.T) {
 	mock := newMockBackend(t)
 	mock.callErr = errors.New("boom")

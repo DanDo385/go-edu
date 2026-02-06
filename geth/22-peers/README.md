@@ -1,36 +1,59 @@
-# 22: Peer Management
+# 22: Peer Connectivity Metrics
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you about Ethereum's P2P networking layer and peer management. Understanding peer connections is important for node operators and network researchers.
+- Problem framing for Peer Connectivity Metrics: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Peer management enables:
-- Network topology analysis
-- Connection troubleshooting
-- Privacy considerations
-- Network research
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Key Concepts You'll Learn
+## End-State Understanding
 
-- **Peer discovery**: How nodes find each other
-- **Connection management**: Max peers, trusted peers
-- **Network protocols**: devp2p, discv5
-- **admin_peers**: RPC method for peer info
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Prerequisites
+## Why This Lesson Now
 
-- Completion of `geth/21-sync`
+Peer health complements sync status for diagnosing node quality.
 
-## How to Run
+Problem statement:
+Read peer count and turn it into health signal input.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Even scalar results come through interfaces; keep boundaries explicit between client calls and result structs.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

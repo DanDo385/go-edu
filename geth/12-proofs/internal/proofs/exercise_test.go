@@ -28,6 +28,8 @@ func (m *mockProofClient) GetProof(ctx context.Context, account common.Address, 
 	return m.resp, nil
 }
 
+// TestRunSuccess verifies proof request encoding and response normalization
+// into lesson-local types, including storage proof key/value mapping.
 func TestRunSuccess(t *testing.T) {
 	account := common.HexToAddress("0x000000000000000000000000000000000000c0de")
 	slot := common.HexToHash("0x01")
@@ -69,6 +71,7 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects nil-client/input validation and GetProof error propagation.
 func TestRunErrors(t *testing.T) {
 	client := &mockProofClient{err: errors.New("boom")}
 	if _, err := Run(context.Background(), client, Config{Account: common.HexToAddress("0x1")}); err == nil {

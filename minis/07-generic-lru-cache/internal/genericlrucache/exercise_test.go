@@ -2,11 +2,10 @@ package genericlrucache
 
 import (
 	"testing" // Testing framework (t.Error, t.Errorf, etc.)
-	"time"    // Time durations for TTL testing
 )
 
 func TestCache_BasicOperations(t *testing.T) {
-	cache := New[string, int](3, 0)
+	cache := New[string, int](3)
 
 	// Set and Get
 	cache.Set("a", 1)
@@ -21,7 +20,7 @@ func TestCache_BasicOperations(t *testing.T) {
 }
 
 func TestCache_Eviction(t *testing.T) {
-	cache := New[string, int](2, 0) // Capacity 2
+	cache := New[string, int](2) // Capacity 2
 
 	cache.Set("a", 1)
 	cache.Set("b", 2)
@@ -39,7 +38,7 @@ func TestCache_Eviction(t *testing.T) {
 }
 
 func TestCache_LRUOrder(t *testing.T) {
-	cache := New[string, int](2, 0)
+	cache := New[string, int](2)
 
 	cache.Set("a", 1)
 	cache.Set("b", 2)
@@ -55,7 +54,7 @@ func TestCache_LRUOrder(t *testing.T) {
 }
 
 func TestCache_Update(t *testing.T) {
-	cache := New[string, int](3, 0)
+	cache := New[string, int](3)
 
 	cache.Set("a", 1)
 	cache.Set("a", 10) // Update
@@ -69,46 +68,8 @@ func TestCache_Update(t *testing.T) {
 	}
 }
 
-func TestCache_TTL(t *testing.T) {
-	cache := New[string, int](3, 100*time.Millisecond)
-
-	cache.Set("a", 1)
-	time.Sleep(150 * time.Millisecond)
-
-	if _, ok := cache.Get("a"); ok {
-		t.Error("Expected 'a' to be expired")
-	}
-}
-
-func TestCache_CustomTTL(t *testing.T) {
-	cache := New[string, int](3, 1*time.Hour) // Default: 1 hour
-
-	cache.SetWithTTL("a", 1, 100*time.Millisecond) // Custom: 100ms
-	cache.Set("b", 2)                              // Uses default TTL
-
-	time.Sleep(150 * time.Millisecond)
-
-	if _, ok := cache.Get("a"); ok {
-		t.Error("Expected 'a' to be expired (custom TTL)")
-	}
-	if _, ok := cache.Get("b"); !ok {
-		t.Error("Expected 'b' to still exist (default TTL)")
-	}
-}
-
-func TestCache_ZeroTTL(t *testing.T) {
-	cache := New[string, int](3, 0) // No expiration
-
-	cache.Set("a", 1)
-	time.Sleep(100 * time.Millisecond)
-
-	if val, ok := cache.Get("a"); !ok || val != 1 {
-		t.Error("Expected 'a' to not expire (zero TTL)")
-	}
-}
-
 func TestCache_Len(t *testing.T) {
-	cache := New[string, int](3, 0)
+	cache := New[string, int](3)
 
 	if cache.Len() != 0 {
 		t.Errorf("Expected initial Len()=0, got %d", cache.Len())
@@ -128,3 +89,4 @@ func TestCache_Len(t *testing.T) {
 		t.Errorf("Expected Len()=3 (capacity), got %d", cache.Len())
 	}
 }
+

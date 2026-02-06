@@ -67,6 +67,8 @@ func (m *mockSubscription) Err() <-chan error {
 	return m.errCh
 }
 
+// TestRunSubscription verifies websocket-style head streaming, including
+// reorg detection when parent hash continuity is broken.
 func TestRunSubscription(t *testing.T) {
 	genesis := common.HexToHash("0x01")
 	h1 := makeHeader(1, genesis)
@@ -93,6 +95,8 @@ func TestRunSubscription(t *testing.T) {
 	}
 }
 
+// TestRunPolling verifies HTTP polling mode deduplicates unchanged heads and
+// still captures canonical progression.
 func TestRunPolling(t *testing.T) {
 	genesis := common.HexToHash("0x42")
 	h1 := makeHeader(10, genesis)

@@ -1,44 +1,59 @@
-# 09: Events and Logs
+# 09: Transfer Event Filtering and Decoding
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to work with Ethereum events (logs). Events are how smart contracts communicate state changes to external observers. You'll learn to query historical events, decode event data, and understand the log structure.
+- Problem framing for Transfer Event Filtering and Decoding: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Events are the primary mechanism for:
-- Off-chain indexing of on-chain activity
-- Real-time notifications of contract state changes
-- Building block explorers and analytics tools
-- Debugging contract interactions
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Real-World Problems This Solves
+## End-State Understanding
 
-- **Token transfers tracking**: Monitor ERC20/ERC721 Transfer events
-- **DeFi monitoring**: Track swaps, liquidity changes, etc.
-- **Indexer development**: Build searchable databases of on-chain activity
-- **Notification systems**: Alert users of relevant on-chain events
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Key Concepts You'll Learn
+## Why This Lesson Now
 
-- **Log structure**: Topics array and data field
-- **Indexed parameters**: Stored in topics for filtering
-- **Non-indexed parameters**: Stored in data field
-- **Event signatures**: topics[0] = keccak256(EventSignature)
-- **Log filtering**: Query events by address, topics, and block range
+This shifts from pull-based reads to event-driven state observation.
 
-## Prerequisites
+Problem statement:
+Filter logs by topics and decode indexed/non-indexed event fields.
 
-- Completion of `geth/06-smart-contracts` through `geth/08-abigen`
+## Step-by-Step Build Path
 
-## How to Run
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Topic filtering uses address values converted into 32-byte topic words; copied hash values are immutable but slices around them can alias.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

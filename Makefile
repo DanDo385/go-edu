@@ -1,4 +1,4 @@
-.PHONY: setup list list-minis list-geth test bench run dev clean help reset lint check
+.PHONY: setup list list-minis list-geth test bench run clean help reset lint check verify-lessons verify-teaching
 
 # Colors for output
 CYAN := \033[0;36m
@@ -33,12 +33,10 @@ ifeq ($(IS_PROJECT),yes)
 	@echo ""
 	@echo "$(GREEN)Quick Start:$(NC)"
 	@echo "  go run ./cmd/app/main.go    Run the CLI application"
-	@echo "  go run ./cmd/dev/main.go    Run the debug harness (auto-demo)"
 	@echo "  go test -v ./...            Run tests"
 	@echo ""
 	@echo "$(GREEN)Development:$(NC)"
 	@echo "  make run                    Run cmd/app"
-	@echo "  make dev                    Run cmd/dev (debug harness)"
 	@echo "  make test                   Run tests for this project"
 	@echo "  make bench                  Run benchmarks"
 	@echo ""
@@ -66,10 +64,8 @@ else
 	@echo ""
 	@echo "$(GREEN)Running Projects:$(NC)"
 	@echo "  make run P=<path>    Run project's cmd/app"
-	@echo "  make dev P=<path>    Run project's cmd/dev (debug harness)"
 	@echo "                       Examples:"
 	@echo "                         make run P=minis/01-hello-strings"
-	@echo "                         make dev P=geth/01-stack"
 	@echo ""
 	@echo "$(GREEN)Testing:$(NC)"
 	@echo "  make test            Run all tests"
@@ -79,6 +75,8 @@ else
 	@echo "$(GREEN)Code Quality:$(NC)"
 	@echo "  make lint            Run golangci-lint"
 	@echo "  make check           Run go vet and staticcheck"
+	@echo "  make verify-lessons  Validate lesson contract files"
+	@echo "  make verify-teaching Validate README teaching sections"
 	@echo ""
 	@echo "$(GREEN)Exercise Management:$(NC)"
 	@echo "  make reset T=all              Reset all exercises to TODO state"
@@ -174,35 +172,6 @@ else
 	fi
 endif
 
-dev:
-ifeq ($(IS_PROJECT),yes)
-	@echo "$(CYAN)Running ./cmd/dev/... (debug harness)$(NC)"
-	@go run ./cmd/dev/...
-else
-	@if [ -z "$(P)" ]; then \
-		echo "$(YELLOW)Usage: make dev P=<project>$(NC)"; \
-		echo "Examples:"; \
-		echo "  make dev P=minis/01-hello-strings"; \
-		echo "  make dev P=geth/01-stack"; \
-		exit 1; \
-	fi
-	@PROJECT_PATH="$(ROOT_DIR)/$(P)"; \
-	if [ ! -d "$$PROJECT_PATH" ] && [ -d "$(ROOT_DIR)/minis/$(P)" ]; then \
-		PROJECT_PATH="$(ROOT_DIR)/minis/$(P)"; \
-	fi; \
-	if [ ! -d "$$PROJECT_PATH" ]; then \
-		echo "$(YELLOW)Error: Project '$(P)' not found$(NC)"; \
-		echo "Run 'make list' to see available projects"; \
-		exit 1; \
-	fi; \
-	if [ -d "$$PROJECT_PATH/cmd/dev" ]; then \
-		echo "$(CYAN)Running $$PROJECT_PATH/cmd/dev/... (debug harness)$(NC)"; \
-		go run $$PROJECT_PATH/cmd/dev/...; \
-	else \
-		echo "$(YELLOW)No cmd/dev directory found$(NC)"; \
-	fi
-endif
-
 # ============================================================================
 # TESTING & BENCHMARKS
 # ============================================================================
@@ -277,6 +246,14 @@ check:
 		echo "$(YELLOW)staticcheck not installed. Install with:$(NC)"; \
 		echo "  go install honnef.co/go/tools/cmd/staticcheck@latest"; \
 	fi
+
+verify-lessons:
+	@echo "$(CYAN)Validating lesson contracts...$(NC)"
+	@./scripts/validate_lessons.sh
+
+verify-teaching:
+	@echo "$(CYAN)Validating README teaching sections...$(NC)"
+	@./scripts/validate_teaching_sections.sh
 
 # ============================================================================
 # EXERCISE MANAGEMENT - Reset to TODO state

@@ -32,6 +32,8 @@ func (m *mockCallClient) CallContract(ctx context.Context, msg ethereum.CallMsg,
 	return resp, nil
 }
 
+// TestRunSuccess verifies low-level selector calls decode correct ERC20 values
+// and always target the configured contract address.
 func TestRunSuccess(t *testing.T) {
 	contract := common.HexToAddress("0x1111111111111111111111111111111111111111")
 	mock := &mockCallClient{
@@ -66,6 +68,7 @@ func TestRunSuccess(t *testing.T) {
 	}
 }
 
+// TestRunErrors protects boundary validation and upstream error propagation for eth_call.
 func TestRunErrors(t *testing.T) {
 	contract := common.HexToAddress("0x1")
 	mock := &mockCallClient{err: errors.New("rpc")}

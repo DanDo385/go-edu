@@ -1,122 +1,115 @@
-# 03: Processing CSV Data
+# 03: Csv Stats
 
-This project marks a significant step up in complexity. You'll move from simple collections to processing structured data from files—a core competency for any backend or data-focused engineer. You will build a mini ETL (Extract, Transform, Load) pipeline that reads real-world data, processes it, and produces valuable insights.
+## Core Concepts
 
-## Table of Contents
+- The concrete problem in Csv Stats and the correctness invariants it depends on.
+- How values, pointers, slices, maps, or channels behave in this module's runtime path.
+- Why this lesson's implementation pattern is the right next step in the learning arc.
 
-- [Learning Objectives](#learning-objectives)
-- [The Big Picture: From Raw Data to Insight](#the-big-picture-from-raw-data-to-insight)
-- [First Principles: Structured Data and Streaming](#first-principles-structured-data-and-streaming)
-- [Project Structure](#project-structure)
-- [Key Go Concepts in This Project](#key-go-concepts-in-this-project)
-  - [Data Flow at a Glance](#data-flow-at-a-glance)
-  - [`encoding/csv` Package](#encodingcsv-package)
-  - [`struct` for Custom Data Types](#struct-for-custom-data-types)
-  - [The Read-Modify-Write Pattern for Map Values](#the-read-modify-write-pattern-for-map-values)
-  - [`strconv`: String Conversion](#strconv-string-conversion)
-  - [Error Wrapping](#error-wrapping)
-- [Progression: Building on Previous Concepts](#progression-building-on-previous-concepts)
-- [How to Run and Test](#how-to-run-and-test)
-- [Key Takeaways](#key-takeaways)
-- [Further Reading](#further-reading)
+## CS Connection
 
-## Learning Objectives
+- Data representation and state transitions: what is copied, what is shared, and what can race.
+- API boundaries: where we validate, where we propagate errors, and where we normalize output.
+- Algorithmic tradeoffs in this lesson (latency, throughput, memory, and complexity).
 
-By the end of this project, you will be able to:
+## End-State Understanding
 
--   **Parse structured text files** using Go's `encoding/csv` package.
--   **Understand and apply streaming** to process files efficiently, regardless of their size.
--   **Define and use `struct` types** to model complex data.
--   **Master the "read-modify-write" pattern** for updating structs within a map.
--   **Perform robust string-to-number conversions** using `strconv`.
--   **Implement error wrapping** to provide meaningful context to errors in a data pipeline.
+- Diagnose and implement Csv Stats patterns without relying on hidden framework behavior.
+- Explain memory and concurrency implications of the final implementation choices.
+- Compare learner code and reference code by invariants, not only by syntax.
 
-## The Big Picture: From Raw Data to Insight
+## Why This Lesson Exists Here
 
-In the real world, data rarely comes in a perfect, ready-to-use format. It's often stored in structured text files like CSV (Comma-Separated Values), JSON, or XML. The ability to read, parse, and extract meaning from these files is a fundamental skill in software engineering.
+Problem statement:
+This lesson turns the previous module's concepts into a reusable engineering pattern for csv stats.
 
-This project takes you one step further than the last. You're no longer just counting words; you're now parsing a structured dataset—a CSV file of financial transactions—and aggregating the data to produce meaningful statistics. This is a mini version of a real-world ETL (Extract, Transform, Load) pipeline.
+At this point in the arc:
+Lesson 03 introduces a sharper systems concern so later modules can assume this mental model is stable.
 
-## First Principles: Structured Data and Streaming
+## Step-by-Step Build Path
 
-1.  **Structured Data**: CSV is a simple format for representing a table of data. Each line is a **record** (or row), and commas separate the **fields** (or columns) within that record. The first line is often a **header**, which gives a name to each field. This structure turns a simple text file into a rich dataset.
+### Step 1: Problem This Step Solves
+Define the smallest valid behavior and reject invalid input or impossible state early.
 
-2.  **Streaming vs. In-Memory Processing**: When dealing with files, especially potentially large ones, you have two basic approaches:
-    *   **In-Memory**: Read the entire file into memory at once. This is simple but can fail if the file is larger than the available RAM.
-    *   **Streaming**: Read and process the file piece by piece (e.g., line by line). This uses a small, constant amount of memory, regardless of the file size. It is far more scalable and robust.
+### Step 2: Why This Approach
+Pick a direct design that keeps control flow and data flow visible for debugging and testing.
 
-    Go's `encoding/csv` package provides a **streaming parser**, which is the professional way to handle this task.
+### Step 3: Memory / Pointer Impact
+Call out where data is copied versus aliased, and where mutable shared state needs synchronization.
 
-## Project Structure
+### Step 4: What Changed
+Produce a stable result shape and explicit error behavior that downstream code can rely on.
 
-```
-.
-├── cmd/
-│   └── dev/
-│       └── main.go       # A simple program to test your functions manually.
-├── internal/
-│   └── stats.go      # Where you will implement the CSV processing logic.
-└── testdata/
-    └── transactions.csv # Sample data used for testing.
-```
--   **`cmd/dev`**: An entry point for a development harness. Run `go run ./cmd/dev` to see your function in action.
--   **`internal/`**: Contains the core logic.
--   **`testdata/`**: Holds data files needed for your tests.
+## Pointer and Indirection
 
-## Key Go Concepts in This Project
+- Explain * and & in this module when they appear in code or docs.
+- Show memory-before and memory-after when data ownership changes.
+- Clarify common misconceptions: Go stays pass-by-value even when pointer values are copied.
+- Primer link: docs/MEMORY_POINTERS_PRIMER.md
 
-### Data Flow at a Glance
+## Verify
 
-Here's how data moves through our program:
 
-```
-+----------------+      +----------------+      +-------------------+      +-------------------------+
-|   CSV File     |----->|  csv.Reader    |----->|  For Loop         |----->|  map[string]Stat        |
-| (io.Reader)    |      | (Streaming)    |      | (Read-Modify-Write) |      |  (Final Aggregation)    |
-+----------------+      +----------------+      +-------------------+      +-------------------------+
-       |                       |                      | (data)                 | (stats)
-       | (text)                | (record)             |                        |
-       v                       v                      v                        v
- "Groceries,25.50\n" --> `[]string{"Groceries", "25.50"}` --> s.Sum += 25.50 --> `stats["Groceries"] = Stat{...}`
- "Rent,800.00\n"   --> `[]string{"Rent", "800.00"}` --> s.Sum += 800.00 --> `stats["Rent"] = Stat{...}`
-```
+a) learner path
 
-1.  **Input**: An `io.Reader` provides the raw, byte-stream of the CSV data.
-2.  **Parsing**: `csv.Reader` reads from the `io.Reader` and decodes the stream one record (`[]string`) at a time.
-3.  **Processing**: Our `for` loop iterates over the records. Inside the loop, we:
-    *   Parse the amount string into a `float64`.
-    *   Perform the crucial **read-modify-write** pattern on our `stats` map.
-4.  **Output**: The final map, containing the aggregated `Stat` for each category, is returned.
 
-### `encoding/csv` Package
+go test -v ./...
 
-Go's standard library provides a dedicated CSV parser. Key features:
-*   **Streaming API**: The `csv.Reader` reads one record at a time with its `Read()` method. This keeps memory usage low and constant.
-*   **Robustness**: It automatically handles complexities like quoted fields containing commas (`"Doe, John"`) and escaped quotes.
 
-### `struct` for Custom Data Types
+b) reference path
 
-While a `map[string]int` was enough to count words, here we need to store more information for each category (a count, a sum, and eventually an average). A `struct` is the perfect tool for this. It lets you define a new, composite type with named fields.
+
+go test -tags=reference -v ./...
+
+
+This lesson is a step up in complexity. You'll build a mini data-processing pipeline that reads a CSV file, parses it, and calculates statistics. This is a core skill for any backend or data-focused engineer.
+
+## CS Connection
+
+- Memory layout drives behavior: variables store values, and some values are addresses into other storage.
+- Go is pass-by-value, including pointers; copying a pointer value copies an address, not the pointee.
+- Correctness depends on understanding copying versus aliasing (`*T`, slices, maps, and channels) and enforcing synchronization when concurrent access exists.
+
+## End-State Understanding
+
+- Implement the exercise with explicit reasoning about correctness, edge cases, and error paths.
+
+## What You'll Learn
+
+- How to **parse structured text files** (CSV).
+- How to use **structs** to define your own custom data types.
+- The **"read-modify-write" pattern** for updating structs inside a map.
+- How to convert strings to numbers using the `strconv` package.
+- How to **wrap errors** to provide more context.
+
+## Core Concepts
+
+### Structs: Custom Data Types
+
+While a `map[string]int` was enough for our word counter, what if we need to store more than just a single number? A `struct` lets you define a new type with named fields.
 
 ```go
 // Stat holds the aggregated statistics for one category.
-// It's a custom data type we've defined.
 type Stat struct {
     Count int
     Sum   float64
-    Avg   float64 // Note: This is calculated at the end.
+    Avg   float64
 }
 ```
+Now we can have a `map[string]Stat` to store our aggregated data for each category.
 
-This makes your code more readable and maintainable. `stats["groceries"].Sum` is much clearer than a hypothetical `stats["groceries"][1]`.
+### The Read-Modify-Write Pattern
 
-### The Read-Modify-Write Pattern for Map Values
-
-A critical concept arises when your map values are structs. Consider this update logic:
+A critical concept arises when your map values are structs. You **cannot** modify a field of a struct that is inside a map directly.
 
 ```go
+// THIS WILL NOT COMPILE
+stats[category].Count++
+```
+
+Instead, you must follow the "read-modify-write" pattern:
+```go
 // 1. Read: Get a *copy* of the Stat struct for the category.
-// If the key doesn't exist, Go returns a zero-value Stat.
 s := stats[category]
 
 // 2. Modify: Update the fields on the local copy `s`.
@@ -124,59 +117,39 @@ s.Count++
 s.Sum += amount
 
 // 3. Write: Put the modified copy *back* into the map.
-// This step is essential!
 stats[category] = s
 ```
+This is a safety feature in Go related to how maps manage their memory.
 
-You **cannot** modify the struct field directly in the map (e.g., `stats[category].Count++`). This is because map elements are not addressable in Go. The compiler prevents this to ensure memory safety, as the map might need to move its data during a resize, invalidating any pointers to its elements. By enforcing the read-modify-write pattern, Go guarantees safety.
+### Streaming with `io.Reader`
 
-### `strconv`: String Conversion
+Just like in the last lesson, our function will take an `io.Reader`. This allows us to "stream" the data, meaning we process it piece by piece instead of reading the entire file into memory at once. This is much more scalable. The `encoding/csv` package provides a streaming reader that is perfect for this task.
 
-Parsing data almost always involves converting strings to other types. Go's `strconv` package is your tool for this. `strconv.ParseFloat()` and `strconv.Atoi()` are common functions that take a string and return a number and an `error`, forcing you to handle cases where the string is not a valid number.
+## Your Task
 
-### Error Wrapping
+Your task is to implement the `SummarizeCSV(io.Reader) (map[string]Stat, error)` function in `internal/csvstats/exercise.go`.
 
-In this project, errors can happen at different stages (I/O error, CSV format error, data conversion error). Instead of just returning the last error you saw, it's better to add context. Go 1.13 introduced **error wrapping**:
+The function should:
+1.  Create a `csv.Reader` from the `io.Reader`.
+2.  Read the CSV records one by one in a loop.
+3.  Skip the header row.
+4.  For each data row, parse the category and the transaction amount.
+5.  Use `strconv.ParseFloat` to convert the amount string to a `float64`.
+6.  Use the read-modify-write pattern to update a `map[string]Stat` with the statistics for each category.
+7.  After the loop, calculate the average for each category.
+8.  Return the final map and any errors that occurred. Remember to wrap your errors for better context!
 
-```go
-// If strconv.ParseFloat fails, we wrap its error with our own context.
-if err != nil {
-    // The original error `err` is "wrapped" in a new, more descriptive error.
-    return nil, fmt.Errorf("row %d: invalid amount %q: %w", rowNum, amountStr, err)
-}
-```
-The `%w` verb preserves the original error. This is incredibly useful for debugging. A caller can see the full story: "could not calculate stats: failed on row 5: invalid amount \"twenty-five\": `strconv.ParseFloat`: parsing \"twenty-five\": invalid syntax".
+Open `internal/csvstats/exercise.go` and fill in the `// TODO` sections.
 
-## Progression: Building on Previous Concepts
+## How to Verify Your Work
 
-*   **Project 01 (Strings)**: Your string manipulation skills are used here for parsing and converting data.
-*   **Project 02 (Maps & Structs)**: This project's core aggregation logic is a more advanced application of the `map` data structure, now using a `struct` as the value type.
-*   **`io.Reader`**: We continue to use the `io.Reader` interface, reinforcing its importance for writing flexible, testable code that can read from a file, a network connection, or an in-memory string buffer.
-
-Parsing structured data is a gateway skill. It's the first step in building web servers that accept JSON, services that interact with databases, and any tool that performs data analysis.
-
-## How to Run and Test
+Run the following command from this directory (`minis/03-csv-stats`):
 
 ```bash
-# The dev harness runs your function against a sample in-memory CSV.
-go run ./cmd/dev
-
-# The tests cover multiple scenarios, including valid data,
-# malformed rows, and edge cases.
-gotest -v ./...
+go test -v ./...
 ```
+If the tests pass, you have successfully completed the lesson.
 
-## Key Takeaways
-
--   **Process large files by streaming** (`csv.Reader`) to keep memory usage low.
--   **Use `structs` to group related data** into custom types.
--   Updating a struct in a map **requires the read-modify-write pattern**.
--   **`strconv` is the standard tool** for converting strings to numbers and other types.
--   **Wrap errors with `fmt.Errorf` and `%w`** to create a chain of context for easier debugging.
-
-## Further Reading
-
-*   [**Package `encoding/csv`**](https://pkg.go.dev/encoding/csv): Official documentation for the CSV reader and writer.
-*   [**Package `strconv`**](https://pkg.go.dev/strconv): Documentation for string conversion functions.
-*   [**A Tour of Go: Structs**](https://go.dev/tour/moretypes/2): An interactive introduction to structs.
-*   [**Go by Example: Error Wrapping**](https://gobyexample.com/error-wrapping): A concise example of how and why to wrap errors.
+## Related Lessons
+- Previous: `minis/02-arrays-maps-basics`
+- Next: `minis/04-jsonl-log-filter`

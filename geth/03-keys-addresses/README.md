@@ -1,75 +1,59 @@
-# 03: Keys and Addresses
+# 03: Keys, Addresses, and Keystore Files
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you the cryptographic foundations of Ethereum accounts. You'll learn how private keys are generated, how public keys are derived using elliptic curve cryptography, and how Ethereum addresses are computed from public keys. Understanding this flow is essential for secure key management and wallet development.
+- Problem framing for Keys, Addresses, and Keystore Files: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Key management is the most security-critical aspect of Ethereum development. Understanding:
-- How keys are generated and why randomness matters
-- The mathematical relationship between private and public keys
-- How addresses are derived and why they're shorter than public keys
-- Best practices for key storage and handling
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-...protects users' funds and prevents catastrophic security failures.
+## End-State Understanding
 
-## Real-World Problems This Solves
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-- **Wallet development**: Generate and manage keys securely
-- **Address verification**: Validate address checksums and formats
-- **HD wallets**: Understand the foundation for hierarchical deterministic wallets
-- **Security auditing**: Identify key management vulnerabilities
+## Why This Lesson Now
 
-## Key Concepts You'll Learn
+Before transactions, learners must understand identity, address derivation, and key custody boundaries.
 
-- **Private keys**: 256-bit random numbers that control accounts
-- **secp256k1**: The elliptic curve used by Ethereum (and Bitcoin)
-- **Public key derivation**: One-way function from private to public key
-- **Keccak-256 hashing**: The hash function used for address derivation
-- **Checksum encoding**: EIP-55 mixed-case checksum for addresses
+Problem statement:
+Generate a keypair, derive an address, and persist encrypted key material.
 
-## Prerequisites
+## Step-by-Step Build Path
 
-- Completion of `geth/01-stack` and `geth/02-rpc-basics`
-- Basic understanding of cryptographic concepts
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
 
-## Project Structure
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
 
-```
-geth/03-keys-addresses/
-├── cmd/
-│   ├── app/
-│   │   └── main.go
-│   └── dev/
-│       └── main.go
-├── internal/
-│   └── keysaddresses/
-│       ├── exercise.go
-│       ├── exercise_test.go
-│       ├── solution.reference.go
-│       └── solution_no_err.reference.go
-└── .vscode/
-    └── launch.json
-```
+### Step 3: Memory / Pointer Impact
+Private keys and addresses are values, but APIs often return pointers to key objects; copying pointers does not copy secret material.
 
-## How to Run
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Generate new key pair
-go run ./cmd/app/main.go
-
-# Derive address from existing private key
-go run ./cmd/app/main.go 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Additional Resources
-
-- [Mastering Ethereum - Keys and Addresses](https://github.com/ethereumbook/ethereumbook/blob/develop/04keys-addresses.asciidoc)
-- [EIP-55: Mixed-case checksum address encoding](https://eips.ethereum.org/EIPS/eip-55)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

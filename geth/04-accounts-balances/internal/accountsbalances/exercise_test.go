@@ -42,6 +42,8 @@ func addr(hexStr string) common.Address {
 	return common.HexToAddress(hexStr)
 }
 
+// TestRunClassifiesAccounts checks two invariants: correct EOA/contract
+// classification and defensive copying of mutable balance/code data.
 func TestRunClassifiesAccounts(t *testing.T) {
 	a1 := addr("0x0000000000000000000000000000000000000001")
 	a2 := addr("0x0000000000000000000000000000000000000002")
@@ -85,6 +87,8 @@ func TestRunClassifiesAccounts(t *testing.T) {
 	}
 }
 
+// TestRunErrors ensures input validation and upstream RPC errors are surfaced
+// instead of producing partial or misleading account snapshots.
 func TestRunErrors(t *testing.T) {
 	a1 := addr("0x0000000000000000000000000000000000000001")
 	client := &mockAccountClient{

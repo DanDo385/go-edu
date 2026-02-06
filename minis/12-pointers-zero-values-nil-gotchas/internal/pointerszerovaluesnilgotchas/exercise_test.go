@@ -82,6 +82,20 @@ func TestSwap(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("nil pointer input does not panic", func(t *testing.T) {
+		b := 33
+		Swap(nil, &b)
+		if b != 33 {
+			t.Fatalf("expected b to stay 33, got %d", b)
+		}
+
+		a := 44
+		Swap(&a, nil)
+		if a != 44 {
+			t.Fatalf("expected a to stay 44, got %d", a)
+		}
+	})
 }
 
 func TestInitializeMap(t *testing.T) {
@@ -107,6 +121,11 @@ func TestInitializeMap(t *testing.T) {
 		if result["existing"] != 100 {
 			t.Errorf("Expected 100, got %d", result["existing"])
 		}
+
+		result["new"] = 7
+		if m["new"] != 7 {
+			t.Fatalf("expected returned map to alias original map")
+		}
 	})
 }
 
@@ -129,8 +148,13 @@ func TestAppendNode(t *testing.T) {
 	t.Run("append multiple nodes", func(t *testing.T) {
 		var head *Node
 		head = AppendNode(head, 1)
+		originalHead := head
 		head = AppendNode(head, 2)
 		head = AppendNode(head, 3)
+
+		if head != originalHead {
+			t.Fatal("expected non-empty append to preserve head pointer")
+		}
 
 		values := []int{1, 2, 3}
 		current := head

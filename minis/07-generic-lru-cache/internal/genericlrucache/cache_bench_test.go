@@ -5,9 +5,8 @@ import (
 	"testing"
 )
 
-// BenchmarkCache_Set measures Set performance
 func BenchmarkCache_Set(b *testing.B) {
-	cache := New[int, int](1000, 0)
+	cache := New[int, int](1000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		cache.Set(i%1000, i)
@@ -16,7 +15,7 @@ func BenchmarkCache_Set(b *testing.B) {
 
 // BenchmarkCache_Get measures Get performance
 func BenchmarkCache_Get(b *testing.B) {
-	cache := New[int, int](1000, 0)
+	cache := New[int, int](1000)
 	// Pre-fill
 	for i := 0; i < 1000; i++ {
 		cache.Set(i, i*10)
@@ -29,7 +28,7 @@ func BenchmarkCache_Get(b *testing.B) {
 
 // BenchmarkCache_Mixed measures realistic workload (70% Get, 30% Set)
 func BenchmarkCache_Mixed(b *testing.B) {
-	cache := New[int, int](1000, 0)
+	cache := New[int, int](1000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if i%10 < 7 {
@@ -42,7 +41,7 @@ func BenchmarkCache_Mixed(b *testing.B) {
 
 // BenchmarkCache_SetWithEviction measures performance with constant eviction
 func BenchmarkCache_SetWithEviction(b *testing.B) {
-	cache := New[int, int](100, 0) // Small capacity
+	cache := New[int, int](100) // Small capacity
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		cache.Set(i, i) // Every insert after 100 causes eviction
@@ -67,7 +66,7 @@ func BenchmarkCache_Sizes(b *testing.B) {
 	sizes := []int{10, 100, 1000, 10000}
 	for _, size := range sizes {
 		b.Run(fmt.Sprintf("size-%d", size), func(b *testing.B) {
-			cache := New[int, int](size, 0)
+			cache := New[int, int](size)
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				if i%2 == 0 {

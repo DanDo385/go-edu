@@ -1,50 +1,59 @@
-# 25: Ethereum Toolbox
+# 25: Operational Toolbox CLI
 
-## What Is This Project About?
+## Core Concepts
 
-This is the capstone module that combines skills from all previous modules into a comprehensive Ethereum developer toolbox. You'll build a utility that can perform various chain operations, demonstrating mastery of the full curriculum.
+- Problem framing for Operational Toolbox CLI: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-This module:
-- Consolidates all learned skills
-- Demonstrates practical integration
-- Creates reusable tooling
-- Prepares you for production development
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Key Concepts You'll Learn
+## End-State Understanding
 
-- **Tool composition**: Combining multiple capabilities
-- **CLI design**: User-friendly command interfaces
-- **Error handling**: Robust error management
-- **Code organization**: Clean, maintainable structure
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Prerequisites
+## Why This Lesson Now
 
-- Completion of all previous geth modules (01-24)
+Final lesson integrates the full arc into practical operator tooling.
 
-## How to Run
+Problem statement:
+Unify status, block, and tx workflows in one command surface.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Command handlers often shuttle `*big.Int` and pointer-rich structs; enforce copy boundaries at handler outputs.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Congratulations!
-
-By completing this module, you've learned:
-- Ethereum connectivity and RPC basics
-- Key management and addresses
-- Transaction nonces and EIP-1559
-- Smart contract interaction (console and Go)
-- Events, filters, and logs
-- Storage, proofs, and tracing
-- Indexing and chain monitoring
-- Node operations and networking
-
-You're now equipped to build production Ethereum applications in Go!
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

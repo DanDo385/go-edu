@@ -1,41 +1,59 @@
-# 19: Development Networks
+# 19: Devnet Environment Profiles
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to set up and work with local development networks for testing Ethereum applications. Devnets provide instant feedback and free gas for development.
+- Problem framing for Devnet Environment Profiles: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-Development networks enable:
-- Fast iteration during development
-- Testing without real funds
-- Reproducible test scenarios
-- Isolated debugging environments
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Key Concepts You'll Learn
+## End-State Understanding
 
-- **Geth dev mode**: Local instant-mining chain
-- **Account management**: Pre-funded accounts
-- **Time manipulation**: Advancing block time
-- **State reset**: Starting fresh for tests
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Prerequisites
+## Why This Lesson Now
 
-- Geth installed locally
-- Completion of previous modules
+Before node operations, learners need repeatable local environments.
 
-## How to Run
+Problem statement:
+Select chain profiles and bootstrap local development network configs.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Config structs may hold pointer fields for optional values; distinguish nil (unspecified) from zero-value intent.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Start local devnet first
-geth --dev --http --http.api eth,net,web3,personal
-
-# Then run the demo
-go run ./cmd/app/main.go http://localhost:8545
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

@@ -1,115 +1,59 @@
 # 01: Ethereum Stack Connectivity
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you how to establish your first connection to an Ethereum node and verify the connection by querying fundamental network identifiers. You'll learn how to retrieve the Chain ID (used for replay protection), Network ID (legacy P2P identifier), and the latest block header—proving that your Go application can communicate with the Ethereum network.
+- Problem framing for Ethereum Stack Connectivity: what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-This is the foundation of all Ethereum development. Before you can send transactions, query balances, or interact with smart contracts, you must first connect to a node. This module ensures that fundamental skill is solid.
+## CS Connection
 
-## Why Is This Important?
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-Every Ethereum application starts with a connection to a node. Understanding how to:
-- Dial an RPC endpoint
-- Handle connection errors gracefully
-- Verify connectivity by querying chain metadata
-- Use context for timeout/cancellation control
+## End-State Understanding
 
-...is essential for building reliable Ethereum tooling. This module establishes patterns you'll use throughout the entire course.
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Real-World Problems This Solves
+## Why This Lesson Now
 
-- **Service health checks**: Verify your RPC connection before processing requests
-- **Multi-chain support**: Detect which network you're connected to via Chain ID
-- **Block monitoring**: Get the latest block header to know the current chain state
-- **Connection pooling**: Understand how to properly open and close client connections
+It anchors the whole geth track: every later module depends on a trustworthy client connection.
 
-## Key Concepts You'll Learn
+Problem statement:
+Verify node connectivity by reading ChainID, NetworkID, and latest header.
 
-- **Chain ID (EIP-155)**: Unique identifier for replay protection in transaction signatures
-- **Network ID**: Legacy identifier used in P2P networking
-- **Block Headers**: Lightweight representation containing cryptographic commitments to block data
-- **Context handling**: Go's idiomatic way to handle timeouts and cancellation
-- **Defensive copying**: Protecting against unintended mutations of shared data
+## Step-by-Step Build Path
 
-## Prerequisites
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
 
-- Basic Go programming knowledge
-- Go 1.21+ installed
-- Internet connection for RPC access
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
 
-## Project Structure
+### Step 3: Memory / Pointer Impact
+`ChainID`, `NetworkID`, and header fields are exposed as pointers (`*big.Int`, `*types.Header`) and must be copied when you need ownership.
 
-```
-geth/01-stack/
-├── cmd/
-│   ├── app/
-│   │   └── main.go          # CLI application with argument parsing
-│   └── dev/
-│       └── main.go          # Debug harness with fixed inputs
-├── internal/
-│   └── stack/
-│       ├── exercise.go      # Your implementation
-│       ├── exercise_test.go # Test cases
-│       ├── solution.reference.go
-│       ├── solution_no_err.reference.go
-│       └── types.go         # Type definitions
-└── .vscode/
-    └── launch.json          # Debug configurations
-```
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
 
-## How to Run
+## Pointer and Indirection Checklist (`*` and `&`)
 
-### Using cmd/app/main.go (CLI Arguments)
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-# Query latest block on mainnet
-go run ./cmd/app/main.go https://eth.llamarpc.com
-
-# Query specific block number
-go run ./cmd/app/main.go https://eth.llamarpc.com 12345678
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-### Using cmd/dev/main.go (Debug Harness)
+## Related Lessons
 
-```bash
-# Run with fixed test inputs
-go run ./cmd/dev/main.go
-
-# Or use VS Code debugger (F5) with "Debug: cmd/dev" configuration
-```
-
-## How to Debug
-
-1. Set breakpoints at `// BREAKPOINT:` comments in exercise.go
-2. Use VS Code debugger (F5) and select appropriate configuration:
-   - "Debug: cmd/app" - Debug with CLI arguments
-   - "Debug: cmd/dev" - Debug with fixed inputs (recommended for learning)
-   - "Test: Run All Tests" - Debug tests
-3. Step through code using F10 (Step Over) and F11 (Step Into)
-4. Watch variables in the Variables panel
-
-## Testing
-
-```bash
-# Run all tests
-go test ./...
-
-# Run with verbose output
-go test -v ./...
-
-# Run with reference implementation
-go test -tags=reference -v ./...
-```
-
-## Exercises
-
-1. Implement the `Run` function in `internal/stack/exercise.go`
-2. Handle nil context and client gracefully
-3. Query Chain ID, Network ID, and latest block header
-4. Return results with defensive copies to prevent mutation
-
-## Additional Resources
-
-- [go-ethereum ethclient Package](https://pkg.go.dev/github.com/ethereum/go-ethereum/ethclient)
-- [EIP-155: Simple Replay Attack Protection](https://eips.ethereum.org/EIPS/eip-155)
-- [Ethereum Block Headers](https://ethereum.org/en/developers/docs/blocks/)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

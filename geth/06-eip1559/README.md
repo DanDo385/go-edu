@@ -1,47 +1,59 @@
-# 06: EIP-1559 Fee Market
+# 06: Dynamic Fee Transactions (EIP-1559)
 
-## What Is This Project About?
+## Core Concepts
 
-This module teaches you the EIP-1559 transaction fee mechanism introduced in the London hard fork. You'll understand base fees, priority fees (tips), max fees, and how the fee market creates more predictable gas costs while burning a portion of fees.
+- Problem framing for Dynamic Fee Transactions (EIP-1559): what state we need, what invariants we must keep.
+- Value vs pointer behavior in this lesson's APIs and data structures.
+- Error-path design: fail fast at boundaries, keep results deterministic.
 
-## Why Is This Important?
+## CS Connection
 
-EIP-1559 fundamentally changed how transaction fees work:
-- More predictable gas pricing
-- Better user experience with fee estimation
-- ETH burning mechanism affects tokenomics
-- Transaction replacement strategies changed
+- Memory ownership: distinguish copied values from aliased references (`*T`, slices, maps).
+- API contracts: define what can be mutated and by whom.
+- Runtime behavior: how failures, retries, and concurrency impact correctness.
 
-## Real-World Problems This Solves
+## End-State Understanding
 
-- **Gas estimation**: Calculate appropriate max and priority fees
-- **Fee optimization**: Minimize costs while ensuring timely inclusion
-- **Transaction management**: Understand why txs get stuck or replaced
-- **Economic analysis**: Track base fee trends and ETH burning
+- Explain why this lesson exists in the geth arc and what gap it closes.
+- Implement `exercise.go` and justify design choices against `solution.reference.go`.
+- Reason about memory/pointer effects in every non-trivial step.
 
-## Key Concepts You'll Learn
+## Why This Lesson Now
 
-- **Base fee**: Protocol-determined fee, burned on inclusion
-- **Priority fee (tip)**: Incentive for validators to include tx
-- **Max fee**: Maximum total fee you're willing to pay
-- **Fee calculation**: Effective gas price = min(base_fee + priority_fee, max_fee)
+After legacy tx flow, learners upgrade to modern fee markets and cap calculations.
 
-## Prerequisites
+Problem statement:
+Construct EIP-1559 transactions from base fee + tip strategy.
 
-- Completion of `geth/01-stack` through `geth/05-tx-nonces`
+## Step-by-Step Build Path
 
-## How to Run
+### Step 1: Problem This Step Solves
+Establish the minimum input validation and boundary checks so invalid state fails early.
+
+### Step 2: Why This Approach
+Use small, explicit operations that map 1:1 to the underlying RPC or data-model behavior.
+
+### Step 3: Memory / Pointer Impact
+Base fee, tip, and fee cap are `*big.Int`; show before/after copies to separate local math from shared upstream pointers.
+
+### Step 4: What Changed
+Return a stable `Result` snapshot that callers can inspect without mutating upstream/internal state.
+
+## Pointer and Indirection Checklist (`*` and `&`)
+
+- `*` in a type means pointer type; it does not dereference by itself.
+- `&` creates an address value; Go remains pass-by-value.
+- If a pointer/slice/map is returned, document whether caller mutation is allowed.
+- When mutation is not allowed, copy before return (see `docs/MEMORY_POINTERS_PRIMER.md`).
+
+## Verify
 
 ```bash
-go run ./cmd/app/main.go https://eth.llamarpc.com
+go test -v ./internal/...
+go test -tags=reference -v ./internal/...
 ```
 
-## Testing
+## Related Lessons
 
-```bash
-go test -v ./...
-```
-
-## Additional Resources
-
-- [EIP-1559: Fee Market Change](https://eips.ethereum.org/EIPS/eip-1559)
+- Previous: follow the preceding lesson in `geth/` ordering.
+- Next: continue to the next lesson in `geth/` ordering.

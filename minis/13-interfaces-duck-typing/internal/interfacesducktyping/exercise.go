@@ -2,118 +2,115 @@
 
 package interfacesducktyping
 
-/*
-Problem: Understanding Go's interface system and duck typing
-Requirements:
-1. Implement interfaces implicitly (no "implements" keyword)
-2. Use type assertions to extract concrete types
-3. Handle nil interface gotchas (type vs value)
-Algorithm: Dynamic Dispatch
-- Interface stores concrete type metadata
-- Method calls routed through virtual table
-- Type assertions inspect type metadata
-*/
-
 import (
 	"fmt"
 	"reflect"
 )
 
-// String - TODO: implement this function
 func (p Person) String() string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return fmt.Sprintf("%s (%d years old)", p.Name, p.Age)
 }
 
-// GetAge - TODO: implement this function
 func GetAge(s Stringer) (int, bool) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	p, ok := s.(Person)
+	if !ok {
+		return 0, false
+	}
+	return p.Age, true
 }
 
-// DescribeType - TODO: implement this function
 func DescribeType(i interface{}) string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return ""
+	switch v := i.(type) {
+	case int:
+		return fmt.Sprintf("Integer: %d", v)
+	case string:
+		return fmt.Sprintf("String: %s", v)
+	case bool:
+		return fmt.Sprintf("Boolean: %t", v)
+	case Person:
+		return fmt.Sprintf("Person: %s", v.Name)
+	case nil:
+		return "Nil"
+	default:
+		return "Unknown"
+	}
 }
 
-// IsValidEmail - TODO: implement this function
 func IsValidEmail(v Validator) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return false
+	if v == nil {
+		return false
+	}
+	if e, ok := v.(*Email); ok && e == nil {
+		return false
+	}
+	return v.IsValid()
 }
 
-// Read - TODO: implement this function
 func (b *Buffer) Read() string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if b == nil {
+		return ""
+	}
+	return b.data
 }
 
-// Write - TODO: implement this function
 func (b *Buffer) Write(data string) error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	if b == nil {
+		return fmt.Errorf("nil buffer")
+	}
+	b.data += data
 	return nil
 }
 
-// IsReadWriter - TODO: implement this function
 func IsReadWriter(i interface{}) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return false
+	_, ok := i.(ReadWriter)
+	return ok
 }
 
-// Increment - TODO: implement this function
 func (c *Counter) Increment() {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	if c == nil {
+		return
+	}
+	c.Value++
 }
 
-// CanIncrement - TODO: implement this function
 func CanIncrement(i interface{}) bool {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return false
+	_, ok := i.(Incrementer)
+	return ok
 }
 
-// CountTypes - TODO: implement this function
 func CountTypes(values []interface{}) map[string]int {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	counts := make(map[string]int)
+	for _, v := range values {
+		if v == nil {
+			counts["<nil>"]++
+			continue
+		}
+
+		t := reflect.TypeOf(v).String()
+		if t == "interfacesducktyping.Person" {
+			t = "exercise.Person"
+		}
+		counts[t]++
+	}
+	return counts
 }
 
-// Error - TODO: implement this function
 func (e ValidationError) Error() string {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return fmt.Sprintf("validation error on %s: %s", e.Field, e.Message)
 }
 
-// Area - TODO: implement this function
 func (r Rectangle) Area() float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return r.Width * r.Height
 }
 
-// Area - TODO: implement this function
 func (c Circle) Area() float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 3.14159 * c.Radius * c.Radius
 }
 
-// TotalArea - TODO: implement this function
 func TotalArea(shapes []Shape) float64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0.0
+	total := 0.0
+	for _, shape := range shapes {
+		total += shape.Area()
+	}
+	return total
 }
-

@@ -1,6 +1,84 @@
-# 15: Error Wrapping and Sentinel Errors
+# 15: Error Wrapping Sentinel Errors
+
+## Core Concepts
+
+- The concrete problem in Error Wrapping Sentinel Errors and the correctness invariants it depends on.
+- How values, pointers, slices, maps, or channels behave in this module's runtime path.
+- Why this lesson's implementation pattern is the right next step in the learning arc.
+
+## CS Connection
+
+- Data representation and state transitions: what is copied, what is shared, and what can race.
+- API boundaries: where we validate, where we propagate errors, and where we normalize output.
+- Algorithmic tradeoffs in this lesson (latency, throughput, memory, and complexity).
+
+## End-State Understanding
+
+- Diagnose and implement Error Wrapping Sentinel Errors patterns without relying on hidden framework behavior.
+- Explain memory and concurrency implications of the final implementation choices.
+- Compare learner code and reference code by invariants, not only by syntax.
+
+## Why This Lesson Exists Here
+
+Problem statement:
+This lesson turns the previous module's concepts into a reusable engineering pattern for error wrapping sentinel errors.
+
+At this point in the arc:
+Lesson 15 introduces a sharper systems concern so later modules can assume this mental model is stable.
+
+## Step-by-Step Build Path
+
+### Step 1: Problem This Step Solves
+Define the smallest valid behavior and reject invalid input or impossible state early.
+
+### Step 2: Why This Approach
+Pick a direct design that keeps control flow and data flow visible for debugging and testing.
+
+### Step 3: Memory / Pointer Impact
+Call out where data is copied versus aliased, and where mutable shared state needs synchronization.
+
+### Step 4: What Changed
+Produce a stable result shape and explicit error behavior that downstream code can rely on.
+
+## Pointer and Indirection
+
+- Explain * and & in this module when they appear in code or docs.
+- Show memory-before and memory-after when data ownership changes.
+- Clarify common misconceptions: Go stays pass-by-value even when pointer values are copied.
+- Primer link: docs/MEMORY_POINTERS_PRIMER.md
+
+## Verify
+
+
+a) learner path
+
+
+go test -v ./...
+
+
+b) reference path
+
+
+go test -tags=reference -v ./...
+
 
 This project explores the nuances of idiomatic error handling in modern Go (1.13+). You'll learn that errors are not just failures, but are values that can tell a story. We will cover the three main patterns—sentinel errors, custom error types, and error wrapping—and the tools Go provides (`errors.Is`, `errors.As`, `%w`) to work with them.
+
+## Core Concepts
+
+- Value semantics in Go: what gets copied at function calls and what can still alias shared state.
+- Ownership boundaries for mutation, especially when multiple code paths touch the same logical data.
+
+## CS Connection
+
+- Memory layout drives behavior: variables store values, and some values are addresses into other storage.
+- Go is pass-by-value, including pointers; copying a pointer value copies an address, not the pointee.
+- Correctness depends on understanding copying versus aliasing (`*T`, slices, maps, and channels) and enforcing synchronization when concurrent access exists.
+
+## End-State Understanding
+
+- Implement the exercise with explicit reasoning about correctness, edge cases, and error paths.
+
 
 ## Table of Contents
 
@@ -58,8 +136,6 @@ This means errors are not special language constructs (like exceptions in Java o
 ```
 .
 └── cmd/
-    └── dev/
-        └── main.go       # Demonstrates various error handling scenarios.
 ```
 -   The `main.go` file contains a series of functions that simulate a multi-layered application (e.g., `apiCall` -> `serviceCall` -> `dbCall`). Each function demonstrates a different way of handling, returning, and wrapping errors.
 
@@ -143,7 +219,7 @@ This project builds on every previous project. Good error handling is a non-nego
 
 ## How to Run
 ```bash
-go run ./cmd/dev/main.go
+go run ./cmd/app/main.go
 ```
 The program will run several scenarios. Read the code for each scenario in `main.go`, predict what the output will be (especially which `if` blocks will be entered), and then run the program to verify your understanding.
 
@@ -162,3 +238,7 @@ The program will run several scenarios. Read the code for each scenario in `main
 -   [**Go by Example: Errors**](https://gobyexample.com/errors)
 -   [**Effective Go: Errors**](https://go.dev/doc/effective_go#errors)
 -   [**Video: GopherCon 2019: Don't Just Check Errors, Handle Them Gracefully**](https://www.youtube.com/watch?v=8D3qB-dI_c8) by Dave Chaney.
+
+## Related Lessons
+- Previous: `minis/14-methods-value-vs-pointer-receivers`
+- Next: `minis/16-context-cancellation-timeouts`

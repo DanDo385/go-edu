@@ -43,43 +43,77 @@ type fileStore struct {
 
 // NewFileStore - TODO: implement this function
 func NewFileStore(path string) Store {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return &fileStore{path: path, items: make([]Item, 0)}
 }
 
 // Load - TODO: implement this function
 func (fs *fileStore) Load() error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	data, err := os.ReadFile(fs.path)
+	if err != nil {
+		return err
+	}
+	var items []Item
+	if err := json.Unmarshal(data, &items); err != nil {
+		return fmt.Errorf("unmarshal todos: %w", err)
+	}
+	fs.items = items
 	return nil
 }
 
 // Save - TODO: implement this function
 func (fs *fileStore) Save() error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	data, err := json.MarshalIndent(fs.items, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal todos: %w", err)
+	}
+	if err := os.WriteFile(fs.path, data, 0644); err != nil {
+		return fmt.Errorf("write todos: %w", err)
+	}
 	return nil
 }
 
 // Add - TODO: implement this function
 func (fs *fileStore) Add(text string) Item {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	maxID := 0
+	for _, item := range fs.items {
+		if item.ID > maxID {
+			maxID = item.ID
+		}
+	}
+
+	newItem := Item{
+		ID:   maxID + 1,
+		Text: text,
+		Done: false,
+	}
+	fs.items = append(fs.items, newItem)
+	return newItem
 }
 
 // Toggle - TODO: implement this function
 func (fs *fileStore) Toggle(id int) (Item, bool) {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	for i := range fs.items {
+		if fs.items[i].ID == id {
+			fs.items[i].Done = !fs.items[i].Done
+			return fs.items[i], true
+		}
+	}
+	return Item{}, false
 }
 
 // List - TODO: implement this function
 func (fs *fileStore) List(onlyPending bool) []Item {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
-}
+	if !onlyPending {
+		out := make([]Item, len(fs.items))
+		copy(out, fs.items)
+		return out
+	}
 
+	out := make([]Item, 0, len(fs.items))
+	for _, item := range fs.items {
+		if !item.Done {
+			out = append(out, item)
+		}
+	}
+	return out
+}
