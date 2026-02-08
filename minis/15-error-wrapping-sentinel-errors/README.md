@@ -219,7 +219,7 @@ This project builds on every previous project. Good error handling is a non-nego
 
 ## How to Run
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/15-error-wrapping-sentinel-errors/cmd/app/main.go
 ```
 The program will run several scenarios. Read the code for each scenario in `main.go`, predict what the output will be (especially which `if` blocks will be entered), and then run the program to verify your understanding.
 

@@ -51,7 +51,7 @@ You can now justify allocation/perf behavior using concrete compiler evidence.
 ```bash
 go build -gcflags='-m' ./...
 go test -v ./...
-go run ./cmd/app/main.go
+go run ./minis/29-escape-analysis-inlining/cmd/app/main.go
 ```
 
 ## Related Lessons

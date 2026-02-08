@@ -2,6 +2,26 @@
 
 package syncmutexvsrwmutex
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"hash/fnv"
 	"sync"
@@ -14,28 +34,58 @@ type Counter struct {
 	value int
 }
 
+// NewCounter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewCounter() *Counter {
 	return &Counter{}
 }
 
+// Increment implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Counter) Increment() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.value++
 }
 
+// Decrement implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Counter) Decrement() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.value--
 }
 
+// Value implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Counter) Value() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.value
 }
 
+// Reset implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Counter) Reset() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -48,12 +98,24 @@ type Cache[K comparable, V any] struct {
 	data map[K]V
 }
 
+// NewCache implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewCache[K comparable, V any]() *Cache[K, V] {
 	return &Cache[K, V]{
 		data: make(map[K]V),
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache[K, V]) Get(key K) (V, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -61,24 +123,48 @@ func (c *Cache[K, V]) Get(key K) (V, bool) {
 	return value, ok
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache[K, V]) Set(key K, value V) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data[key] = value
 }
 
+// Delete implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache[K, V]) Delete(key K) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.data, key)
 }
 
+// Len implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache[K, V]) Len() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return len(c.data)
 }
 
+// Clear implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache[K, V]) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -98,6 +184,12 @@ type cacheEntry[V any] struct {
 	expiration time.Time
 }
 
+// NewExpiringCache implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewExpiringCache[K comparable, V any]() *ExpiringCache[K, V] {
 	return &ExpiringCache[K, V]{
 		data:   make(map[K]*cacheEntry[V]),
@@ -105,6 +197,12 @@ func NewExpiringCache[K comparable, V any]() *ExpiringCache[K, V] {
 	}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *ExpiringCache[K, V]) Set(key K, value V, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -115,6 +213,12 @@ func (c *ExpiringCache[K, V]) Set(key K, value V, ttl time.Duration) {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *ExpiringCache[K, V]) Get(key K) (V, bool) {
 	c.mu.RLock()
 	entry, ok := c.data[key]
@@ -137,6 +241,12 @@ func (c *ExpiringCache[K, V]) Get(key K) (V, bool) {
 	return entry.value, true
 }
 
+// StartCleanup implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *ExpiringCache[K, V]) StartCleanup(interval time.Duration) {
 	c.mu.Lock()
 	if !c.stopped {
@@ -162,6 +272,12 @@ func (c *ExpiringCache[K, V]) StartCleanup(interval time.Duration) {
 	}()
 }
 
+// StopCleanup implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *ExpiringCache[K, V]) StopCleanup() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -172,6 +288,12 @@ func (c *ExpiringCache[K, V]) StopCleanup() {
 	}
 }
 
+// cleanup implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *ExpiringCache[K, V]) cleanup() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -196,6 +318,12 @@ type shard[K comparable, V any] struct {
 
 const numShards = 16
 
+// NewShardedMap implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewShardedMap[K comparable, V any]() *ShardedMap[K, V] {
 	sm := &ShardedMap[K, V]{}
 	for i := 0; i < numShards; i++ {
@@ -206,6 +334,12 @@ func NewShardedMap[K comparable, V any]() *ShardedMap[K, V] {
 	return sm
 }
 
+// getShard implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sm *ShardedMap[K, V]) getShard(key K) *shard[K, V] {
 	// Hash the key
 	h := fnv.New32a()
@@ -231,6 +365,12 @@ func (sm *ShardedMap[K, V]) getShard(key K) *shard[K, V] {
 	return sm.shards[shardIndex]
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sm *ShardedMap[K, V]) Get(key K) (V, bool) {
 	shard := sm.getShard(key)
 	shard.mu.RLock()
@@ -239,6 +379,12 @@ func (sm *ShardedMap[K, V]) Get(key K) (V, bool) {
 	return value, ok
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sm *ShardedMap[K, V]) Set(key K, value V) {
 	shard := sm.getShard(key)
 	shard.mu.Lock()
@@ -246,6 +392,12 @@ func (sm *ShardedMap[K, V]) Set(key K, value V) {
 	shard.data[key] = value
 }
 
+// Delete implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sm *ShardedMap[K, V]) Delete(key K) {
 	shard := sm.getShard(key)
 	shard.mu.Lock()
@@ -259,36 +411,72 @@ type Metrics struct {
 	metrics map[string]int64
 }
 
+// NewMetrics implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewMetrics() *Metrics {
 	return &Metrics{
 		metrics: make(map[string]int64),
 	}
 }
 
+// IncrementCounter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) IncrementCounter(name string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.metrics[name]++
 }
 
+// SetGauge implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) SetGauge(name string, value int64) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.metrics[name] = value
 }
 
+// GetCounter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) GetCounter(name string) int64 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.metrics[name]
 }
 
+// GetGauge implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) GetGauge(name string) int64 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.metrics[name]
 }
 
+// Snapshot implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) Snapshot() map[string]int64 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -311,6 +499,12 @@ type RateLimiter struct {
 	refillTicker *time.Ticker
 }
 
+// NewRateLimiter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewRateLimiter(rate float64, burst int) *RateLimiter {
 	rl := &RateLimiter{
 		rate:       rate,
@@ -326,6 +520,12 @@ func NewRateLimiter(rate float64, burst int) *RateLimiter {
 	return rl
 }
 
+// Allow implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) Allow() bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
@@ -337,6 +537,12 @@ func (rl *RateLimiter) Allow() bool {
 	return false
 }
 
+// refill implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) refill() {
 	ticker := time.NewTicker(time.Second / 10) // Refill 10 times per second
 	defer ticker.Stop()

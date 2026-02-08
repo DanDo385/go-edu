@@ -14,16 +14,24 @@ var errNilClient = errors.New("nil explorer rpc client")
 
 /*
 Reference Solution
+==================
 
-Structure:
-- Fetch one block.
-- Build a stable, lightweight summary object.
-- Optionally include per-transaction summaries.
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
 
-Pointer notes:
-  - `tx.To()` returns `*common.Address`; we copy that address value before storing
-    it in `TxSummary` so result data does not alias transaction internals.
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
 */
+
 func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

@@ -92,7 +92,7 @@ This module teaches you the difference between Mutex and RWMutex.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/24-sync-mutex-vs-rwmutex/cmd/app/main.go
 ```
 
 ## Related Lessons

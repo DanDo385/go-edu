@@ -20,15 +20,24 @@ var (
 
 /*
 Reference Solution
+==================
 
-Structure:
-- Build four read-only call payloads using function selectors.
-- Execute eth_call for each selector.
-- Decode ABI-encoded return values.
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
 
-Invariant:
-- Contract must be non-zero address and client must be non-nil.
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
 */
+
 func Run(ctx context.Context, client ContractCaller, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -89,11 +98,23 @@ func Run(ctx context.Context, client ContractCaller, cfg Config) (*Result, error
 	}, nil
 }
 
+// selector implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func selector(sig string) []byte {
 	h := crypto.Keccak256([]byte(sig))
 	return append([]byte(nil), h[:4]...)
 }
 
+// decodeString implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func decodeString(data []byte) (string, error) {
 	if len(data) < 64 {
 		return "", errShortABIValue
@@ -121,6 +142,12 @@ func decodeString(data []byte) (string, error) {
 	return string(data[start:end]), nil
 }
 
+// decodeUint8 implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func decodeUint8(data []byte) (uint8, error) {
 	v, err := decodeUint256(data)
 	if err != nil {
@@ -132,6 +159,12 @@ func decodeUint8(data []byte) (uint8, error) {
 	return uint8(v.Uint64()), nil
 }
 
+// decodeUint256 implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func decodeUint256(data []byte) (*big.Int, error) {
 	if len(data) < 32 {
 		return nil, errShortABIValue

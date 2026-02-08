@@ -92,7 +92,7 @@ This module teaches you Go's reflection capabilities.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/48-reflection-introspection/cmd/app/main.go
 ```
 
 ## Related Lessons

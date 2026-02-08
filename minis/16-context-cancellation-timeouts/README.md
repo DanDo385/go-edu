@@ -50,7 +50,7 @@ Long-running operations now terminate predictably, and upstream callers control 
 
 ```bash
 go test -v ./...
-go run ./cmd/app/main.go
+go run ./minis/16-context-cancellation-timeouts/cmd/app/main.go
 ```
 
 ## Related Lessons

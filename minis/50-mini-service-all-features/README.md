@@ -122,10 +122,10 @@ minis/50-mini-service-all-features/
 
 ```bash
 # Run the service
-go run ./cmd/app/main.go
+go run ./minis/50-mini-service-all-features/cmd/app/main.go
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/50-mini-service-all-features/cmd/app/main.go
 ```
 
 ## Testing

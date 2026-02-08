@@ -116,23 +116,23 @@ Simulate a gossip protocol for message propagation.
 cd minis/45-p2p-gossip-mock-network
 
 # Simulate network with 10 nodes
-go run ./cmd/app/main.go --nodes 10 --fanout 3
+go run ./minis/45-p2p-gossip-mock-network/cmd/app/main.go --nodes 10 --fanout 3
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/45-p2p-gossip-mock-network/cmd/app/main.go
 ```
 
 ## Quick Copy & Paste
 
 ```bash
 # Simulate gossip
-go run ./cmd/app/main.go --nodes 10 --fanout 3
+go run ./minis/45-p2p-gossip-mock-network/cmd/app/main.go --nodes 10 --fanout 3
 
 # Larger network
-go run ./cmd/app/main.go --nodes 100 --fanout 5
+go run ./minis/45-p2p-gossip-mock-network/cmd/app/main.go --nodes 100 --fanout 5
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/45-p2p-gossip-mock-network/cmd/app/main.go
 ```
 
 ## Key Concepts

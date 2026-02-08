@@ -92,7 +92,7 @@ This module teaches you how to build a Merkle tree data structure.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/40-merkle-tree-basics/cmd/app/main.go
 ```
 
 ## Related Lessons

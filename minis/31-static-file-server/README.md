@@ -92,7 +92,7 @@ This module teaches you how to build an HTTP server that serves static files.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/31-static-file-server/cmd/app/main.go
 ```
 
 ## Related Lessons

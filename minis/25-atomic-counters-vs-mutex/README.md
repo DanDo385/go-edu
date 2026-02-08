@@ -92,7 +92,7 @@ This module compares atomic operations with mutex-based synchronization.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/25-atomic-counters-vs-mutex/cmd/app/main.go
 ```
 
 ## Related Lessons

@@ -92,7 +92,7 @@ This module teaches you how to use channels as semaphores for concurrency limiti
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/23-bounded-channel-semaphore/cmd/app/main.go
 ```
 
 ## Related Lessons

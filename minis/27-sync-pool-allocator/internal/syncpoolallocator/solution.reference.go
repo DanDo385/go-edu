@@ -2,6 +2,26 @@
 
 package syncpoolallocator
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"bytes"
 	"fmt"
@@ -14,6 +34,12 @@ type BufferPool struct {
 	pool sync.Pool
 }
 
+// NewBufferPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewBufferPool() *BufferPool {
 	return &BufferPool{
 		pool: sync.Pool{
@@ -24,10 +50,22 @@ func NewBufferPool() *BufferPool {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (bp *BufferPool) Get() *bytes.Buffer {
 	return bp.pool.Get().(*bytes.Buffer)
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (bp *BufferPool) Put(buf *bytes.Buffer) {
 	buf.Reset()
 	bp.pool.Put(buf)
@@ -39,6 +77,12 @@ type SlicePool struct {
 	capacity int
 }
 
+// NewSlicePool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSlicePool(capacity int) *SlicePool {
 	return &SlicePool{
 		capacity: capacity,
@@ -51,10 +95,22 @@ func NewSlicePool(capacity int) *SlicePool {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sp *SlicePool) Get() *[]byte {
 	return sp.pool.Get().(*[]byte)
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sp *SlicePool) Put(slice *[]byte) {
 	*slice = (*slice)[:0] // Reset length, keep capacity
 	sp.pool.Put(slice)
@@ -66,6 +122,12 @@ type Pool[T any] struct {
 	reset func(*T)
 }
 
+// NewPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewPool[T any](newFunc func() *T, resetFunc func(*T)) *Pool[T] {
 	return &Pool[T]{
 		pool: sync.Pool{
@@ -77,10 +139,22 @@ func NewPool[T any](newFunc func() *T, resetFunc func(*T)) *Pool[T] {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (p *Pool[T]) Get() *T {
 	return p.pool.Get().(*T)
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (p *Pool[T]) Put(obj *T) {
 	if p.reset != nil {
 		p.reset(obj)
@@ -103,6 +177,12 @@ type PoolStats struct {
 	HitRate float64
 }
 
+// NewMetricsPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewMetricsPool(newFunc func() interface{}) *MetricsPool {
 	mp := &MetricsPool{}
 	mp.pool.New = func() interface{} {
@@ -112,16 +192,34 @@ func NewMetricsPool(newFunc func() interface{}) *MetricsPool {
 	return mp
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mp *MetricsPool) Get() interface{} {
 	mp.gets.Add(1)
 	return mp.pool.Get()
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mp *MetricsPool) Put(obj interface{}) {
 	mp.puts.Add(1)
 	mp.pool.Put(obj)
 }
 
+// Stats implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mp *MetricsPool) Stats() PoolStats {
 	gets := mp.gets.Load()
 	puts := mp.puts.Load()
@@ -145,6 +243,12 @@ type SizeClassedPool struct {
 	pools [4]sync.Pool
 }
 
+// NewSizeClassedPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSizeClassedPool() *SizeClassedPool {
 	scp := &SizeClassedPool{}
 
@@ -175,6 +279,12 @@ func NewSizeClassedPool() *SizeClassedPool {
 	return scp
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (scp *SizeClassedPool) Get(size int) *[]byte {
 	var poolIdx int
 	switch {
@@ -191,6 +301,12 @@ func (scp *SizeClassedPool) Get(size int) *[]byte {
 	return scp.pools[poolIdx].Get().(*[]byte)
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (scp *SizeClassedPool) Put(buf *[]byte) {
 	*buf = (*buf)[:0] // Reset length
 
@@ -217,6 +333,12 @@ type BoundedPool struct {
 	maxSize   int
 }
 
+// NewBoundedPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewBoundedPool(maxSize int, newFunc func() interface{}) *BoundedPool {
 	return &BoundedPool{
 		pool: sync.Pool{
@@ -227,16 +349,34 @@ func NewBoundedPool(maxSize int, newFunc func() interface{}) *BoundedPool {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (bp *BoundedPool) Get() interface{} {
 	bp.semaphore <- struct{}{} // Acquire semaphore (blocks if full)
 	return bp.pool.Get()
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (bp *BoundedPool) Put(obj interface{}) {
 	bp.pool.Put(obj)
 	<-bp.semaphore // Release semaphore
 }
 
+// InUse implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (bp *BoundedPool) InUse() int {
 	return len(bp.semaphore)
 }
@@ -251,6 +391,12 @@ type WorkerPool struct {
 	pool sync.Pool
 }
 
+// NewWorkerPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewWorkerPool() *WorkerPool {
 	return &WorkerPool{
 		pool: sync.Pool{
@@ -264,6 +410,12 @@ func NewWorkerPool() *WorkerPool {
 	}
 }
 
+// Process implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (wp *WorkerPool) Process(data string) string {
 	worker := wp.pool.Get().(*Worker)
 	defer wp.pool.Put(worker)
@@ -282,6 +434,12 @@ func (wp *WorkerPool) Process(data string) string {
 	return result
 }
 
+// Reset implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (w *Worker) Reset() {
 	if w.buf != nil {
 		w.buf.Reset()
@@ -310,6 +468,12 @@ type EnhancedStats struct {
 	Efficiency float64
 }
 
+// NewEnhancedMetricsPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewEnhancedMetricsPool(newFunc func() interface{}) *EnhancedMetricsPool {
 	emp := &EnhancedMetricsPool{}
 	emp.pool.New = func() interface{} {
@@ -319,6 +483,12 @@ func NewEnhancedMetricsPool(newFunc func() interface{}) *EnhancedMetricsPool {
 	return emp
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (emp *EnhancedMetricsPool) Get() interface{} {
 	emp.gets.Add(1)
 	obj := emp.pool.Get()
@@ -334,11 +504,23 @@ func (emp *EnhancedMetricsPool) Get() interface{} {
 	return obj
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (emp *EnhancedMetricsPool) Put(obj interface{}) {
 	emp.puts.Add(1)
 	emp.pool.Put(obj)
 }
 
+// Stats implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (emp *EnhancedMetricsPool) Stats() EnhancedStats {
 	gets := emp.gets.Load()
 	puts := emp.puts.Load()
@@ -366,6 +548,12 @@ func (emp *EnhancedMetricsPool) Stats() EnhancedStats {
 	}
 }
 
+// String implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (es EnhancedStats) String() string {
 	return fmt.Sprintf(
 		"Gets: %d, Puts: %d, News: %d, Reuses: %d, Hit Rate: %.1f%%, Miss Rate: %.1f%%, Efficiency: %.1f%%",
@@ -379,6 +567,12 @@ type CopyOnWritePool[T any] struct {
 	copy func(*T) *T
 }
 
+// NewCopyOnWritePool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewCopyOnWritePool[T any](newFunc func() *T, copyFunc func(*T) *T) *CopyOnWritePool[T] {
 	return &CopyOnWritePool[T]{
 		pool: sync.Pool{
@@ -390,6 +584,12 @@ func NewCopyOnWritePool[T any](newFunc func() *T, copyFunc func(*T) *T) *CopyOnW
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cp *CopyOnWritePool[T]) Get() *T {
 	obj := cp.pool.Get().(*T)
 	// Return a copy so original stays in pool
@@ -399,6 +599,12 @@ func (cp *CopyOnWritePool[T]) Get() *T {
 	return obj
 }
 
+// Put implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cp *CopyOnWritePool[T]) Put(obj *T) {
 	cp.pool.Put(obj)
 }

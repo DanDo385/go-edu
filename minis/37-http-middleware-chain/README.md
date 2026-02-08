@@ -114,23 +114,23 @@ Build composable HTTP middleware.
 cd minis/37-http-middleware-chain
 
 # Start server with middleware
-go run ./cmd/app/main.go --port 8080
+go run ./minis/37-http-middleware-chain/cmd/app/main.go --port 8080
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/37-http-middleware-chain/cmd/app/main.go
 ```
 
 ## Quick Copy & Paste
 
 ```bash
 # Start server
-go run ./cmd/app/main.go --port 8080
+go run ./minis/37-http-middleware-chain/cmd/app/main.go --port 8080
 
 # Test with curl (see middleware effects)
 curl -v http://localhost:8080/
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/37-http-middleware-chain/cmd/app/main.go
 ```
 
 ## Key Concepts

@@ -92,7 +92,7 @@ This module teaches you how to create hashable block structures.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/42-simple-block-struct-hashing/cmd/app/main.go
 ```
 
 ## Related Lessons

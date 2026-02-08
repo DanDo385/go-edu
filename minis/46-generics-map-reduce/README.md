@@ -116,20 +116,20 @@ Implement generic functional programming utilities.
 cd minis/46-generics-map-reduce
 
 # Run demonstration
-go run ./cmd/app/main.go
+go run ./minis/46-generics-map-reduce/cmd/app/main.go
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/46-generics-map-reduce/cmd/app/main.go
 ```
 
 ## Quick Copy & Paste
 
 ```bash
 # Run demo
-go run ./cmd/app/main.go
+go run ./minis/46-generics-map-reduce/cmd/app/main.go
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/46-generics-map-reduce/cmd/app/main.go
 ```
 
 ## Key Concepts

@@ -2,6 +2,26 @@
 
 package escapeanalysisinlining
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"bytes"
 	"strconv"
@@ -282,6 +302,12 @@ var bufferPool = sync.Pool{
 	},
 }
 
+// ProcessWithPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func ProcessWithPool(item string) []byte {
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
@@ -304,6 +330,12 @@ func EscapingAllocation() *int {
 	return &x // Escapes to heap
 }
 
+// NonEscapingAllocation implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NonEscapingAllocation() int {
 	x := 42
 	return x // Stays on stack
@@ -315,6 +347,12 @@ func InlinableFunction(a, b int) int {
 	return a + b
 }
 
+// NonInlinableFunction implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NonInlinableFunction(a, b, c, d, e, f int) int {
 	// Too complex to inline
 	result := 0
@@ -333,7 +371,19 @@ func NonInlinableFunction(a, b, c, d, e, f int) int {
 // Pattern 1: Return value, not pointer (if struct is small)
 type SmallStruct struct{ A, B int }
 
-func Good() SmallStruct { return SmallStruct{1, 2} }          // Stack
+// Good implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
+func Good() SmallStruct { return SmallStruct{1, 2} } // Stack
+// Bad implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func Bad() *SmallStruct { s := SmallStruct{1, 2}; return &s } // Heap
 
 // Pattern 2: Use local slices when size is known and small
@@ -342,6 +392,12 @@ func GoodLocal() int {
 	return s[0]
 }
 
+// BadLocal implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func BadLocal() []int {
 	s := []int{1, 2, 3, 4, 5} // Slice escapes if returned
 	return s
@@ -353,10 +409,23 @@ func GoodClosure() func() int {
 	return func() int { return x } // x must escape (captured)
 }
 
+// BetterNoClosure implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func BetterNoClosure(x int) int {
 	return x // No closure, no escape
 }
 
 // Pattern 4: Use concrete types instead of interfaces in hot paths
-func GoodConcrete(x int) int                 { return x * 2 }
+func GoodConcrete(x int) int { return x * 2 }
+
+// BadInterface implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func BadInterface(x interface{}) interface{} { return x } // x escapes

@@ -279,7 +279,7 @@ Memory-oriented breakpoint strategy:
 ## Run the Demo Program
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/12-pointers-zero-values-nil-gotchas/cmd/app/main.go
 ```
 
 The demo reinforces:

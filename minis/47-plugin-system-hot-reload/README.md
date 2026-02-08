@@ -92,7 +92,7 @@ This module teaches you how to build a plugin system with hot reloading.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/47-plugin-system-hot-reload/cmd/app/main.go
 ```
 
 ## Related Lessons

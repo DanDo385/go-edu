@@ -92,7 +92,7 @@ This module teaches you how proof of work mining works.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/43-proof-of-work-demo/cmd/app/main.go
 ```
 
 ## Related Lessons

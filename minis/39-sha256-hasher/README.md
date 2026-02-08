@@ -92,7 +92,7 @@ This module teaches you cryptographic hashing with SHA256.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/39-sha256-hasher/cmd/app/main.go
 ```
 
 ## Related Lessons

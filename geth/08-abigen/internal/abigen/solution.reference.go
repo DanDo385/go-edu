@@ -20,15 +20,24 @@ var errNilBackend = errors.New("nil contract backend")
 
 /*
 Reference Solution
+==================
 
-Structure:
-- Parse ABI once.
-- Bind contract and issue typed calls through `bind.BoundContract`.
-- Convert decoded values into a stable Result shape.
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
 
-Pointer notes:
-- `*big.Int` results are copied before return to avoid external mutation aliasing.
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
 */
+
 func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, error) {
 	if backend == nil {
 		return nil, errNilBackend
@@ -84,6 +93,12 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 	return res, nil
 }
 
+// callString implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func callString(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (string, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {
@@ -99,6 +114,12 @@ func callString(contract *bind.BoundContract, opts *bind.CallOpts, method string
 	return s, nil
 }
 
+// callUint8 implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func callUint8(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (uint8, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {
@@ -114,6 +135,12 @@ func callUint8(contract *bind.BoundContract, opts *bind.CallOpts, method string,
 	return v, nil
 }
 
+// callUint256 implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func callUint256(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (*big.Int, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {

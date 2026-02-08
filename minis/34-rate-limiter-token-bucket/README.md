@@ -92,7 +92,7 @@ This module teaches you how to implement a token bucket rate limiter.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/34-rate-limiter-token-bucket/cmd/app/main.go
 ```
 
 ## Related Lessons

@@ -2,6 +2,26 @@
 
 package mempoolinmemory
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"container/heap"
 	"errors"
@@ -120,8 +140,20 @@ type PriorityMempool struct {
 // TxHeap implements heap.Interface for priority queue.
 type TxHeap []*Transaction
 
+// Len implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (h TxHeap) Len() int { return len(h) }
 
+// Less implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (h TxHeap) Less(i, j int) bool {
 	// Higher fee = higher priority
 	if h[i].Fee != h[j].Fee {
@@ -131,14 +163,32 @@ func (h TxHeap) Less(i, j int) bool {
 	return h[i].Timestamp.Before(h[j].Timestamp)
 }
 
+// Swap implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (h TxHeap) Swap(i, j int) {
 	h[i], h[j] = h[j], h[i]
 }
 
+// Push implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (h *TxHeap) Push(x interface{}) {
 	*h = append(*h, x.(*Transaction))
 }
 
+// Pop implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (h *TxHeap) Pop() interface{} {
 	old := *h
 	n := len(old)

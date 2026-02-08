@@ -114,23 +114,23 @@ Build a real-time chat room with WebSockets.
 cd minis/32-websocket-chatroom
 
 # Start chat server
-go run ./cmd/app/main.go --port 8080
+go run ./minis/32-websocket-chatroom/cmd/app/main.go --port 8080
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/32-websocket-chatroom/cmd/app/main.go
 ```
 
 ## Quick Copy & Paste
 
 ```bash
 # Start chat server
-go run ./cmd/app/main.go --port 8080
+go run ./minis/32-websocket-chatroom/cmd/app/main.go --port 8080
 
 # Connect with wscat (install: npm i -g wscat)
 wscat -c ws://localhost:8080/ws
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/32-websocket-chatroom/cmd/app/main.go
 ```
 
 ## Key Concepts

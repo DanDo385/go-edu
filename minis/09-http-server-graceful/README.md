@@ -133,7 +133,7 @@ This lesson is interactive!
 
 1.  **Start the server from the lesson directory:**
     ```bash
-    go run ./cmd/app/main.go
+    go run ./minis/09-http-server-graceful/cmd/app/main.go
     ```
     The server will be running on `localhost:8080`.
 

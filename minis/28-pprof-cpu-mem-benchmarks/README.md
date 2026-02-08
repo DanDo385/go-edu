@@ -92,7 +92,7 @@ This module teaches you how to profile Go applications using pprof.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/28-pprof-cpu-mem-benchmarks/cmd/app/main.go
 go test -bench=. -cpuprofile=cpu.prof
 ```
 

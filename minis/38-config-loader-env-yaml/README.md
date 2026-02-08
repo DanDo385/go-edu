@@ -117,26 +117,26 @@ Load config from environment variables and YAML files.
 cd minis/38-config-loader-env-yaml
 
 # Load config from file
-go run ./cmd/app/main.go --config config/default.yaml
+go run ./minis/38-config-loader-env-yaml/cmd/app/main.go --config config/default.yaml
 
 # Override with env var
-PORT=9000 go run ./cmd/app/main.go --config config/default.yaml
+PORT=9000 go run ./minis/38-config-loader-env-yaml/cmd/app/main.go --config config/default.yaml
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/38-config-loader-env-yaml/cmd/app/main.go
 ```
 
 ## Quick Copy & Paste
 
 ```bash
 # Load from file
-go run ./cmd/app/main.go --config config/default.yaml
+go run ./minis/38-config-loader-env-yaml/cmd/app/main.go --config config/default.yaml
 
 # With environment overrides
-DATABASE_URL=postgres://localhost/db go run ./cmd/app/main.go
+DATABASE_URL=postgres://localhost/db go run ./minis/38-config-loader-env-yaml/cmd/app/main.go
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/38-config-loader-env-yaml/cmd/app/main.go
 ```
 
 ## Key Concepts

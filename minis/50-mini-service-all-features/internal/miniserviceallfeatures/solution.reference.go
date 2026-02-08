@@ -2,6 +2,26 @@
 
 package miniserviceallfeatures
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"context"
 	"errors"
@@ -26,12 +46,24 @@ type solutionCacheItem struct {
 	expiresAt time.Time
 }
 
+// NewSolutionCache implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSolutionCache() *SolutionCache {
 	return &SolutionCache{
 		items: make(map[string]solutionCacheItem),
 	}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SolutionCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -42,6 +74,12 @@ func (c *SolutionCache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SolutionCache) Get(key string) (interface{}, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -59,6 +97,12 @@ func (c *SolutionCache) Get(key string) (interface{}, bool) {
 	return item.value, true
 }
 
+// Delete implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SolutionCache) Delete(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -91,6 +135,12 @@ type SolutionCircuitBreaker struct {
 	timeout         time.Duration
 }
 
+// NewSolutionCircuitBreaker implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSolutionCircuitBreaker(threshold int, timeout time.Duration) *SolutionCircuitBreaker {
 	return &SolutionCircuitBreaker{
 		state:     StateClosed,
@@ -99,6 +149,12 @@ func NewSolutionCircuitBreaker(threshold int, timeout time.Duration) *SolutionCi
 	}
 }
 
+// Call implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cb *SolutionCircuitBreaker) Call(fn func() error) error {
 	cb.mu.Lock()
 
@@ -147,6 +203,12 @@ func (cb *SolutionCircuitBreaker) Call(fn func() error) error {
 	return nil
 }
 
+// State implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cb *SolutionCircuitBreaker) State() CircuitState {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
@@ -187,6 +249,12 @@ type SolutionWorkerPool struct {
 	wg         sync.WaitGroup
 }
 
+// NewSolutionWorkerPool implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSolutionWorkerPool(numWorkers int) *SolutionWorkerPool {
 	return &SolutionWorkerPool{
 		numWorkers: numWorkers,
@@ -194,6 +262,12 @@ func NewSolutionWorkerPool(numWorkers int) *SolutionWorkerPool {
 	}
 }
 
+// Start implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (wp *SolutionWorkerPool) Start(ctx context.Context) {
 	for i := 0; i < wp.numWorkers; i++ {
 		wp.wg.Add(1)
@@ -201,6 +275,12 @@ func (wp *SolutionWorkerPool) Start(ctx context.Context) {
 	}
 }
 
+// worker implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (wp *SolutionWorkerPool) worker(ctx context.Context) {
 	defer wp.wg.Done()
 
@@ -217,10 +297,22 @@ func (wp *SolutionWorkerPool) worker(ctx context.Context) {
 	}
 }
 
+// Submit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (wp *SolutionWorkerPool) Submit(job Job) {
 	wp.jobs <- job
 }
 
+// Shutdown implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (wp *SolutionWorkerPool) Shutdown() {
 	close(wp.jobs)
 	wp.wg.Wait()
@@ -272,6 +364,12 @@ type SolutionUserRateLimiter struct {
 	burst             int
 }
 
+// NewSolutionUserRateLimiter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSolutionUserRateLimiter(requestsPerSecond float64, burst int) *SolutionUserRateLimiter {
 	return &SolutionUserRateLimiter{
 		limiters:          make(map[string]*rate.Limiter),
@@ -280,6 +378,12 @@ func NewSolutionUserRateLimiter(requestsPerSecond float64, burst int) *SolutionU
 	}
 }
 
+// getLimiter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (url *SolutionUserRateLimiter) getLimiter(userID string) *rate.Limiter {
 	url.mu.Lock()
 	defer url.mu.Unlock()
@@ -293,6 +397,12 @@ func (url *SolutionUserRateLimiter) getLimiter(userID string) *rate.Limiter {
 	return limiter
 }
 
+// Allow implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (url *SolutionUserRateLimiter) Allow(userID string) bool {
 	limiter := url.getLimiter(userID)
 	return limiter.Allow()
@@ -306,10 +416,22 @@ type SolutionAppError struct {
 	HTTPStatus int
 }
 
+// Error implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (e SolutionAppError) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
+// SolutionNewNotFoundError implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func SolutionNewNotFoundError(message string) SolutionAppError {
 	return SolutionAppError{
 		Code:       "NOT_FOUND",
@@ -318,6 +440,12 @@ func SolutionNewNotFoundError(message string) SolutionAppError {
 	}
 }
 
+// SolutionNewBadRequestError implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func SolutionNewBadRequestError(message string) SolutionAppError {
 	return SolutionAppError{
 		Code:       "BAD_REQUEST",
@@ -326,6 +454,12 @@ func SolutionNewBadRequestError(message string) SolutionAppError {
 	}
 }
 
+// SolutionNewInternalError implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func SolutionNewInternalError(message string) SolutionAppError {
 	return SolutionAppError{
 		Code:       "INTERNAL_ERROR",
@@ -341,12 +475,24 @@ type SolutionEventBus struct {
 	subscribers map[string][]EventHandler
 }
 
+// NewSolutionEventBus implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSolutionEventBus() *SolutionEventBus {
 	return &SolutionEventBus{
 		subscribers: make(map[string][]EventHandler),
 	}
 }
 
+// Subscribe implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (eb *SolutionEventBus) Subscribe(eventType string, handler EventHandler) {
 	eb.mu.Lock()
 	defer eb.mu.Unlock()
@@ -354,6 +500,12 @@ func (eb *SolutionEventBus) Subscribe(eventType string, handler EventHandler) {
 	eb.subscribers[eventType] = append(eb.subscribers[eventType], handler)
 }
 
+// Publish implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (eb *SolutionEventBus) Publish(eventType string, event interface{}) {
 	eb.mu.RLock()
 	handlers := eb.subscribers[eventType]

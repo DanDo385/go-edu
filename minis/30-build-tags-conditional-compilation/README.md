@@ -126,7 +126,7 @@ GOOS=linux go build ./...
 
 ```bash
 # Default build
-go run ./cmd/app/main.go
+go run ./minis/30-build-tags-conditional-compilation/cmd/app/main.go
 
 # Build with custom tag
 go build -tags=debug ./cmd/app/
@@ -135,7 +135,7 @@ go build -tags=debug ./cmd/app/
 GOOS=linux GOARCH=amd64 go build ./cmd/app/
 
 # Example run
-go run ./cmd/app/main.go
+go run ./minis/30-build-tags-conditional-compilation/cmd/app/main.go
 ```
 
 ## Key Concepts

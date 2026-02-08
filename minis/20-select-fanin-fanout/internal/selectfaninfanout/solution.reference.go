@@ -3,6 +3,26 @@
 package selectfaninfanout
 
 /*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
+/*
 Project 20: Select, Fan-In, and Fan-Out - Solutions
 
 This file contains complete solutions to all exercises with detailed explanations.
@@ -467,6 +487,12 @@ type RateLimiter struct {
 	rate   int
 }
 
+// NewRateLimiter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewRateLimiter(rate int) *RateLimiter {
 	rl := &RateLimiter{
 		tokens: make(chan struct{}, rate),
@@ -484,6 +510,12 @@ func NewRateLimiter(rate int) *RateLimiter {
 	return rl
 }
 
+// refill implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) refill() {
 	// Calculate interval between token additions
 	// If rate = 10/sec, interval = 100ms
@@ -502,11 +534,23 @@ func (rl *RateLimiter) refill() {
 	}
 }
 
+// Wait implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) Wait() {
 	// Block until token available
 	<-rl.tokens
 }
 
+// TryWait implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) TryWait() bool {
 	// Try to get token without blocking
 	select {

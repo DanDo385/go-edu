@@ -49,7 +49,7 @@ You can now reason from memory state, not guesses, when writing append-heavy cod
 ## Verify
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/11-slices-internals-capacity-growth/cmd/app/main.go
 ```
 
 Watch where capacity jumps; those are allocation/copy points.

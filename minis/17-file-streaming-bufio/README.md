@@ -92,7 +92,7 @@ This module teaches you efficient file streaming using bufio for line-by-line pr
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/17-file-streaming-bufio/cmd/app/main.go
 ```
 
 ## Related Lessons

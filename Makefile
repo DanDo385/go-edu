@@ -11,7 +11,7 @@ NC := \033[0m # No Color
 # Detect current directory relative to repo root
 ROOT_DIR := $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
 CURRENT_DIR := $(shell pwd)
-REL_DIR := $(shell realpath --relative-to=$(ROOT_DIR) $(CURRENT_DIR) 2>/dev/null || echo ".")
+REL_DIR := $(shell echo $(CURRENT_DIR) | sed "s|^$(ROOT_DIR)/||" | sed 's|^/$$|.|' )
 
 # Detect if we're in a project directory
 IS_MINIS_PROJECT := $(shell echo "$(REL_DIR)" | grep -q "^minis/[^/]*$$" && echo "yes" || echo "no")

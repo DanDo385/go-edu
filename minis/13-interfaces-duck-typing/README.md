@@ -142,7 +142,7 @@ The `main.go` file defines several types (`Bird`, `Plane`, `Car`) and interfaces
 1.  **Read the code:** Open `cmd/app/main.go` and read through the source code and its comments.
 2.  **Run the program:**
     ```bash
-    go run ./cmd/app/main.go
+    go run ./minis/13-interfaces-duck-typing/cmd/app/main.go
     ```
 3.  **Analyze the output:** Trace the program's output back to the code that produced it. Make sure you understand why `MakeItFly(b)` and `MakeItFly(p)` both work, and how the type switch is able to differentiate between the different types in the `things` slice.
 

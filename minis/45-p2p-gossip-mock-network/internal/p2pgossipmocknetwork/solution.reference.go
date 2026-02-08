@@ -2,6 +2,26 @@
 
 package p2pgossipmocknetwork
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"fmt"
 	"math/rand"
@@ -56,6 +76,12 @@ type gossipNode struct {
 	shutdown chan struct{}
 }
 
+// NewGossipNode implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewGossipNode(id string, network Network, fanout int) GossipNode {
 	return &gossipNode{
 		id:       id,
@@ -68,10 +94,22 @@ func NewGossipNode(id string, network Network, fanout int) GossipNode {
 	}
 }
 
+// ID implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) ID() string {
 	return n.id
 }
 
+// AddPeer implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) AddPeer(peerID string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
@@ -90,6 +128,12 @@ func (n *gossipNode) AddPeer(peerID string) {
 	n.peers = append(n.peers, peerID)
 }
 
+// Broadcast implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) Broadcast(msgType string, payload map[string]interface{}) error {
 	msg := Message{
 		ID:        fmt.Sprintf("%s-%d", n.id, time.Now().UnixNano()),
@@ -105,6 +149,12 @@ func (n *gossipNode) Broadcast(msgType string, payload map[string]interface{}) e
 	return nil
 }
 
+// ReceiveMessage implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) ReceiveMessage(msg Message) bool {
 	n.mu.Lock()
 	defer n.mu.Unlock()
@@ -126,6 +176,12 @@ func (n *gossipNode) ReceiveMessage(msg Message) bool {
 	return true
 }
 
+// forwardToPeers implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) forwardToPeers(msg Message) {
 	n.mu.RLock()
 	peers := n.selectRandomPeers(n.fanout, msg.From)
@@ -136,6 +192,12 @@ func (n *gossipNode) forwardToPeers(msg Message) {
 	}
 }
 
+// selectRandomPeers implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) selectRandomPeers(count int, excludeID string) []string {
 	// Filter out the excluded ID
 	eligible := make([]string, 0)
@@ -161,6 +223,12 @@ func (n *gossipNode) selectRandomPeers(count int, excludeID string) []string {
 	return shuffled[:count]
 }
 
+// GetState implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) GetState() map[string]interface{} {
 	n.mu.RLock()
 	defer n.mu.RUnlock()
@@ -172,6 +240,12 @@ func (n *gossipNode) GetState() map[string]interface{} {
 	return stateCopy
 }
 
+// Shutdown implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (n *gossipNode) Shutdown() {
 	close(n.shutdown)
 }
@@ -186,6 +260,12 @@ type mockNetwork struct {
 	mu           sync.RWMutex
 }
 
+// NewMockNetwork implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewMockNetwork(latency time.Duration, dropRate float64) Network {
 	return &mockNetwork{
 		nodes:    make(map[string]GossipNode),
@@ -194,12 +274,24 @@ func NewMockNetwork(latency time.Duration, dropRate float64) Network {
 	}
 }
 
+// RegisterNode implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) RegisterNode(node GossipNode) {
 	mn.mu.Lock()
 	defer mn.mu.Unlock()
 	mn.nodes[node.ID()] = node
 }
 
+// Send implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) Send(from, to string, msg Message) {
 	mn.mu.Lock()
 	mn.messageCount++
@@ -226,24 +318,48 @@ func (mn *mockNetwork) Send(from, to string, msg Message) {
 	})
 }
 
+// SetLatency implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) SetLatency(latency time.Duration) {
 	mn.mu.Lock()
 	defer mn.mu.Unlock()
 	mn.latency = latency
 }
 
+// SetDropRate implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) SetDropRate(rate float64) {
 	mn.mu.Lock()
 	defer mn.mu.Unlock()
 	mn.dropRate = rate
 }
 
+// GetMessageCount implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) GetMessageCount() int {
 	mn.mu.RLock()
 	defer mn.mu.RUnlock()
 	return mn.messageCount
 }
 
+// GetDroppedCount implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (mn *mockNetwork) GetDroppedCount() int {
 	mn.mu.RLock()
 	defer mn.mu.RUnlock()
@@ -255,16 +371,34 @@ type PushGossipProtocol struct {
 	fanout int
 }
 
+// NewPushGossipProtocol implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewPushGossipProtocol(fanout int) GossipProtocol {
 	return &PushGossipProtocol{
 		fanout: fanout,
 	}
 }
 
+// Fanout implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (p *PushGossipProtocol) Fanout() int {
 	return p.fanout
 }
 
+// SelectPeers implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (p *PushGossipProtocol) SelectPeers(allPeers []string, excludeID string) []string {
 	// Filter out excluded ID
 	eligible := make([]string, 0)
@@ -290,6 +424,12 @@ func (p *PushGossipProtocol) SelectPeers(allPeers []string, excludeID string) []
 	return shuffled[:p.fanout]
 }
 
+// ShouldForward implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (p *PushGossipProtocol) ShouldForward(msg Message) bool {
 	// For basic push protocol, always forward
 	return true
@@ -301,12 +441,24 @@ type ConvergenceDetector struct {
 	mu    sync.RWMutex
 }
 
+// NewConvergenceDetector implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewConvergenceDetector(nodes []GossipNode) *ConvergenceDetector {
 	return &ConvergenceDetector{
 		nodes: nodes,
 	}
 }
 
+// IsConverged implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cd *ConvergenceDetector) IsConverged(key string) (bool, int) {
 	cd.mu.RLock()
 	defer cd.mu.RUnlock()
@@ -342,6 +494,12 @@ func (cd *ConvergenceDetector) IsConverged(key string) (bool, int) {
 	return convergedCount == len(cd.nodes), convergedCount
 }
 
+// WaitForConvergence implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cd *ConvergenceDetector) WaitForConvergence(key string, timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 	ticker := time.NewTicker(50 * time.Millisecond)
@@ -365,6 +523,12 @@ type Simulator struct {
 	mu       sync.RWMutex
 }
 
+// NewSimulator implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSimulator(nodeCount, fanout int, latency time.Duration, dropRate float64) *Simulator {
 	// Create network
 	network := NewMockNetwork(latency, dropRate)
@@ -413,6 +577,12 @@ func NewSimulator(nodeCount, fanout int, latency time.Duration, dropRate float64
 	}
 }
 
+// BroadcastFrom implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *Simulator) BroadcastFrom(nodeID string, msgType string, payload map[string]interface{}) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -426,10 +596,22 @@ func (s *Simulator) BroadcastFrom(nodeID string, msgType string, payload map[str
 	return fmt.Errorf("node %s not found", nodeID)
 }
 
+// WaitForConvergence implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *Simulator) WaitForConvergence(key string, timeout time.Duration) bool {
 	return s.detector.WaitForConvergence(key, timeout)
 }
 
+// GetStats implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *Simulator) GetStats() SimulationStats {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -448,6 +630,12 @@ func (s *Simulator) GetStats() SimulationStats {
 	}
 }
 
+// Shutdown implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *Simulator) Shutdown() {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -464,6 +652,12 @@ type SimulationStats struct {
 	DroppedCount int
 }
 
+// max implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func max(a, b int) int {
 	if a > b {
 		return a

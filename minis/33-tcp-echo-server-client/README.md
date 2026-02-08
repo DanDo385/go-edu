@@ -92,7 +92,7 @@ This module teaches you low-level TCP networking with a simple echo server.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/33-tcp-echo-server-client/cmd/app/main.go
 ```
 
 ## Related Lessons

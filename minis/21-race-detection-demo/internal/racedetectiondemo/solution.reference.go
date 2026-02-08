@@ -2,6 +2,26 @@
 
 package racedetectiondemo
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 // This file contains solutions to all the race detection exercises.
 // Students should implement these in exercise.go before looking at this file.
 
@@ -20,14 +40,32 @@ type SafeCounter struct {
 	value atomic.Int64
 }
 
+// NewSafeCounter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSafeCounter() *SafeCounter {
 	return &SafeCounter{}
 }
 
+// Increment implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SafeCounter) Increment() {
 	c.value.Add(1)
 }
 
+// Value implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SafeCounter) Value() int64 {
 	return c.value.Load()
 }
@@ -38,16 +76,34 @@ type SafeCounterMutex struct {
 	mu    sync.Mutex
 }
 
+// NewSafeCounterMutex implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSafeCounterMutex() *SafeCounterMutex {
 	return &SafeCounterMutex{}
 }
 
+// Increment implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SafeCounterMutex) Increment() {
 	c.mu.Lock()
 	c.value++
 	c.mu.Unlock()
 }
 
+// Value implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *SafeCounterMutex) Value() int64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -64,18 +120,36 @@ type SafeMap struct {
 	mu   sync.RWMutex
 }
 
+// NewSafeMap implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSafeMap() *SafeMap {
 	return &SafeMap{
 		data: make(map[string]int),
 	}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMap) Set(key string, value int) {
 	m.mu.Lock()
 	m.data[key] = value
 	m.mu.Unlock()
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMap) Get(key string) (int, bool) {
 	m.mu.RLock()
 	value, ok := m.data[key]
@@ -83,6 +157,12 @@ func (m *SafeMap) Get(key string) (int, bool) {
 	return value, ok
 }
 
+// Len implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMap) Len() int {
 	m.mu.RLock()
 	length := len(m.data)
@@ -95,14 +175,32 @@ type SafeMapSyncMap struct {
 	data sync.Map
 }
 
+// NewSafeMapSyncMap implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSafeMapSyncMap() *SafeMapSyncMap {
 	return &SafeMapSyncMap{}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMapSyncMap) Set(key string, value int) {
 	m.data.Store(key, value)
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMapSyncMap) Get(key string) (int, bool) {
 	val, ok := m.data.Load(key)
 	if !ok {
@@ -111,6 +209,12 @@ func (m *SafeMapSyncMap) Get(key string) (int, bool) {
 	return val.(int), true
 }
 
+// Len implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *SafeMapSyncMap) Len() int {
 	count := 0
 	m.data.Range(func(key, value interface{}) bool {
@@ -130,10 +234,22 @@ type LazyInit struct {
 	value interface{}
 }
 
+// NewLazyInit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewLazyInit() *LazyInit {
 	return &LazyInit{}
 }
 
+// GetOrInit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (l *LazyInit) GetOrInit(init func() interface{}) interface{} {
 	l.once.Do(func() {
 		l.value = init()
@@ -151,18 +267,36 @@ type SafeSlice struct {
 	mu   sync.RWMutex
 }
 
+// NewSafeSlice implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewSafeSlice() *SafeSlice {
 	return &SafeSlice{
 		data: make([]int, 0),
 	}
 }
 
+// Append implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *SafeSlice) Append(value int) {
 	s.mu.Lock()
 	s.data = append(s.data, value)
 	s.mu.Unlock()
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *SafeSlice) Get(index int) (int, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -173,6 +307,12 @@ func (s *SafeSlice) Get(index int) (int, bool) {
 	return s.data[index], true
 }
 
+// Len implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (s *SafeSlice) Len() int {
 	s.mu.RLock()
 	length := len(s.data)
@@ -233,6 +373,12 @@ type URLCache struct {
 	fetcher func(url string) (string, error)
 }
 
+// NewURLCache implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewURLCache(fetcher func(url string) (string, error)) *URLCache {
 	return &URLCache{
 		cache:   make(map[string]string),
@@ -279,6 +425,12 @@ type URLCacheAdvanced struct {
 	inflmu   sync.Mutex
 }
 
+// NewURLCacheAdvanced implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewURLCacheAdvanced(fetcher func(url string) (string, error)) *URLCacheAdvanced {
 	return &URLCacheAdvanced{
 		cache:    make(map[string]string),
@@ -287,6 +439,12 @@ func NewURLCacheAdvanced(fetcher func(url string) (string, error)) *URLCacheAdva
 	}
 }
 
+// Fetch implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *URLCacheAdvanced) Fetch(url string) (string, error) {
 	// Check cache
 	c.mu.RLock()
@@ -345,18 +503,42 @@ type Metrics struct {
 	errors   atomic.Int64
 }
 
+// NewMetrics implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewMetrics() *Metrics {
 	return &Metrics{}
 }
 
+// IncrementRequests implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) IncrementRequests() {
 	m.requests.Add(1)
 }
 
+// IncrementErrors implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) IncrementErrors() {
 	m.errors.Add(1)
 }
 
+// GetStats implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *Metrics) GetStats() (requests int64, errors int64) {
 	return m.requests.Load(), m.errors.Load()
 }
@@ -371,18 +553,36 @@ type BankAccount struct {
 	mu      sync.Mutex
 }
 
+// NewBankAccount implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewBankAccount(initialBalance int64) *BankAccount {
 	return &BankAccount{
 		balance: initialBalance,
 	}
 }
 
+// Deposit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (b *BankAccount) Deposit(amount int64) {
 	b.mu.Lock()
 	b.balance += amount
 	b.mu.Unlock()
 }
 
+// Withdraw implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (b *BankAccount) Withdraw(amount int64) bool {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -394,6 +594,12 @@ func (b *BankAccount) Withdraw(amount int64) bool {
 	return false
 }
 
+// Balance implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (b *BankAccount) Balance() int64 {
 	b.mu.Lock()
 	balance := b.balance
@@ -657,34 +863,76 @@ type ServerMetrics struct {
 	responseTimesMu sync.Mutex
 }
 
+// NewServerMetrics implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewServerMetrics() *ServerMetrics {
 	return &ServerMetrics{
 		responseTimes: make([]int64, 0),
 	}
 }
 
+// RecordRequest implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) RecordRequest() {
 	m.requests.Add(1)
 }
 
+// RecordError implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) RecordError() {
 	m.errors.Add(1)
 }
 
+// RecordResponseTime implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) RecordResponseTime(ms int64) {
 	m.responseTimesMu.Lock()
 	m.responseTimes = append(m.responseTimes, ms)
 	m.responseTimesMu.Unlock()
 }
 
+// ConnOpened implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) ConnOpened() {
 	m.activeConns.Add(1)
 }
 
+// ConnClosed implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) ConnClosed() {
 	m.activeConns.Add(-1)
 }
 
+// Snapshot implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (m *ServerMetrics) Snapshot() string {
 	m.responseTimesMu.Lock()
 	avgResponseTime := int64(0)

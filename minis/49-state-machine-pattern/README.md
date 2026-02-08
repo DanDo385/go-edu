@@ -92,7 +92,7 @@ This module teaches you how to implement state machines in Go.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/49-state-machine-pattern/cmd/app/main.go
 ```
 
 ## Related Lessons

@@ -3,6 +3,26 @@
 package contextcancellationtimeouts
 
 /*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
+/*
 Project 16: Context Cancellation and Timeouts - Solutions
 
 This file contains complete solutions with extensive debugging support.
@@ -209,6 +229,12 @@ type fetchResult struct {
 	err   error
 }
 
+// FetchAll implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func FetchAll(ctx context.Context, urls []string, timeout time.Duration) ([]string, error) {
 	// BREAKPOINT: Set breakpoint to observe context creation with timeout
 	// DEBUG: Watch timeout duration and resulting deadline
@@ -521,12 +547,24 @@ type Cache struct {
 	entries map[string]cacheEntry
 }
 
+// NewCache implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewCache() *Cache {
 	return &Cache{
 		entries: make(map[string]cacheEntry),
 	}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	// BREAKPOINT: Set breakpoint to observe write lock acquisition
 	// DEBUG: Lock() blocks if another goroutine holds read or write lock
@@ -543,6 +581,12 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache) Get(key string) (interface{}, bool) {
 	// BREAKPOINT: Set breakpoint to observe read lock acquisition
 	// DEBUG: RLock() allows multiple concurrent readers
@@ -569,6 +613,12 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	return entry.value, true
 }
 
+// Cleanup implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache) Cleanup(ctx context.Context) {
 	// BREAKPOINT: Set breakpoint to observe ticker creation
 	// DEBUG: Ticker fires every 100ms for periodic cleanup
@@ -592,6 +642,12 @@ func (c *Cache) Cleanup(ctx context.Context) {
 	}
 }
 
+// removeExpired implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *Cache) removeExpired() {
 	// BREAKPOINT: Set breakpoint to watch cleanup acquire write lock
 	// DEBUG: Lock() ensures exclusive access during cleanup
@@ -661,6 +717,12 @@ type RateLimiter struct {
 	tokens chan struct{}
 }
 
+// NewRateLimiter implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func NewRateLimiter(rate int) *RateLimiter {
 	// BREAKPOINT: Set breakpoint to observe token bucket creation
 	// DEBUG: Watch rate value and channel capacity (same value)
@@ -703,6 +765,12 @@ func NewRateLimiter(rate int) *RateLimiter {
 	return rl
 }
 
+// Wait implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) Wait(ctx context.Context) error {
 	// BREAKPOINT: Set breakpoint on select to watch token consumption
 	// DEBUG: Select waits for either token available or context cancelled

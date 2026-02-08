@@ -42,12 +42,24 @@ type txOutput struct {
 
 /*
 Reference Solution
+==================
 
-Structure:
-- Dispatch by command (`status`, `block`, `tx`).
-- Reuse focused handler functions for each operation.
-- Return command-specific payloads through `Result.Output`.
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
 */
+
 func Run(ctx context.Context, client ToolboxClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -68,6 +80,12 @@ func Run(ctx context.Context, client ToolboxClient, cfg Config) (*Result, error)
 	}
 }
 
+// handleStatus implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func handleStatus(ctx context.Context, client ToolboxClient) (*Result, error) {
 	chainID, err := client.ChainID(ctx)
 	if err != nil {
@@ -115,6 +133,12 @@ func handleStatus(ctx context.Context, client ToolboxClient) (*Result, error) {
 	return &Result{Command: "status", Output: out, Status: "ok"}, nil
 }
 
+// handleBlock implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func handleBlock(ctx context.Context, client ToolboxClient, args []string) (*Result, error) {
 	if len(args) < 1 {
 		return nil, errors.New("block command requires block number argument")
@@ -145,6 +169,12 @@ func handleBlock(ctx context.Context, client ToolboxClient, args []string) (*Res
 	return &Result{Command: "block", Output: out, Status: "ok"}, nil
 }
 
+// handleTx implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func handleTx(ctx context.Context, client ToolboxClient, args []string) (*Result, error) {
 	if len(args) < 1 {
 		return nil, errors.New("tx command requires transaction hash argument")

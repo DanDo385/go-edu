@@ -92,7 +92,7 @@ This module teaches you how to build a worker pool with backpressure handling.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/22-worker-pool-with-backpressure/cmd/app/main.go
 ```
 
 ## Related Lessons

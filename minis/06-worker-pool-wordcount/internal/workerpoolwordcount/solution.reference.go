@@ -17,11 +17,20 @@ import (
 Reference Solution
 ==================
 
-This file is the canonical reference for this exercise. It keeps error paths
-explicit when an operation can fail, so callers decide how to handle failure.
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
 
 Read this alongside exercise.go and the tests to understand the intended data
-flow, boundary checks, and invariants.
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
 */
 
 // WordCount is the main function you will implement.
@@ -139,6 +148,12 @@ func tokenizeAndCount(text string) map[string]int {
 	return counts
 }
 
+// normalizeToken implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func normalizeToken(word string) string {
 	var b strings.Builder
 	for _, r := range word {

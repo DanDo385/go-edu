@@ -92,7 +92,7 @@ This module teaches you how to use sync.Once for thread-safe initialization.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/26-sync-once-singleton/cmd/app/main.go
 ```
 
 ## Related Lessons

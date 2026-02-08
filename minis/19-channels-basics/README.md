@@ -50,7 +50,7 @@ You can now choose value vs pointer payloads intentionally based on ownership ne
 
 ```bash
 go test -v ./...
-go run ./cmd/app/main.go
+go run ./minis/19-channels-basics/cmd/app/main.go
 ```
 
 ## Related Lessons

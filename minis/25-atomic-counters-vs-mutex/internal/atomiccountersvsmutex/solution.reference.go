@@ -2,6 +2,26 @@
 
 package atomiccountersvsmutex
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 // Package exercise contains hands-on exercises for atomic operations.
 
 import (
@@ -18,22 +38,52 @@ func NewAtomicCounter() *AtomicCounter {
 	return &AtomicCounter{value: 0}
 }
 
+// Increment implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *AtomicCounter) Increment() {
 	atomic.AddInt64(&c.value, 1)
 }
 
+// Decrement implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *AtomicCounter) Decrement() {
 	atomic.AddInt64(&c.value, -1)
 }
 
+// Add implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *AtomicCounter) Add(delta int64) {
 	atomic.AddInt64(&c.value, delta)
 }
 
+// Value implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *AtomicCounter) Value() int64 {
 	return atomic.LoadInt64(&c.value)
 }
 
+// Reset implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (c *AtomicCounter) Reset() int64 {
 	return atomic.SwapInt64(&c.value, 0)
 }
@@ -46,18 +96,42 @@ func NewAtomicFlag() *AtomicFlag {
 	return &AtomicFlag{value: 0}
 }
 
+// Set implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (f *AtomicFlag) Set() {
 	atomic.StoreInt64(&f.value, 1)
 }
 
+// Clear implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (f *AtomicFlag) Clear() {
 	atomic.StoreInt64(&f.value, 0)
 }
 
+// IsSet implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (f *AtomicFlag) IsSet() bool {
 	return atomic.LoadInt64(&f.value) == 1
 }
 
+// TestAndSet implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (f *AtomicFlag) TestAndSet() bool {
 	old := atomic.SwapInt64(&f.value, 1)
 	return old == 1
@@ -76,6 +150,12 @@ func NewRateLimiter(capacity, tokensPerSecond int64) *RateLimiter {
 	}
 }
 
+// Allow implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rl *RateLimiter) Allow() bool {
 	now := time.Now().Unix()
 	last := atomic.LoadInt64(&rl.lastRefill)
@@ -121,6 +201,12 @@ func NewAtomicMax() *AtomicMax {
 	return &AtomicMax{max: math.MinInt64}
 }
 
+// Update implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (am *AtomicMax) Update(value int64) {
 	for {
 		current := atomic.LoadInt64(&am.max)
@@ -134,6 +220,12 @@ func (am *AtomicMax) Update(value int64) {
 	}
 }
 
+// Max implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (am *AtomicMax) Max() int64 {
 	return atomic.LoadInt64(&am.max)
 }
@@ -146,6 +238,12 @@ func NewSpinLock() *SpinLock {
 	return &SpinLock{state: 0}
 }
 
+// Lock implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sl *SpinLock) Lock() {
 	for atomic.SwapInt64(&sl.state, 1) != 0 {
 		// Spin (busy-wait)
@@ -153,6 +251,12 @@ func (sl *SpinLock) Lock() {
 	}
 }
 
+// Unlock implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (sl *SpinLock) Unlock() {
 	atomic.StoreInt64(&sl.state, 0)
 }
@@ -165,10 +269,22 @@ func NewAtomicState() *AtomicState {
 	return &AtomicState{current: StateIdle}
 }
 
+// CurrentState implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (as *AtomicState) CurrentState() int64 {
 	return atomic.LoadInt64(&as.current)
 }
 
+// Transition implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (as *AtomicState) Transition(expectedCurrent, newState int64) bool {
 	return atomic.CompareAndSwapInt64(&as.current, expectedCurrent, newState)
 }
@@ -181,15 +297,33 @@ func NewReferenceCounter() *ReferenceCounter {
 	return &ReferenceCounter{count: 0}
 }
 
+// Acquire implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rc *ReferenceCounter) Acquire() {
 	atomic.AddInt64(&rc.count, 1)
 }
 
+// Release implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rc *ReferenceCounter) Release() bool {
 	newCount := atomic.AddInt64(&rc.count, -1)
 	return newCount == 0
 }
 
+// Count implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (rc *ReferenceCounter) Count() int64 {
 	return atomic.LoadInt64(&rc.count)
 }
@@ -208,10 +342,22 @@ func NewConfigManager() *ConfigManager {
 	return cm
 }
 
+// Update implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cm *ConfigManager) Update(newConfig *Config) {
 	cm.config.Store(newConfig)
 }
 
+// Get implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cm *ConfigManager) Get() *Config {
 	return cm.config.Load().(*Config)
 }
@@ -227,6 +373,12 @@ func NewLoadBalancer(numWorkers int) *LoadBalancer {
 	}
 }
 
+// NextWorker implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (lb *LoadBalancer) NextWorker() int64 {
 	val := atomic.AddInt64(&lb.counter, 1)
 	return (val - 1) % lb.workers
@@ -240,6 +392,12 @@ func NewAtomicBitmap() *AtomicBitmap {
 	return &AtomicBitmap{}
 }
 
+// SetBit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (ab *AtomicBitmap) SetBit(bitIndex int) {
 	if bitIndex < 0 || bitIndex >= 256 {
 		return
@@ -257,6 +415,12 @@ func (ab *AtomicBitmap) SetBit(bitIndex int) {
 	}
 }
 
+// ClearBit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (ab *AtomicBitmap) ClearBit(bitIndex int) {
 	if bitIndex < 0 || bitIndex >= 256 {
 		return
@@ -274,6 +438,12 @@ func (ab *AtomicBitmap) ClearBit(bitIndex int) {
 	}
 }
 
+// TestBit implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (ab *AtomicBitmap) TestBit(bitIndex int) bool {
 	if bitIndex < 0 || bitIndex >= 256 {
 		return false
@@ -294,6 +464,12 @@ func IncrementCounterNonAtomic(counter *int64) {
 	*counter++
 }
 
+// IncrementCounterAtomic implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func IncrementCounterAtomic(counter *int64) {
 	atomic.AddInt64(counter, 1)
 }
@@ -312,6 +488,12 @@ func NewCircularBuffer(capacity int) *CircularBuffer {
 	}
 }
 
+// Push implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cb *CircularBuffer) Push(value int64) bool {
 	for {
 		size := atomic.LoadInt64(&cb.size)
@@ -334,6 +516,12 @@ func (cb *CircularBuffer) Push(value int64) bool {
 	}
 }
 
+// Pop implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func (cb *CircularBuffer) Pop() (int64, bool) {
 	for {
 		size := atomic.LoadInt64(&cb.size)

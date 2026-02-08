@@ -2,6 +2,26 @@
 
 package pprofcpumembenchmarks
 
+/*
+Reference Solution
+==================
+
+This file is the canonical reference for this exercise. It keeps failure paths
+explicit when an operation can fail, so callers can decide how to handle
+errors at API boundaries.
+
+Read this alongside exercise.go and the tests to understand the intended data
+flow, ownership boundaries, and invariants that keep behavior deterministic.
+
+Teaching notes:
+- Memory/ownership: make copies when returning mutable data that should not
+  alias internal state; share references only when aliasing is intentional.
+- Invariants: establish assumptions close to construction, and rely on them in
+  smaller helper functions to keep logic easy to audit.
+- Error surfaces: prefer explicit returns over hidden panics so learners can
+  reason about control flow in production-style code.
+*/
+
 import (
 	"encoding/json"
 	"fmt"
@@ -210,6 +230,12 @@ func (idx *DocumentIndex) Search(query string) []Document {
 	return results
 }
 
+// extractWords implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func extractWords(text string) []string {
 	text = strings.ToLower(text)
 	words := strings.Fields(text) // More efficient than Split
@@ -666,6 +692,12 @@ func FibonacciMemoized(n int) int {
 	return fibMemo(n, memo)
 }
 
+// fibMemo implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func fibMemo(n int, memo map[int]int) int {
 	if n <= 1 {
 		return n
@@ -691,6 +723,12 @@ func FibonacciMatrix(n int) int {
 	return result[0][0]
 }
 
+// matrixPower implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func matrixPower(m [][]int, n int) [][]int {
 	if n == 1 {
 		return m
@@ -704,6 +742,12 @@ func matrixPower(m [][]int, n int) [][]int {
 	return matrixMultiply(m, matrixPower(m, n-1))
 }
 
+// matrixMultiply implements the reference behavior for this exercise.
+//
+// Algorithm steps:
+// 1. Validate prerequisites and invariants before mutating state.
+// 2. Execute the core operation while keeping ownership/aliasing explicit.
+// 3. Return explicit values/errors so callers control failure behavior.
 func matrixMultiply(a, b [][]int) [][]int {
 	return [][]int{
 		{a[0][0]*b[0][0] + a[0][1]*b[1][0], a[0][0]*b[0][1] + a[0][1]*b[1][1]},

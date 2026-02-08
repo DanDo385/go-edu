@@ -92,7 +92,7 @@ This module teaches you digital signatures using Ed25519.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/41-signed-transactions-ed25519/cmd/app/main.go
 ```
 
 ## Related Lessons

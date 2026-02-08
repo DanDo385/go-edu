@@ -92,7 +92,7 @@ This module teaches you how to build a caching reverse proxy.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/36-caching-reverse-proxy/cmd/app/main.go
 ```
 
 ## Related Lessons

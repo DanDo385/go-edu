@@ -92,7 +92,7 @@ This module teaches you how to build an in-memory transaction mempool.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/44-mempool-in-memory/cmd/app/main.go
 ```
 
 ## Related Lessons

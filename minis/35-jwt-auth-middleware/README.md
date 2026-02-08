@@ -92,7 +92,7 @@ This module teaches you how to build JWT authentication middleware.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/35-jwt-auth-middleware/cmd/app/main.go
 ```
 
 ## Related Lessons

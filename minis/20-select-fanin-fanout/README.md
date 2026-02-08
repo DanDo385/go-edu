@@ -92,7 +92,7 @@ This module teaches you advanced channel patterns using select for multiplexing.
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/20-select-fanin-fanout/cmd/app/main.go
 ```
 
 ## Related Lessons

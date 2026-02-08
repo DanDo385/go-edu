@@ -92,7 +92,7 @@ This module demonstrates Go's ability to spawn millions of goroutines, showing t
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/18-goroutines-1M-demo/cmd/app/main.go
 ```
 
 ## Related Lessons

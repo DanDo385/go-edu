@@ -225,7 +225,7 @@ This project solidifies your ability to design your own types, a skill you start
 ## How to Run
 
 ```bash
-go run ./cmd/app/main.go
+go run ./minis/14-methods-value-vs-pointer-receivers/cmd/app/main.go
 ```
 The program will run two tests: one using a value receiver `Increment` and one using a pointer receiver `IncrementPtr`. Observe how only the pointer receiver version actually changes the original counter's value.
 

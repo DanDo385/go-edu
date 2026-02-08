@@ -50,7 +50,7 @@ Alloc-heavy paths can reuse buffers/objects with explicit ownership boundaries.
 
 ```bash
 go test -v ./...
-go run ./cmd/app/main.go
+go run ./minis/27-sync-pool-allocator/cmd/app/main.go
 ```
 
 ## Related Lessons
