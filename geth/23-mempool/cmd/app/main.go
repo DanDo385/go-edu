@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/23-mempool/internal/mempool"
+	"github.com/example/go-10x-minis/geth/23-mempool/internal/mempool"
 )
 
 /*

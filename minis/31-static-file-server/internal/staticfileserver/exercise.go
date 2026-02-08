@@ -15,17 +15,8 @@ Time/Space Complexity:
 */
 
 import (
-	"crypto/md5"
-	"fmt"
-	"html"
-	"log"
-	"mime"
 	"net/http"
-	"net/url"
 	"os"
-	"path/filepath"
-	"sort"
-	"strings"
 	"time"
 )
 
@@ -52,14 +43,14 @@ func NewFileServer(config FileServerConfig) (*FileServer, error) {
 func (fs *FileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // securePath - TODO: implement this function
 func securePath(root, requestPath string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // generateETag - TODO: implement this function
@@ -73,7 +64,7 @@ func generateETag(stat os.FileInfo) string {
 func generateETagWithHash(path string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // checkETag - TODO: implement this function
@@ -107,14 +98,14 @@ func detectContentType(path string) string {
 func (fs *FileServer) serveFile(w http.ResponseWriter, r *http.Request, path string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return
 }
 
 // serveDirectory - TODO: implement this function
 func (fs *FileServer) serveDirectory(w http.ResponseWriter, r *http.Request, path string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return
 }
 
 // formatSize - TODO: implement this function

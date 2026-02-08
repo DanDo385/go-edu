@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/ethclient/gethclient"
 
-	"geth/12-proofs/internal/proofs"
+	"github.com/example/go-10x-minis/geth/12-proofs/internal/proofs"
 )
 
 /*
@@ -43,8 +44,12 @@ func main() {
 	}
 	defer client.Close()
 
+	// gethclient wraps the underlying RPC connection and provides GetProof,
+	// which satisfies the proofs.ProofClient interface.
+	gc := gethclient.New(client.Client())
+
 	// BREAKPOINT: Step into Run()
-	result, err := proofs.Run(ctx, client, proofs.Config{})
+	result, err := proofs.Run(ctx, gc, proofs.Config{})
 	if err != nil {
 		fmt.Printf("Failed: %v\n", err)
 		os.Exit(1)

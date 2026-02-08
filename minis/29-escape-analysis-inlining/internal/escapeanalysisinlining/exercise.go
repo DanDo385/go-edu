@@ -2,12 +2,6 @@
 
 package escapeanalysisinlining
 
-import (
-	"bytes"
-	"strconv"
-	"strings"
-)
-
 // SumIntsOptimizedSolution - TODO: implement this function
 func SumIntsOptimizedSolution(values []int) int {
 	// TODO: Implement this function
@@ -33,7 +27,7 @@ func JoinStringsOptimizedSolution(parts []string, separator string) string {
 func (r Rectangle) AreaValueReceiverSolution() float64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // ProcessItemsOptimizedSolution - TODO: implement this function
@@ -75,7 +69,7 @@ func FilterPositiveOptimizedEstimate(numbers []int) []int {
 func GetConfigOptimizedSolution() Config {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return Config{}
 }
 
 // BuildStringNoAlloc - TODO: implement this function
@@ -93,7 +87,7 @@ type Point struct {
 func NewPoint(x, y float64) Point {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return Point{}
 }
 
 // SumArrayNoBoundsCheck - TODO: implement this function
@@ -144,7 +138,7 @@ func Bad() *SmallStruct { s := SmallStruct{1, 2}; return &s } // Heap
 func GoodLocal() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // BadLocal - TODO: implement this function
@@ -171,8 +165,4 @@ func BetterNoClosure(x int) int {
 // GoodConcrete - TODO: implement this function
 func GoodConcrete(x int) int                 { return x * 2 }
 func BadInterface(x interface{}) interface{} { return x } // x escapes
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return 0
-}
 

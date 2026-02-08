@@ -2,11 +2,6 @@
 
 package reflectionintrospection
 
-import (
-	"fmt"
-	"reflect"
-)
-
 // GetTypeName - TODO: implement this function
 func GetTypeName(v interface{}) string {
 	// TODO: Implement this function

@@ -4,11 +4,7 @@ package tcpechoserverclient
 
 import (
 	"bufio"
-	"fmt"
-	"io"
-	"log"
 	"net"
-	"strings"
 )
 
 // StartEchoServer - TODO: implement this function
@@ -28,20 +24,20 @@ func handleClient(conn net.Conn) {
 func EchoClient(addr, message string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // SendMessage - TODO: implement this function
 func SendMessage(conn net.Conn, message string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // ReadResponse - TODO: implement this function
 func ReadResponse(reader *bufio.Reader) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 

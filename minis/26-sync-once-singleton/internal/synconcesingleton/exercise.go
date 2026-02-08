@@ -3,9 +3,7 @@
 package synconcesingleton
 
 import (
-	"errors"
 	"sync"
-	"sync/atomic"
 )
 
 type Counter struct {
@@ -17,14 +15,14 @@ type Counter struct {
 func (c *Counter) Initialize(initialValue int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // GetValue - TODO: implement this function
 func (c *Counter) GetValue() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type ConfigManager struct {
@@ -119,14 +117,14 @@ type InitOnce struct {
 func (io *InitOnce) Do(f func()) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // IsInitialized - TODO: implement this function
 func (io *InitOnce) IsInitialized() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 type ResettableOnce struct {
@@ -137,14 +135,14 @@ type ResettableOnce struct {
 func (ro *ResettableOnce) Do(f func()) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Reset - TODO: implement this function
 func (ro *ResettableOnce) Reset() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type FactorySingleton struct {
@@ -158,4 +156,3 @@ func (fs *FactorySingleton) GetOrCreate(factory func() interface{}) interface{} 
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
-

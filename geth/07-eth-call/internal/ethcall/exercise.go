@@ -4,18 +4,21 @@ package ethcall
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
-
-	ethereum "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 /*
 Problem: Query ERC20 token metadata using manual ABI encoding/decoding.
 */
+
+// Precomputed 4-byte function selectors for ERC20 methods.
+// TODO: compute via selector("name()"), selector("symbol()"), etc.
+var (
+	selectorName        = selector("name()")
+	selectorSymbol      = selector("symbol()")
+	selectorDecimals    = selector("decimals()")
+	selectorTotalSupply = selector("totalSupply()")
+)
 
 // Run - TODO: implement this function
 func Run(ctx context.Context, client CallClient, cfg Config) (*Result, error) {
@@ -35,14 +38,14 @@ func selector(sig string) []byte {
 func decodeString(data []byte) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // decodeUint8 - TODO: implement this function
 func decodeUint8(data []byte) (uint8, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, nil
 }
 
 // decodeUint256 - TODO: implement this function
@@ -51,4 +54,3 @@ func decodeUint256(data []byte) (*big.Int, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

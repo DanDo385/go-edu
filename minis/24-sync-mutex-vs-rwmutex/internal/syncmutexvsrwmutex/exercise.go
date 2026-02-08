@@ -3,7 +3,6 @@
 package syncmutexvsrwmutex
 
 import (
-	"hash/fnv"
 	"sync"
 	"time"
 )
@@ -24,28 +23,28 @@ func NewCounter() *Counter {
 func (c *Counter) Increment() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Decrement - TODO: implement this function
 func (c *Counter) Decrement() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Value - TODO: implement this function
 func (c *Counter) Value() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Reset - TODO: implement this function
 func (c *Counter) Reset() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type Cache[K comparable, V any] struct {
@@ -57,42 +56,42 @@ type Cache[K comparable, V any] struct {
 func NewCache[K comparable, V any]() *Cache[K, V] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Get - TODO: implement this function
 func (c *Cache[K, V]) Get(key K) (V, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return *new(V), false
 }
 
 // Set - TODO: implement this function
 func (c *Cache[K, V]) Set(key K, value V) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Delete - TODO: implement this function
 func (c *Cache[K, V]) Delete(key K) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Len - TODO: implement this function
 func (c *Cache[K, V]) Len() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Clear - TODO: implement this function
 func (c *Cache[K, V]) Clear() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type ExpiringCache[K comparable, V any] struct {
@@ -111,42 +110,42 @@ type cacheEntry[V any] struct {
 func NewExpiringCache[K comparable, V any]() *ExpiringCache[K, V] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Set - TODO: implement this function
 func (c *ExpiringCache[K, V]) Set(key K, value V, ttl time.Duration) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return
 }
 
 // Get - TODO: implement this function
 func (c *ExpiringCache[K, V]) Get(key K) (V, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return *new(V), false
 }
 
 // StartCleanup - TODO: implement this function
 func (c *ExpiringCache[K, V]) StartCleanup(interval time.Duration) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // StopCleanup - TODO: implement this function
 func (c *ExpiringCache[K, V]) StopCleanup() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // cleanup - TODO: implement this function
 func (c *ExpiringCache[K, V]) cleanup() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type ShardedMap[K comparable, V any] struct {
@@ -159,39 +158,40 @@ type shard[K comparable, V any] struct {
 }
 
 const numShards = 16
+
 // NewShardedMap - TODO: implement this function
 func NewShardedMap[K comparable, V any]() *ShardedMap[K, V] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // getShard - TODO: implement this function
 func (sm *ShardedMap[K, V]) getShard(key K) *shard[K, V] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Get - TODO: implement this function
 func (sm *ShardedMap[K, V]) Get(key K) (V, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return *new(V), false
 }
 
 // Set - TODO: implement this function
 func (sm *ShardedMap[K, V]) Set(key K, value V) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Delete - TODO: implement this function
 func (sm *ShardedMap[K, V]) Delete(key K) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type Metrics struct {
@@ -210,28 +210,28 @@ func NewMetrics() *Metrics {
 func (m *Metrics) IncrementCounter(name string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // SetGauge - TODO: implement this function
 func (m *Metrics) SetGauge(name string, value int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // GetCounter - TODO: implement this function
 func (m *Metrics) GetCounter(name string) int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // GetGauge - TODO: implement this function
 func (m *Metrics) GetGauge(name string) int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Snapshot - TODO: implement this function
@@ -262,13 +262,12 @@ func NewRateLimiter(rate float64, burst int) *RateLimiter {
 func (rl *RateLimiter) Allow() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // refill - TODO: implement this function
 func (rl *RateLimiter) refill() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
-

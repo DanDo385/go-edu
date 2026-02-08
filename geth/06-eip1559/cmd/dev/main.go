@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/06-eip1559/internal/eip1559"
+	"github.com/example/go-10x-minis/geth/06-eip1559/internal/eip1559"
 )
 
 /*

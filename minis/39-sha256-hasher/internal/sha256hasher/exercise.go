@@ -12,15 +12,6 @@ Time/Space Complexity:
 - CompareHashes: O(1) time (hashes are fixed size), O(1) space
 */
 
-import (
-	"crypto/sha256"
-	"crypto/subtle"
-	"encoding/hex"
-	"io"
-	"os"
-	"strings"
-)
-
 // HashString - TODO: implement this function
 func HashString(s string) string {
 	// TODO: Implement this function
@@ -39,7 +30,7 @@ func HashFile(filename string) ([]byte, error) {
 func VerifyFile(filename, expectedHashHex string) (bool, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false, nil
 }
 
 // HashIncremental - TODO: implement this function

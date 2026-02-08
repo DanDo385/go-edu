@@ -4,124 +4,123 @@ package boundedchannelsemaphore
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 )
 
-type SemaphoreSolution struct {
+type Semaphore struct {
 	sem chan struct{}
 }
 
-// NewSemaphoreSolution - TODO: implement this function
-func NewSemaphoreSolution(maxPermits int) *SemaphoreSolution {
+// NewSemaphore - TODO: implement this function
+func NewSemaphore(maxPermits int) *Semaphore {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Acquire - TODO: implement this function
-func (s *SemaphoreSolution) Acquire() {
+func (s *Semaphore) Acquire() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Release - TODO: implement this function
-func (s *SemaphoreSolution) Release() {
+func (s *Semaphore) Release() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // TryAcquire - TODO: implement this function
-func (s *SemaphoreSolution) TryAcquire() bool {
+func (s *Semaphore) TryAcquire() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // AcquireWithContext - TODO: implement this function
-func (s *SemaphoreSolution) AcquireWithContext(ctx context.Context) error {
+func (s *Semaphore) AcquireWithContext(ctx context.Context) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-type RateLimiterSolution struct {
+type RateLimiter struct {
 	tokens chan struct{}
 	rate   time.Duration
 	done   chan struct{}
 }
 
-// NewRateLimiterSolution - TODO: implement this function
-func NewRateLimiterSolution(maxBurst int, rate time.Duration) *RateLimiterSolution {
+// NewRateLimiter - TODO: implement this function
+func NewRateLimiter(maxBurst int, rate time.Duration) *RateLimiter {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // refill - TODO: implement this function
-func (rl *RateLimiterSolution) refill() {
+func (rl *RateLimiter) refill() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Wait - TODO: implement this function
-func (rl *RateLimiterSolution) Wait() {
+func (rl *RateLimiter) Wait() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // TryAcquire - TODO: implement this function
-func (rl *RateLimiterSolution) TryAcquire() bool {
+func (rl *RateLimiter) TryAcquire() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Stop - TODO: implement this function
-func (rl *RateLimiterSolution) Stop() {
+func (rl *RateLimiter) Stop() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
-type WeightedSemaphoreSolution struct {
+type WeightedSemaphore struct {
 	permits chan struct{}
 }
 
-// NewWeightedSemaphoreSolution - TODO: implement this function
-func NewWeightedSemaphoreSolution(maxWeight int) *WeightedSemaphoreSolution {
+// NewWeightedSemaphore - TODO: implement this function
+func NewWeightedSemaphore(maxWeight int) *WeightedSemaphore {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Acquire - TODO: implement this function
-func (ws *WeightedSemaphoreSolution) Acquire(weight int) {
+func (ws *WeightedSemaphore) Acquire(weight int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Release - TODO: implement this function
-func (ws *WeightedSemaphoreSolution) Release(weight int) {
+func (ws *WeightedSemaphore) Release(weight int) {
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return
+}
+
+// AcquireWithContext - TODO: implement this function
+func (ws *WeightedSemaphore) AcquireWithContext(ctx context.Context, weight int) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-// AcquireWithContext - TODO: implement this function
-func (ws *WeightedSemaphoreSolution) AcquireWithContext(ctx context.Context, weight int) error {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
-}
-
-type WorkerPoolSolution struct {
+type WorkerPool struct {
 	jobs       chan Job
 	results    chan Result
 	sem        chan struct{}
@@ -132,42 +131,49 @@ type WorkerPoolSolution struct {
 	mu         sync.Mutex
 }
 
-// NewWorkerPoolSolution - TODO: implement this function
-func NewWorkerPoolSolution(numWorkers int, processor func(Job) Result) *WorkerPoolSolution {
+// DefaultProcessor - TODO: implement this function
+func DefaultProcessor(job Job) Result {
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return Result{}
+}
+
+// NewWorkerPool - TODO: implement this function
+func NewWorkerPool(numWorkers int, processor func(Job) Result) *WorkerPool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Submit - TODO: implement this function
-func (wp *WorkerPoolSolution) Submit(job Job) {
+func (wp *WorkerPool) Submit(job Job) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Start - TODO: implement this function
-func (wp *WorkerPoolSolution) Start() {
+func (wp *WorkerPool) Start() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Results - TODO: implement this function
-func (wp *WorkerPoolSolution) Results() <-chan Result {
+func (wp *WorkerPool) Results() <-chan Result {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Stop - TODO: implement this function
-func (wp *WorkerPoolSolution) Stop() {
+func (wp *WorkerPool) Stop() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
-type MonitoredSemaphoreSolution struct {
+type MonitoredSemaphore struct {
 	sem           chan struct{}
 	acquired      int
 	capacity      int
@@ -177,76 +183,76 @@ type MonitoredSemaphoreSolution struct {
 	mu            sync.Mutex
 }
 
-// NewMonitoredSemaphoreSolution - TODO: implement this function
-func NewMonitoredSemaphoreSolution(capacity int) *MonitoredSemaphoreSolution {
+// NewMonitoredSemaphore - TODO: implement this function
+func NewMonitoredSemaphore(capacity int) *MonitoredSemaphore {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Acquire - TODO: implement this function
-func (ms *MonitoredSemaphoreSolution) Acquire() {
+func (ms *MonitoredSemaphore) Acquire() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Release - TODO: implement this function
-func (ms *MonitoredSemaphoreSolution) Release() {
+func (ms *MonitoredSemaphore) Release() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // GetStats - TODO: implement this function
-func (ms *MonitoredSemaphoreSolution) GetStats() Stats {
+func (ms *MonitoredSemaphore) GetStats() Stats {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return Stats{}
 }
 
-type ConnectionPoolSolution struct {
+type ConnectionPool struct {
 	sem      chan struct{}
 	maxConns int
 }
 
-// NewConnectionPoolSolution - TODO: implement this function
-func NewConnectionPoolSolution(maxConns int) *ConnectionPoolSolution {
+// NewConnectionPool - TODO: implement this function
+func NewConnectionPool(maxConns int) *ConnectionPool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Acquire - TODO: implement this function
-func (cp *ConnectionPoolSolution) Acquire() {
+func (cp *ConnectionPool) Acquire() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Release - TODO: implement this function
-func (cp *ConnectionPoolSolution) Release() {
+func (cp *ConnectionPool) Release() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // AcquireWithTimeout - TODO: implement this function
-func (cp *ConnectionPoolSolution) AcquireWithTimeout(timeout time.Duration) error {
+func (cp *ConnectionPool) AcquireWithTimeout(timeout time.Duration) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // ExecuteQuery - TODO: implement this function
-func (cp *ConnectionPoolSolution) ExecuteQuery(ctx context.Context, query string) error {
+func (cp *ConnectionPool) ExecuteQuery(ctx context.Context, query string) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 type BenchmarkHelper struct {
-	sem *SemaphoreSolution
+	sem *Semaphore
 }
 
 // NewBenchmarkHelper - TODO: implement this function
@@ -260,13 +266,13 @@ func NewBenchmarkHelper(capacity int) *BenchmarkHelper {
 func (bh *BenchmarkHelper) AcquireRelease() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // ConcurrentAcquireRelease - TODO: implement this function
 func (bh *BenchmarkHelper) ConcurrentAcquireRelease(n int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 

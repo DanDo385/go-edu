@@ -39,3 +39,8 @@ testdata/output/
 *.tmp
 *.bak
 *.orig
+
+# Debug binaries and artifacts
+__debug_bin*
+Untitled
+*.log

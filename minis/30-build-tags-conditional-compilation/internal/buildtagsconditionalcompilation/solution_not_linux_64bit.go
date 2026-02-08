@@ -1,4 +1,4 @@
-//go:build reference
+//go:build reference && !(linux && amd64)
 
 package buildtagsconditionalcompilation
 

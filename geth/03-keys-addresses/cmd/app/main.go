@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"geth/03-keys-addresses/internal/keysaddresses"
+	"github.com/example/go-10x-minis/geth/03-keys-addresses/internal/keysaddresses"
 )
 
 /*

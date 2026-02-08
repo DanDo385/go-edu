@@ -39,4 +39,6 @@ type Result struct {
 	Nonce       uint64
 	Tx          *types.Transaction
 	BaseFee     *big.Int
+	MaxFee      *big.Int
+	PriorityFee *big.Int
 }

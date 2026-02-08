@@ -17,10 +17,6 @@ Time/Space Complexity:
 */
 
 import (
-	"fmt"
-	"path/filepath"
-	"plugin"
-
 	"github.com/example/go-10x-minis/minis/47-plugin-system-hot-reload/shared"
 )
 
@@ -28,7 +24,7 @@ import (
 func LoadAndExecute(pluginPath string, input interface{}) (interface{}, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return nil, nil
 }
 
 // DiscoverPlugins - TODO: implement this function

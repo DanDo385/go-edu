@@ -301,10 +301,13 @@ reset:
 # ============================================================================
 
 clean:
-	@echo "$(CYAN)Cleaning build cache...$(NC)"
+	@echo "$(CYAN)Cleaning build cache and artifacts...$(NC)"
 	go clean -testcache
 	rm -f coverage.out
 	@find . -name "*.test" -delete 2>/dev/null || true
 	@find . -name "*.out" -delete 2>/dev/null || true
+	@find . -name "__debug_bin*" -delete 2>/dev/null || true
+	@find . -name "Untitled" -delete 2>/dev/null || true
+	@find . -name "*.log" -delete 2>/dev/null || true
 	@find . -name "todos.json" -delete 2>/dev/null || true
-	@echo "$(GREEN)✓ Build cache cleaned$(NC)"
+	@echo "$(GREEN)✓ Build cache and artifacts cleaned$(NC)"

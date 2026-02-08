@@ -3,8 +3,6 @@
 package p2pgossipmocknetwork
 
 import (
-	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 )
@@ -62,42 +60,42 @@ func NewGossipNode(id string, network Network, fanout int) GossipNode {
 func (n *gossipNode) ID() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 // AddPeer - TODO: implement this function
 func (n *gossipNode) AddPeer(peerID string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Broadcast - TODO: implement this function
 func (n *gossipNode) Broadcast(msgType string, payload map[string]interface{}) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // ReceiveMessage - TODO: implement this function
 func (n *gossipNode) ReceiveMessage(msg Message) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // forwardToPeers - TODO: implement this function
 func (n *gossipNode) forwardToPeers(msg Message) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // selectRandomPeers - TODO: implement this function
 func (n *gossipNode) selectRandomPeers(count int, excludeID string) []string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // GetState - TODO: implement this function
@@ -111,7 +109,7 @@ func (n *gossipNode) GetState() map[string]interface{} {
 func (n *gossipNode) Shutdown() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type mockNetwork struct {
@@ -134,42 +132,42 @@ func NewMockNetwork(latency time.Duration, dropRate float64) Network {
 func (mn *mockNetwork) RegisterNode(node GossipNode) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Send - TODO: implement this function
 func (mn *mockNetwork) Send(from, to string, msg Message) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return
 }
 
 // SetLatency - TODO: implement this function
 func (mn *mockNetwork) SetLatency(latency time.Duration) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // SetDropRate - TODO: implement this function
 func (mn *mockNetwork) SetDropRate(rate float64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // GetMessageCount - TODO: implement this function
 func (mn *mockNetwork) GetMessageCount() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // GetDroppedCount - TODO: implement this function
 func (mn *mockNetwork) GetDroppedCount() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type PushGossipProtocol struct {
@@ -187,21 +185,21 @@ func NewPushGossipProtocol(fanout int) GossipProtocol {
 func (p *PushGossipProtocol) Fanout() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // SelectPeers - TODO: implement this function
 func (p *PushGossipProtocol) SelectPeers(allPeers []string, excludeID string) []string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // ShouldForward - TODO: implement this function
 func (p *PushGossipProtocol) ShouldForward(msg Message) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 type ConvergenceDetector struct {
@@ -220,14 +218,14 @@ func NewConvergenceDetector(nodes []GossipNode) *ConvergenceDetector {
 func (cd *ConvergenceDetector) IsConverged(key string) (bool, int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false, 0
 }
 
 // WaitForConvergence - TODO: implement this function
 func (cd *ConvergenceDetector) WaitForConvergence(key string, timeout time.Duration) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false
 }
 
 type Simulator struct {
@@ -248,28 +246,28 @@ func NewSimulator(nodeCount, fanout int, latency time.Duration, dropRate float64
 func (s *Simulator) BroadcastFrom(nodeID string, msgType string, payload map[string]interface{}) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return nil
 }
 
 // WaitForConvergence - TODO: implement this function
 func (s *Simulator) WaitForConvergence(key string, timeout time.Duration) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false
 }
 
 // GetStats - TODO: implement this function
 func (s *Simulator) GetStats() SimulationStats {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return SimulationStats{}
 }
 
 // Shutdown - TODO: implement this function
 func (s *Simulator) Shutdown() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type SimulationStats struct {

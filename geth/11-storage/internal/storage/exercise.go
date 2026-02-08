@@ -4,12 +4,9 @@ package storage
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 /*
@@ -27,13 +24,12 @@ func Run(ctx context.Context, client StorageClient, cfg Config) (*Result, error)
 func slotToHash(slot *big.Int) common.Hash {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return common.Hash{}
 }
 
 // mappingSlotHash - TODO: implement this function
 func mappingSlotHash(key []byte, slot common.Hash) common.Hash {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return common.Hash{}
 }
-

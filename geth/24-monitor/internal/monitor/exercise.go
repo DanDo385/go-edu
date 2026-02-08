@@ -4,9 +4,6 @@ package monitor
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"time"
 )
 
 /*
@@ -19,4 +16,3 @@ func Run(ctx context.Context, client MonitorClient, cfg Config) (*Result, error)
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

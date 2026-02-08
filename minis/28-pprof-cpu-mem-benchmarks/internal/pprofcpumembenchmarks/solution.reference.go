@@ -8,11 +8,36 @@ import (
 	"math"
 	"strings"
 	"sync"
+	"time"
 )
 
 // ============================================================================
-// Solution 1: Optimized Prime Number Finding
+// Solution 1: Prime Number Finding
 // ============================================================================
+
+// FindPrimes uses a naive trial division approach.
+// Time complexity: O(n²) - very slow for large n
+// Space complexity: O(1) auxiliary, O(n) for result
+func FindPrimes(n int) []int {
+	if n < 2 {
+		return nil
+	}
+
+	var primes []int
+	for i := 2; i <= n; i++ {
+		isPrime := true
+		for j := 2; j*j <= i; j++ {
+			if i%j == 0 {
+				isPrime = false
+				break
+			}
+		}
+		if isPrime {
+			primes = append(primes, i)
+		}
+	}
+	return primes
+}
 
 // FindPrimesOptimized uses the Sieve of Eratosthenes algorithm.
 // Time complexity: O(n log log n) vs O(n²) for naive approach
@@ -50,8 +75,24 @@ func FindPrimesOptimized(n int) []int {
 }
 
 // ============================================================================
-// Solution 2: Optimized String Building
+// Solution 2: String Building
 // ============================================================================
+
+// BuildReport uses simple string concatenation.
+// Creates many temporary strings - O(n²) behavior for large inputs
+// Each concatenation creates a new string and copies all previous content
+func BuildReport(items []Item) string {
+	report := "=== Report ===\n"
+
+	for _, item := range items {
+		report += fmt.Sprintf("ID: %d, Name: %s, Value: %.2f\n",
+			item.ID, item.Name, item.Value)
+	}
+
+	report += "=== End Report ===\n"
+
+	return report
+}
 
 // BuildReportOptimized uses strings.Builder to avoid allocations.
 // Reduces allocations from O(n) to O(1) by using a single growing buffer.
@@ -74,8 +115,27 @@ func BuildReportOptimized(items []Item) string {
 }
 
 // ============================================================================
-// Solution 3: Optimized Document Search
+// Solution 3: Document Search
 // ============================================================================
+
+// SearchDocuments performs linear search through documents.
+// Time complexity: O(n*m) where n is document count, m is average document size
+func SearchDocuments(docs []Document, query string) []Document {
+	queryLower := strings.ToLower(query)
+	var results []Document
+
+	for _, doc := range docs {
+		// Search in title and content
+		titleLower := strings.ToLower(doc.Title)
+		contentLower := strings.ToLower(doc.Content)
+
+		if strings.Contains(titleLower, queryLower) || strings.Contains(contentLower, queryLower) {
+			results = append(results, doc)
+		}
+	}
+
+	return results
+}
 
 // SearchDocumentsOptimized improves search performance.
 // Optimizations:
@@ -157,8 +217,49 @@ func extractWords(text string) []string {
 }
 
 // ============================================================================
-// Solution 4: Optimized Item Processing
+// Solution 4: Item Processing
 // ============================================================================
+
+// determineCategory categorizes items based on their value
+func determineCategory(value float64) string {
+	switch {
+	case value < 10:
+		return "low"
+	case value < 50:
+		return "medium"
+	default:
+		return "high"
+	}
+}
+
+// calculateScore computes a score for an item
+func calculateScore(item Item) float64 {
+	baseScore := item.Value * 0.1
+	if item.Value > 100 {
+		baseScore *= 1.5 // bonus for high-value items
+	}
+	return baseScore
+}
+
+// ProcessItems transforms items into results using simple slice append.
+// Each append may trigger slice growth and copying.
+func ProcessItems(items []Item) []Result {
+	var results []Result
+
+	for _, item := range items {
+		category := determineCategory(item.Value)
+
+		result := Result{
+			ItemID:    item.ID,
+			Score:     calculateScore(item),
+			Category:  category,
+			Processed: item.Timestamp,
+		}
+		results = append(results, result)
+	}
+
+	return results
+}
 
 // ProcessItemsOptimized preallocates and reduces redundant calculations.
 func ProcessItemsOptimized(items []Item) []Result {
@@ -181,8 +282,18 @@ func ProcessItemsOptimized(items []Item) []Result {
 }
 
 // ============================================================================
-// Solution 5: Optimized JSON Formatting
+// Solution 5: JSON Formatting
 // ============================================================================
+
+// FormatItemsAsJSON uses standard library json.Marshal.
+// Creates temporary JSON bytes that are converted to string.
+func FormatItemsAsJSON(items []Item) string {
+	jsonBytes, err := json.Marshal(items)
+	if err != nil {
+		return "[]"
+	}
+	return string(jsonBytes)
+}
 
 // FormatItemsAsJSONOptimized uses encoding/json for correctness and efficiency.
 func FormatItemsAsJSONOptimized(items []Item) string {
@@ -233,8 +344,35 @@ func FormatItemsAsJSONManual(items []Item) string {
 }
 
 // ============================================================================
-// Solution 6: Optimized Distance Calculation
+// Solution 6: Distance Calculation
 // ============================================================================
+
+// GenerateTestPoints creates random 2D points for testing
+func GenerateTestPoints(count int) [][2]float64 {
+	points := make([][2]float64, count)
+	for i := 0; i < count; i++ {
+		points[i] = [2]float64{float64(i) * 1.5, float64(i) * 2.3}
+	}
+	return points
+}
+
+// ComputeDistances calculates Euclidean distances between all point pairs.
+// Returns distances in arbitrary order, may reallocate slice multiple times.
+func ComputeDistances(points [][2]float64) []float64 {
+	var distances []float64
+	n := len(points)
+
+	for i := 0; i < n; i++ {
+		for j := i + 1; j < n; j++ {
+			dx := points[i][0] - points[j][0]
+			dy := points[i][1] - points[j][1]
+			dist := math.Sqrt(dx*dx + dy*dy)
+			distances = append(distances, dist)
+		}
+	}
+
+	return distances
+}
 
 // ComputeDistancesOptimized preallocates and could be parallelized.
 func ComputeDistancesOptimized(points [][2]float64) []float64 {
@@ -297,8 +435,24 @@ func ComputeDistancesParallel(points [][2]float64) []float64 {
 }
 
 // ============================================================================
-// Solution 7: Optimized Word Frequency
+// Solution 7: Word Frequency
 // ============================================================================
+
+// CountWordFrequency counts word occurrences using simple map operations.
+// May trigger multiple map growths as words are added.
+func CountWordFrequency(docs []Document) map[string]int {
+	wordCount := make(map[string]int)
+
+	for _, doc := range docs {
+		words := strings.Fields(strings.ToLower(doc.Content))
+
+		for _, word := range words {
+			wordCount[word]++
+		}
+	}
+
+	return wordCount
+}
 
 // CountWordFrequencyOptimized uses efficient string processing.
 func CountWordFrequencyOptimized(docs []Document) map[string]int {
@@ -336,6 +490,35 @@ type OptimizedCache struct {
 type cacheEntry struct {
 	value     interface{}
 	createdAt int64
+}
+
+// SimpleCache is a basic cache without optimizations
+type SimpleCache struct {
+	data map[string]*cacheEntry
+}
+
+// NewSimpleCache creates a basic cache without capacity limits.
+func NewSimpleCache(capacity int) *SimpleCache {
+	return &SimpleCache{
+		data: make(map[string]*cacheEntry, capacity),
+	}
+}
+
+// Get retrieves a value from the cache
+func (c *SimpleCache) Get(key string) (interface{}, bool) {
+	entry, exists := c.data[key]
+	if !exists {
+		return nil, false
+	}
+	return entry.value, true
+}
+
+// Set stores a value in the cache
+func (c *SimpleCache) Set(key string, value interface{}) {
+	c.data[key] = &cacheEntry{
+		value:     value,
+		createdAt: time.Now().Unix(),
+	}
 }
 
 // NewOptimizedCache creates a cache with capacity limit.
@@ -389,8 +572,27 @@ func (c *OptimizedCache) Len() int {
 }
 
 // ============================================================================
-// Solution 9: Optimized Filter and Transform
+// Solution 9: Filter and Transform
 // ============================================================================
+
+// FilterAndTransform filters items by value and transforms to results.
+// Uses append which may trigger multiple slice reallocations.
+func FilterAndTransform(items []Item, minValue float64) []Result {
+	var results []Result
+
+	for _, item := range items {
+		if item.Value >= minValue {
+			result := Result{
+				ItemID:   item.ID,
+				Score:    item.Value * 2,
+				Category: "filtered",
+			}
+			results = append(results, result)
+		}
+	}
+
+	return results
+}
 
 // FilterAndTransformOptimized preallocates and reduces allocations.
 func FilterAndTransformOptimized(items []Item, minValue float64) []Result {
@@ -431,8 +633,18 @@ func FilterAndTransformInPlace(items []Item, minValue float64) []Result {
 }
 
 // ============================================================================
-// Solution 10: Optimized Fibonacci
+// Solution 10: Fibonacci
 // ============================================================================
+
+// Fibonacci computes the nth Fibonacci number using naive recursion.
+// Time complexity: O(2^n) - exponential, very slow for n > 30
+// Space complexity: O(n) due to call stack
+func Fibonacci(n int) int {
+	if n <= 1 {
+		return n
+	}
+	return Fibonacci(n-1) + Fibonacci(n-2)
+}
 
 // FibonacciIterative uses O(n) time and O(1) space.
 func FibonacciIterative(n int) int {
@@ -527,4 +739,39 @@ func BuildReportWithPool(items []Item) string {
 	buf.WriteString("=== End Report ===\n")
 
 	return buf.String()
+}
+
+// ============================================================================
+// Helper Functions for Testing and Benchmarks
+// ============================================================================
+
+// GenerateTestItems creates a slice of test items for benchmarking
+func GenerateTestItems(count int) []Item {
+	items := make([]Item, count)
+	for i := 0; i < count; i++ {
+		items[i] = Item{
+			ID:        i + 1,
+			Name:      fmt.Sprintf("Item%d", i+1),
+			Value:     float64(i+1) * 10.5,
+			Timestamp: int64(i * 1000),
+			Tags:      []string{fmt.Sprintf("tag%d", i%5)},
+			Metadata:  map[string]string{"key": fmt.Sprintf("value%d", i)},
+		}
+	}
+	return items
+}
+
+// GenerateTestDocuments creates a slice of test documents for benchmarking
+func GenerateTestDocuments(count int) []Document {
+	docs := make([]Document, count)
+	for i := 0; i < count; i++ {
+		docs[i] = Document{
+			ID:      i + 1,
+			Title:   fmt.Sprintf("Document %d", i+1),
+			Content: fmt.Sprintf("This is the content of document %d with some searchable text and keywords for testing purposes.", i+1),
+			Author:  fmt.Sprintf("Author%d", i%3),
+			Tags:    []string{fmt.Sprintf("tag%d", i%5), fmt.Sprintf("category%d", i%3)},
+		}
+	}
+	return docs
 }

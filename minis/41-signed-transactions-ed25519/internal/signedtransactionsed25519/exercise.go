@@ -4,10 +4,6 @@ package signedtransactionsed25519
 
 import (
 	"crypto/ed25519"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
-	"time"
 )
 
 type Transaction struct {
@@ -69,21 +65,21 @@ func (w *Wallet) Sign(tx *Transaction) (*SignedTransaction, error) {
 func (st *SignedTransaction) Verify() (bool, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false, nil
 }
 
 // VerifyOwnership - TODO: implement this function
 func (st *SignedTransaction) VerifyOwnership() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // GetTransactionID - TODO: implement this function
 func (st *SignedTransaction) GetTransactionID() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 type MultiSigTransaction struct {
@@ -110,6 +106,6 @@ func (mst *MultiSigTransaction) AddSignature(wallet *Wallet) error {
 func (mst *MultiSigTransaction) Verify() (bool, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false, nil
 }
 

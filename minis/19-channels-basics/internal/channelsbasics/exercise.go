@@ -4,7 +4,6 @@ package channelsbasics
 
 import (
 	"context"
-	"sync"
 	"time"
 )
 
@@ -89,28 +88,28 @@ func NewBoundedQueue(capacity int) *BoundedQueue {
 func (q *BoundedQueue) Enqueue(value int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Dequeue - TODO: implement this function
 func (q *BoundedQueue) Dequeue() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // TryEnqueue - TODO: implement this function
 func (q *BoundedQueue) TryEnqueue(value int) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // TryDequeue - TODO: implement this function
 func (q *BoundedQueue) TryDequeue() (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
 
 // NewBroadcaster - TODO: implement this function
@@ -131,21 +130,21 @@ func (b *Broadcaster) Subscribe() <-chan Message {
 func (b *Broadcaster) Unsubscribe(ch <-chan Message) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Send - TODO: implement this function
 func (b *Broadcaster) Send(msg Message) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Close - TODO: implement this function
 func (b *Broadcaster) Close() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // NewBarrier - TODO: implement this function
@@ -159,6 +158,6 @@ func NewBarrier(n int) *Barrier {
 func (b *Barrier) Wait() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 

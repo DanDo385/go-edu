@@ -4,11 +4,6 @@ package proofs
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"math/big"
-
-	"github.com/ethereum/go-ethereum/common"
 )
 
 /*
@@ -21,4 +16,3 @@ func Run(ctx context.Context, client ProofClient, cfg Config) (*Result, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

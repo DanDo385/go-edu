@@ -3,10 +3,7 @@
 package jwtauthmiddleware
 
 import (
-	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -30,7 +27,7 @@ type Claims struct {
 func GenerateToken(user *User, secret []byte, expiresIn time.Duration) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // ValidateToken - TODO: implement this function
@@ -65,6 +62,6 @@ func GetClaims(r *http.Request) (*Claims, error) {
 func RefreshToken(refreshTokenString string, secret []byte, newExpiresIn time.Duration) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 

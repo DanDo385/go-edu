@@ -1,3 +1,5 @@
+//go:build !reference
+
 package racedetectiondemo
 
 import (
@@ -8,6 +10,8 @@ import (
 type SafeCounter struct {
 	// TODO: Add necessary fields for thread-safe counter
 	// Hint: You can use either sync.Mutex or atomic.Int64
+	value int64 // For mutex-based implementation
+	mu    sync.Mutex // For mutex-based implementation
 }
 
 // SafeMap is a thread-safe map wrapper.

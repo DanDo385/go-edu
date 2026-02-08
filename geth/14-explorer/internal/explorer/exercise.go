@@ -4,12 +4,10 @@ package explorer
 
 import (
 	"context"
-	"errors"
-	"fmt"
 )
 
 /*
-*/
+ */
 
 // Run - TODO: implement this function
 func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
@@ -17,4 +15,3 @@ func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

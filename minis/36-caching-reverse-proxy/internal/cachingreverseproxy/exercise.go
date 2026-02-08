@@ -20,13 +20,9 @@ Algorithm:
 import (
 	"bytes"
 	"container/list"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
-	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -65,28 +61,28 @@ func NewCache(maxSize int, ttl time.Duration) *Cache {
 func (c *Cache) Get(key string) (*CacheEntry, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil, false
 }
 
 // Set - TODO: implement this function
 func (c *Cache) Set(key string, entry *CacheEntry) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Delete - TODO: implement this function
 func (c *Cache) Delete(key string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Clear - TODO: implement this function
 func (c *Cache) Clear() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Stats - TODO: implement this function
@@ -114,21 +110,21 @@ func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
 func (rr *ResponseRecorder) WriteHeader(status int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Write - TODO: implement this function
 func (rr *ResponseRecorder) Write(b []byte) (int, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, nil
 }
 
 // Header - TODO: implement this function
 func (rr *ResponseRecorder) Header() http.Header {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return http.Header{}
 }
 
 // NewCachingProxy - TODO: implement this function
@@ -149,28 +145,28 @@ func (c *Cache) Handler(backend http.Handler) http.Handler {
 func (c *Cache) serveFromCache(w http.ResponseWriter, entry *CacheEntry) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // copyResponseToWriter - TODO: implement this function
 func (c *Cache) copyResponseToWriter(w http.ResponseWriter, recorder *ResponseRecorder) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // isCacheable - TODO: implement this function
 func (c *Cache) isCacheable(recorder *ResponseRecorder) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // calculateExpiry - TODO: implement this function
 func (c *Cache) calculateExpiry(header http.Header) time.Time {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return time.Time{}
 }
 
 // StatsHandler - TODO: implement this function

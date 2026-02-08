@@ -3,10 +3,6 @@
 package pprofcpumembenchmarks
 
 import (
-	"encoding/json"
-	"fmt"
-	"math"
-	"strings"
 	"sync"
 )
 
@@ -122,21 +118,21 @@ func NewOptimizedCache(capacity int) *OptimizedCache {
 func (c *OptimizedCache) Get(key string) (interface{}, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return nil, false
 }
 
 // Set - TODO: implement this function
 func (c *OptimizedCache) Set(key string, value interface{}) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Len - TODO: implement this function
 func (c *OptimizedCache) Len() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // FilterAndTransformOptimized - TODO: implement this function
@@ -201,4 +197,3 @@ func BuildReportWithPool(items []Item) string {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return ""
 }
-

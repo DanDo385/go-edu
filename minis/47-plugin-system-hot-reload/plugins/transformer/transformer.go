@@ -193,3 +193,6 @@ func toSnakeCase(s string) string {
 //   }
 //
 // Rebuild and see the transformation change in real-time!
+
+// main is required for package main but unused when built as a plugin (-buildmode=plugin).
+func main() {}

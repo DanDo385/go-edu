@@ -4,11 +4,6 @@ package trace
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-
-	"github.com/ethereum/go-ethereum/common"
 )
 
 /*
@@ -21,4 +16,3 @@ func Run(ctx context.Context, client TraceClient, cfg Config) (*Result, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

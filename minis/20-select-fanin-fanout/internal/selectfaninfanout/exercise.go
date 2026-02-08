@@ -3,10 +3,9 @@
 package selectfaninfanout
 
 /*
-*/
+ */
 
 import (
-	"sync"
 	"time"
 )
 
@@ -14,7 +13,7 @@ import (
 func SelectFirst(ch1, ch2 <-chan string, timeout time.Duration) (string, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", false
 }
 
 // NonBlockingSend - TODO: implement this function
@@ -68,21 +67,21 @@ func NewRateLimiter(rate int) *RateLimiter {
 func (rl *RateLimiter) refill() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Wait - TODO: implement this function
 func (rl *RateLimiter) Wait() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // TryWait - TODO: implement this function
 func (rl *RateLimiter) TryWait() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Pipeline - TODO: implement this function
@@ -110,13 +109,12 @@ func filter(in <-chan int, predicate func(int) bool) <-chan int {
 func SelectWithPriority(high, low <-chan int) (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
 
 // Timeout - TODO: implement this function
 func Timeout(ch <-chan int, timeout time.Duration) (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
-

@@ -3,8 +3,6 @@
 package mempoolinmemory
 
 import (
-	"container/heap"
-	"errors"
 	"sync"
 	"time"
 )
@@ -58,7 +56,7 @@ func (m *FIFOMempool) GetNext() *Transaction {
 func (m *FIFOMempool) Size() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type PriorityMempool struct {
@@ -76,21 +74,21 @@ func (h TxHeap) Len() int { return len(h) }
 func (h TxHeap) Less(i, j int) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Swap - TODO: implement this function
 func (h TxHeap) Swap(i, j int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Push - TODO: implement this function
 func (h *TxHeap) Push(x interface{}) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Pop - TODO: implement this function
@@ -132,7 +130,7 @@ func (m *PriorityMempool) GetNext() *Transaction {
 func (m *PriorityMempool) Size() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type NonceMempool struct {
@@ -171,13 +169,13 @@ func (m *NonceMempool) GetNextForAccount(address string) *Transaction {
 func (m *NonceMempool) AdvanceNonce(address string) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Size - TODO: implement this function
 func (m *NonceMempool) Size() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 

@@ -3,17 +3,12 @@
 package websocketchatroom
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-const (
 type Client struct {
 	hub      *Hub
 	conn     *websocket.Conn
@@ -48,7 +43,7 @@ func NewHub() *Hub {
 func (h *Hub) Run() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // GetOrCreateRoom - TODO: implement this function
@@ -62,21 +57,21 @@ func (h *Hub) GetOrCreateRoom(name string) *Room {
 func (h *Hub) Shutdown() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Run - TODO: implement this function
 func (r *Room) Run() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // broadcastToAll - TODO: implement this function
 func (r *Room) broadcastToAll(message []byte) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // NewClient - TODO: implement this function
@@ -90,14 +85,14 @@ func NewClient(hub *Hub, conn *websocket.Conn, username, roomName string) *Clien
 func (c *Client) ReadPump() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // WritePump - TODO: implement this function
 func (c *Client) WritePump() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // ServeWS - TODO: implement this function

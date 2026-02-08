@@ -3,13 +3,7 @@
 package configloaderenvyaml
 
 import (
-	"fmt"
-	"os"
-	"regexp"
-	"strings"
 	"time"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -58,7 +52,7 @@ func substituteEnvVars(input string) string {
 func (c *Config) ApplyDefaults() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Validate - TODO: implement this function

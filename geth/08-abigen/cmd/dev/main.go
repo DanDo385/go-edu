@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/08-abigen/internal/abigen"
+	"github.com/example/go-10x-minis/geth/08-abigen/internal/abigen"
 )
 
 /*

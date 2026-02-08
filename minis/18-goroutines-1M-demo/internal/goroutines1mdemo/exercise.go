@@ -3,13 +3,10 @@
 package goroutines1mdemo
 
 /*
-*/
+ */
 
 import (
 	"context"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 // ParallelSum - TODO: implement this function
@@ -44,14 +41,14 @@ func NewWorkerPool(numWorkers int) *WorkerPool {
 func (p *WorkerPool) Submit(job func()) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Stop - TODO: implement this function
 func (p *WorkerPool) Stop() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // NewRateLimiter - TODO: implement this function
@@ -65,28 +62,28 @@ func NewRateLimiter(maxOps int) *RateLimiter {
 func (r *RateLimiter) Wait() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Increment - TODO: implement this function
 func (c *ConcurrentCounter) Increment() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Decrement - TODO: implement this function
 func (c *ConcurrentCounter) Decrement() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Value - TODO: implement this function
 func (c *ConcurrentCounter) Value() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // NewGracefulWorker - TODO: implement this function
@@ -100,14 +97,14 @@ func NewGracefulWorker(ctx context.Context) *GracefulWorker {
 func (w *GracefulWorker) Start() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // WorkDone - TODO: implement this function
 func (w *GracefulWorker) WorkDone() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Pipeline - TODO: implement this function
@@ -121,6 +118,5 @@ func Pipeline(input <-chan int, stages ...func(<-chan int) <-chan int) <-chan in
 func BoundedParallel(maxConcurrent int, fns ...func()) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
-

@@ -12,78 +12,78 @@ import (
 )
 
 // ============================================================================
-// Solution 1: Safe Counter
+//  1: Safe Counter
 // ============================================================================
 
-// Solution: Use atomic.Int64 for lock-free counter
-type SafeCounterSolution struct {
+// : Use atomic.Int64 for lock-free counter
+type SafeCounter struct {
 	value atomic.Int64
 }
 
-func NewSafeCounterSolution() *SafeCounterSolution {
-	return &SafeCounterSolution{}
+func NewSafeCounter() *SafeCounter {
+	return &SafeCounter{}
 }
 
-func (c *SafeCounterSolution) Increment() {
+func (c *SafeCounter) Increment() {
 	c.value.Add(1)
 }
 
-func (c *SafeCounterSolution) Value() int64 {
+func (c *SafeCounter) Value() int64 {
 	return c.value.Load()
 }
 
 // Alternative solution: Use mutex
-type SafeCounterMutexSolution struct {
+type SafeCounterMutex struct {
 	value int64
 	mu    sync.Mutex
 }
 
-func NewSafeCounterMutexSolution() *SafeCounterMutexSolution {
-	return &SafeCounterMutexSolution{}
+func NewSafeCounterMutex() *SafeCounterMutex {
+	return &SafeCounterMutex{}
 }
 
-func (c *SafeCounterMutexSolution) Increment() {
+func (c *SafeCounterMutex) Increment() {
 	c.mu.Lock()
 	c.value++
 	c.mu.Unlock()
 }
 
-func (c *SafeCounterMutexSolution) Value() int64 {
+func (c *SafeCounterMutex) Value() int64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.value
 }
 
 // ============================================================================
-// Solution 2: Safe Map
+//  2: Safe Map
 // ============================================================================
 
-// Solution: Use sync.RWMutex to protect map access
-type SafeMapSolution struct {
+// : Use sync.RWMutex to protect map access
+type SafeMap struct {
 	data map[string]int
 	mu   sync.RWMutex
 }
 
-func NewSafeMapSolution() *SafeMapSolution {
-	return &SafeMapSolution{
+func NewSafeMap() *SafeMap {
+	return &SafeMap{
 		data: make(map[string]int),
 	}
 }
 
-func (m *SafeMapSolution) Set(key string, value int) {
+func (m *SafeMap) Set(key string, value int) {
 	m.mu.Lock()
 	m.data[key] = value
 	m.mu.Unlock()
 }
 
-func (m *SafeMapSolution) Get(key string) (int, bool) {
+func (m *SafeMap) Get(key string) (int, bool) {
 	m.mu.RLock()
 	value, ok := m.data[key]
 	m.mu.RUnlock()
 	return value, ok
 }
 
-func (m *SafeMapSolution) Len() int {
+func (m *SafeMap) Len() int {
 	m.mu.RLock()
 	length := len(m.data)
 	m.mu.RUnlock()
@@ -91,19 +91,19 @@ func (m *SafeMapSolution) Len() int {
 }
 
 // Alternative solution: Use sync.Map (built-in concurrent map)
-type SafeMapSyncMapSolution struct {
+type SafeMapSyncMap struct {
 	data sync.Map
 }
 
-func NewSafeMapSyncMapSolution() *SafeMapSyncMapSolution {
-	return &SafeMapSyncMapSolution{}
+func NewSafeMapSyncMap() *SafeMapSyncMap {
+	return &SafeMapSyncMap{}
 }
 
-func (m *SafeMapSyncMapSolution) Set(key string, value int) {
+func (m *SafeMapSyncMap) Set(key string, value int) {
 	m.data.Store(key, value)
 }
 
-func (m *SafeMapSyncMapSolution) Get(key string) (int, bool) {
+func (m *SafeMapSyncMap) Get(key string) (int, bool) {
 	val, ok := m.data.Load(key)
 	if !ok {
 		return 0, false
@@ -111,7 +111,7 @@ func (m *SafeMapSyncMapSolution) Get(key string) (int, bool) {
 	return val.(int), true
 }
 
-func (m *SafeMapSyncMapSolution) Len() int {
+func (m *SafeMapSyncMap) Len() int {
 	count := 0
 	m.data.Range(func(key, value interface{}) bool {
 		count++
@@ -121,20 +121,20 @@ func (m *SafeMapSyncMapSolution) Len() int {
 }
 
 // ============================================================================
-// Solution 3: Lazy Initialization
+//  3: Lazy Initialization
 // ============================================================================
 
-// Solution: Use sync.Once for thread-safe lazy initialization
-type LazyInitSolution struct {
+// : Use sync.Once for thread-safe lazy initialization
+type LazyInit struct {
 	once  sync.Once
 	value interface{}
 }
 
-func NewLazyInitSolution() *LazyInitSolution {
-	return &LazyInitSolution{}
+func NewLazyInit() *LazyInit {
+	return &LazyInit{}
 }
 
-func (l *LazyInitSolution) GetOrInit(init func() interface{}) interface{} {
+func (l *LazyInit) GetOrInit(init func() interface{}) interface{} {
 	l.once.Do(func() {
 		l.value = init()
 	})
@@ -142,28 +142,28 @@ func (l *LazyInitSolution) GetOrInit(init func() interface{}) interface{} {
 }
 
 // ============================================================================
-// Solution 4: Safe Slice
+//  4: Safe Slice
 // ============================================================================
 
-// Solution: Use mutex to protect slice operations
-type SafeSliceSolution struct {
+// : Use mutex to protect slice operations
+type SafeSlice struct {
 	data []int
 	mu   sync.RWMutex
 }
 
-func NewSafeSliceSolution() *SafeSliceSolution {
-	return &SafeSliceSolution{
+func NewSafeSlice() *SafeSlice {
+	return &SafeSlice{
 		data: make([]int, 0),
 	}
 }
 
-func (s *SafeSliceSolution) Append(value int) {
+func (s *SafeSlice) Append(value int) {
 	s.mu.Lock()
 	s.data = append(s.data, value)
 	s.mu.Unlock()
 }
 
-func (s *SafeSliceSolution) Get(index int) (int, bool) {
+func (s *SafeSlice) Get(index int) (int, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -173,7 +173,7 @@ func (s *SafeSliceSolution) Get(index int) (int, bool) {
 	return s.data[index], true
 }
 
-func (s *SafeSliceSolution) Len() int {
+func (s *SafeSlice) Len() int {
 	s.mu.RLock()
 	length := len(s.data)
 	s.mu.RUnlock()
@@ -181,11 +181,11 @@ func (s *SafeSliceSolution) Len() int {
 }
 
 // ============================================================================
-// Solution 5: Process IDs (Loop Variable Capture)
+//  5: Process IDs (Loop Variable Capture)
 // ============================================================================
 
-// Solution: Pass loop variables as arguments to goroutine
-func ProcessIDsSolution(ids []int, process func(int) int) []int {
+// : Pass loop variables as arguments to goroutine
+func ProcessIDs(ids []int, process func(int) int) []int {
 	var wg sync.WaitGroup
 	results := make([]int, len(ids))
 
@@ -203,7 +203,7 @@ func ProcessIDsSolution(ids []int, process func(int) int) []int {
 }
 
 // Alternative solution: Shadow the loop variables (Go 1.22+ does this automatically)
-func ProcessIDsSolutionShadow(ids []int, process func(int) int) []int {
+func ProcessIDsShadow(ids []int, process func(int) int) []int {
 	var wg sync.WaitGroup
 	results := make([]int, len(ids))
 
@@ -224,11 +224,24 @@ func ProcessIDsSolutionShadow(ids []int, process func(int) int) []int {
 }
 
 // ============================================================================
-// Solution 6: Concurrent URL Cache
+//  6: Concurrent URL Cache
 // ============================================================================
 
-// Solution: Use RWMutex for cache access
-func (c *URLCache) FetchSolution(url string) (string, error) {
+type URLCache struct {
+	cache   map[string]string
+	mu      sync.RWMutex
+	fetcher func(url string) (string, error)
+}
+
+func NewURLCache(fetcher func(url string) (string, error)) *URLCache {
+	return &URLCache{
+		cache:   make(map[string]string),
+		fetcher: fetcher,
+	}
+}
+
+// : Use RWMutex for cache access
+func (c *URLCache) Fetch(url string) (string, error) {
 	// First, try to read from cache (read lock)
 	c.mu.RLock()
 	if content, ok := c.cache[url]; ok {
@@ -323,54 +336,54 @@ func (c *URLCacheAdvanced) Fetch(url string) (string, error) {
 }
 
 // ============================================================================
-// Solution 7: Concurrent Metrics
+//  7: Concurrent Metrics
 // ============================================================================
 
-// Solution: Use atomic counters
-type MetricsSolution struct {
+// : Use atomic counters
+type Metrics struct {
 	requests atomic.Int64
 	errors   atomic.Int64
 }
 
-func NewMetricsSolution() *MetricsSolution {
-	return &MetricsSolution{}
+func NewMetrics() *Metrics {
+	return &Metrics{}
 }
 
-func (m *MetricsSolution) IncrementRequests() {
+func (m *Metrics) IncrementRequests() {
 	m.requests.Add(1)
 }
 
-func (m *MetricsSolution) IncrementErrors() {
+func (m *Metrics) IncrementErrors() {
 	m.errors.Add(1)
 }
 
-func (m *MetricsSolution) GetStats() (requests int64, errors int64) {
+func (m *Metrics) GetStats() (requests int64, errors int64) {
 	return m.requests.Load(), m.errors.Load()
 }
 
 // ============================================================================
-// Solution 8: Bank Account
+//  8: Bank Account
 // ============================================================================
 
-// Solution: Use mutex to protect balance
-type BankAccountSolution struct {
+// : Use mutex to protect balance
+type BankAccount struct {
 	balance int64
 	mu      sync.Mutex
 }
 
-func NewBankAccountSolution(initialBalance int64) *BankAccountSolution {
-	return &BankAccountSolution{
+func NewBankAccount(initialBalance int64) *BankAccount {
+	return &BankAccount{
 		balance: initialBalance,
 	}
 }
 
-func (b *BankAccountSolution) Deposit(amount int64) {
+func (b *BankAccount) Deposit(amount int64) {
 	b.mu.Lock()
 	b.balance += amount
 	b.mu.Unlock()
 }
 
-func (b *BankAccountSolution) Withdraw(amount int64) bool {
+func (b *BankAccount) Withdraw(amount int64) bool {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -381,7 +394,7 @@ func (b *BankAccountSolution) Withdraw(amount int64) bool {
 	return false
 }
 
-func (b *BankAccountSolution) Balance() int64 {
+func (b *BankAccount) Balance() int64 {
 	b.mu.Lock()
 	balance := b.balance
 	b.mu.Unlock()
@@ -389,11 +402,11 @@ func (b *BankAccountSolution) Balance() int64 {
 }
 
 // ============================================================================
-// Solution 9: Pipeline Pattern
+//  9: Pipeline Pattern
 // ============================================================================
 
-// Solution: Use channels to connect pipeline stages
-func PipelineSolution(numbers []int) int {
+// : Use channels to connect pipeline stages
+func Pipeline(numbers []int) int {
 	// Stage 1: Generate numbers
 	gen := make(chan int)
 	go func() {
@@ -422,7 +435,7 @@ func PipelineSolution(numbers []int) int {
 }
 
 // Alternative: More functional/composable pipeline
-func PipelineSolutionComposable(numbers []int) int {
+func PipelineComposable(numbers []int) int {
 	// Stage 1: Generate
 	generate := func(nums []int) <-chan int {
 		out := make(chan int)
@@ -463,11 +476,11 @@ func PipelineSolutionComposable(numbers []int) int {
 }
 
 // ============================================================================
-// Solution 10: Worker Pool
+//  10: Worker Pool
 // ============================================================================
 
-// Solution: Use channels and WaitGroup for worker pool
-func WorkerPoolSolution(numWorkers int, jobs []int, process func(int) int) []int {
+// : Use channels and WaitGroup for worker pool
+func WorkerPool(numWorkers int, jobs []int, process func(int) int) []int {
 	// Create channels
 	jobsCh := make(chan int, len(jobs))
 	resultsCh := make(chan int, len(jobs))
@@ -508,7 +521,7 @@ func WorkerPoolSolution(numWorkers int, jobs []int, process func(int) int) []int
 }
 
 // Alternative: Pre-allocated results slice (if order matters)
-func WorkerPoolSolutionOrdered(numWorkers int, jobs []int, process func(int) int) []int {
+func WorkerPoolOrdered(numWorkers int, jobs []int, process func(int) int) []int {
 	type result struct {
 		index int
 		value int
@@ -560,7 +573,7 @@ func WorkerPoolSolutionOrdered(numWorkers int, jobs []int, process func(int) int
 }
 
 // ============================================================================
-// Explanation: Why These Solutions Work
+// Explanation: Why These s Work
 // ============================================================================
 
 /*

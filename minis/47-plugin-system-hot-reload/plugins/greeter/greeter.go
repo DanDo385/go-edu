@@ -122,3 +122,6 @@ func (p *GreeterPlugin) Cleanup() error {
 //    go build -buildmode=plugin -o plugins/greeter.so plugins/greeter/greeter.go
 //
 // 4. Watch the host application detect the change and hot reload!
+
+// main is required for package main but unused when built as a plugin (-buildmode=plugin).
+func main() {}

@@ -4,8 +4,6 @@ package mempool
 
 import (
 	"context"
-	"errors"
-	"fmt"
 )
 
 /*
@@ -18,4 +16,3 @@ func Run(ctx context.Context, client MempoolClient, cfg Config) (*Result, error)
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

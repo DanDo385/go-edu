@@ -19,6 +19,8 @@ type TXClient interface {
 
 // Config defines how to build the transaction.
 type Config struct {
+	// Address is the account to query nonces for (convenience field).
+	Address    common.Address
 	PrivateKey *ecdsa.PrivateKey
 	To         common.Address
 	AmountWei  *big.Int
@@ -33,7 +35,8 @@ type Config struct {
 
 // Result surfaces the signed transaction plus metadata for display.
 type Result struct {
-	FromAddress common.Address
-	Nonce       uint64
-	Tx          *types.Transaction
+	FromAddress  common.Address
+	Nonce        uint64
+	PendingNonce uint64
+	Tx           *types.Transaction
 }

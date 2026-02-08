@@ -16,6 +16,8 @@ type LogClient interface {
 
 // Config configures the ERC20 Transfer log query.
 type Config struct {
+	// Contract is the contract address to query events from.
+	Contract   common.Address
 	Token      common.Address
 	FromBlock  *big.Int
 	ToBlock    *big.Int

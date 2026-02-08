@@ -14,17 +14,6 @@ Time/Space Complexity:
 - Space: O(m*n) for storing entire chain
 */
 
-import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/binary"
-	"encoding/hex"
-	"errors"
-	"fmt"
-	"strings"
-	"time"
-)
-
 type BlockHeader struct {
 	Index      int    // Block number (position in chain)
 	Timestamp  int64  // Unix timestamp (seconds since epoch)
@@ -50,7 +39,7 @@ func (b *Block) Serialize() []byte {
 func (b *Block) ComputeHash() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 // ComputeMerkleRoot - TODO: implement this function

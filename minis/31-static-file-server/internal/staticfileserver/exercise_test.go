@@ -604,8 +604,8 @@ func TestCheckETag(t *testing.T) {
 }
 
 func TestCheckModifiedSince(t *testing.T) {
-	now := time.Now().Truncate(time.Second)
-	past := now.Add(-1 * time.Hour)
+	now := time.Now().UTC().Truncate(time.Second)
+	past := now.Add(-1 * time.Hour).Truncate(time.Second)
 
 	tests := []struct {
 		name        string

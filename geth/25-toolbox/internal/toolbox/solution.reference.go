@@ -150,7 +150,7 @@ func handleTx(ctx context.Context, client ToolboxClient, args []string) (*Result
 		return nil, errors.New("tx command requires transaction hash argument")
 	}
 
-	tx, pending, err := client.TransactionByHash(ctx, args[0])
+	tx, pending, err := client.TransactionByHash(ctx, common.HexToHash(args[0]))
 	if err != nil {
 		return nil, fmt.Errorf("transaction by hash: %w", err)
 	}

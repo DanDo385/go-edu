@@ -54,42 +54,42 @@ func New(initial State, data interface{}) *StateMachine {
 func (sm *StateMachine) AddTransition(t Transition) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // OnEnter - TODO: implement this function
 func (sm *StateMachine) OnEnter(state State, action Action) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // OnExit - TODO: implement this function
 func (sm *StateMachine) OnExit(state State, action Action) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Transition - TODO: implement this function
 func (sm *StateMachine) Transition(ctx context.Context, event Event) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Current - TODO: implement this function
 func (sm *StateMachine) Current() State {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 // Can - TODO: implement this function
 func (sm *StateMachine) Can(event Event) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // History - TODO: implement this function
@@ -102,9 +102,22 @@ func (sm *StateMachine) History() []HistoryEntry {
 type OrderState string
 
 const (
+	OrderPending   OrderState = "pending"
+	OrderPaid      OrderState = "paid"
+	OrderShipped   OrderState = "shipped"
+	OrderDelivered OrderState = "delivered"
+	OrderCancelled OrderState = "cancelled"
+)
+
 type OrderEvent string
 
 const (
+	EventPay     OrderEvent = "pay"
+	EventShip    OrderEvent = "ship"
+	EventDeliver OrderEvent = "deliver"
+	EventCancel  OrderEvent = "cancel"
+)
+
 type Order struct {
 	ID             string
 	CustomerEmail  string
@@ -124,9 +137,19 @@ func NewOrderStateMachine(order *Order) *StateMachine {
 type AuthState string
 
 const (
+	AuthLoggedOut  AuthState = "logged_out"
+	AuthLoggedIn   AuthState = "logged_in"
+	AuthMFAPending AuthState = "mfa_pending"
+)
+
 type AuthEvent string
 
 const (
+	EventLogin      AuthEvent = "login"
+	EventMFASuccess AuthEvent = "mfa_success"
+	EventLogout     AuthEvent = "logout"
+)
+
 type User struct {
 	ID         string
 	Email      string
@@ -157,3 +180,8 @@ func generateTrackingNumber(orderID string) string {
 	return ""
 }
 
+// Ensure imports are used
+var (
+	_ = fmt.Sprintf
+	_ = log.Println
+)

@@ -11,10 +11,7 @@ Requirements:
 */
 
 import (
-	"fmt"
-	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -38,14 +35,14 @@ func NewTokenBucket(capacity int64, rate float64) *TokenBucket {
 func (b *TokenBucket) refill() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Allow - TODO: implement this function
 func (b *TokenBucket) Allow() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 type RateLimiter struct {
@@ -66,7 +63,7 @@ func NewRateLimiter(capacity int64, rate float64) *RateLimiter {
 func (rl *RateLimiter) Allow(clientID string) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // getBucket - TODO: implement this function
@@ -101,6 +98,6 @@ func getClientIP(r *http.Request) string {
 func (rl *RateLimiter) Cleanup(inactiveThreshold time.Duration) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 

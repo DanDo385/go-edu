@@ -4,10 +4,6 @@ package toolbox
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"math/big"
-	"strconv"
 )
 
 /*
@@ -41,4 +37,3 @@ func handleTx(ctx context.Context, client ToolboxClient, args []string) (*Result
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

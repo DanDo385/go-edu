@@ -1,4 +1,4 @@
-//go:build reference
+//go:build reference && 386
 
 package buildtagsconditionalcompilation
 

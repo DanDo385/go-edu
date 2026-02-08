@@ -4,7 +4,6 @@ package syncpoolallocator
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -31,7 +30,7 @@ func (bp *BufferPool) Get() *bytes.Buffer {
 func (bp *BufferPool) Put(buf *bytes.Buffer) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type SlicePool struct {
@@ -57,7 +56,7 @@ func (sp *SlicePool) Get() *[]byte {
 func (sp *SlicePool) Put(slice *[]byte) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type Pool[T any] struct {
@@ -69,7 +68,7 @@ type Pool[T any] struct {
 func NewPool[T any](newFunc func() *T, resetFunc func(*T)) *Pool[T] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Get - TODO: implement this function
@@ -83,7 +82,7 @@ func (p *Pool[T]) Get() *T {
 func (p *Pool[T]) Put(obj *T) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type MetricsPool struct {
@@ -118,14 +117,14 @@ func (mp *MetricsPool) Get() interface{} {
 func (mp *MetricsPool) Put(obj interface{}) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Stats - TODO: implement this function
 func (mp *MetricsPool) Stats() PoolStats {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return PoolStats{}
 }
 
 type SizeClassedPool struct {
@@ -150,7 +149,7 @@ func (scp *SizeClassedPool) Get(size int) *[]byte {
 func (scp *SizeClassedPool) Put(buf *[]byte) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type BoundedPool struct {
@@ -177,14 +176,14 @@ func (bp *BoundedPool) Get() interface{} {
 func (bp *BoundedPool) Put(obj interface{}) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // InUse - TODO: implement this function
 func (bp *BoundedPool) InUse() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type Worker struct {
@@ -207,14 +206,14 @@ func NewWorkerPool() *WorkerPool {
 func (wp *WorkerPool) Process(data string) string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 // Reset - TODO: implement this function
 func (w *Worker) Reset() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type EnhancedMetricsPool struct {
@@ -253,21 +252,21 @@ func (emp *EnhancedMetricsPool) Get() interface{} {
 func (emp *EnhancedMetricsPool) Put(obj interface{}) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Stats - TODO: implement this function
 func (emp *EnhancedMetricsPool) Stats() EnhancedStats {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return EnhancedStats{}
 }
 
 // String - TODO: implement this function
 func (es EnhancedStats) String() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 
 type CopyOnWritePool[T any] struct {
@@ -279,7 +278,7 @@ type CopyOnWritePool[T any] struct {
 func NewCopyOnWritePool[T any](newFunc func() *T, copyFunc func(*T) *T) *CopyOnWritePool[T] {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Get - TODO: implement this function
@@ -293,6 +292,5 @@ func (cp *CopyOnWritePool[T]) Get() *T {
 func (cp *CopyOnWritePool[T]) Put(obj *T) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
-

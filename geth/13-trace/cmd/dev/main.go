@@ -2,13 +2,23 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/13-trace/internal/trace"
+	"github.com/example/go-10x-minis/geth/13-trace/internal/trace"
 )
+
+// traceAdapter wraps ethclient to satisfy trace.TraceClient.
+// Students will implement the real trace logic in the exercise.
+type traceAdapter struct{ c *ethclient.Client }
+
+func (a *traceAdapter) TraceTransaction(ctx context.Context, txHash common.Hash) (json.RawMessage, error) {
+	return nil, fmt.Errorf("not yet implemented - complete the exercise")
+}
 
 /*
 Debug Harness for Trace Module
@@ -30,7 +40,7 @@ func main() {
 	defer client.Close()
 
 	// BREAKPOINT: Step into Run()
-	result, err := trace.Run(ctx, client, trace.Config{})
+	result, err := trace.Run(ctx, &traceAdapter{client}, trace.Config{})
 	if err != nil {
 		fmt.Printf("ERROR: %v\n", err)
 		return

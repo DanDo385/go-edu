@@ -1,4 +1,4 @@
-//go:build reference
+//go:build reference && arm64
 
 package buildtagsconditionalcompilation
 

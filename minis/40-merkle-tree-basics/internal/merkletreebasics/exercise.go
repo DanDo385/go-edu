@@ -2,10 +2,6 @@
 
 package merkletreebasics
 
-import (
-	"crypto/sha256"
-)
-
 type MerkleTree struct {
 	Root   []byte     // The root hash representing the entire tree
 	Leaves [][]byte   // All leaf hashes (hashes of original data)

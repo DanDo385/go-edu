@@ -8,8 +8,16 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/16-concurrency/internal/concurrency"
+	"github.com/example/go-10x-minis/geth/16-concurrency/internal/concurrency"
 )
+
+// ethProber wraps ethclient to satisfy concurrency.Prober.
+// Students will implement the real probe logic in the exercise.
+type ethProber struct{ c *ethclient.Client }
+
+func (p *ethProber) Probe(ctx context.Context, endpoint string) error {
+	return fmt.Errorf("not yet implemented - complete the exercise")
+}
 
 /*
 Concurrent RPC Calls Demo
@@ -44,7 +52,7 @@ func main() {
 	defer client.Close()
 
 	// BREAKPOINT: Step into Run()
-	result, err := concurrency.Run(ctx, client, concurrency.Config{})
+	result, err := concurrency.Run(ctx, &ethProber{client}, concurrency.Config{})
 	if err != nil {
 		fmt.Printf("Failed: %v\n", err)
 		os.Exit(1)

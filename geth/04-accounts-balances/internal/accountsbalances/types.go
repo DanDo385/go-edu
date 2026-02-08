@@ -23,6 +23,8 @@ const (
 
 // Config controls how Run performs lookups.
 type Config struct {
+	// Address is the single address to query (convenience field).
+	Address     common.Address
 	Addresses   []common.Address
 	BlockNumber *big.Int
 }
@@ -38,4 +40,7 @@ type AccountState struct {
 // Result aggregates the queried account states.
 type Result struct {
 	Accounts []AccountState
+	// Convenience fields for single-address queries.
+	Balance *big.Int
+	Nonce   uint64
 }

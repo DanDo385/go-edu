@@ -3,8 +3,6 @@
 package grpctelemetryservice
 
 import (
-	"io"
-
 	pb "github.com/example/go-10x-minis/minis/10-grpc-telemetry-service/proto"
 )
 

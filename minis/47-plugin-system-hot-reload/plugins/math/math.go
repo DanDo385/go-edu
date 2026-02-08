@@ -198,3 +198,6 @@ func toFloat64(v interface{}) (float64, error) {
 // 3. Update version to "1.1.0"
 //
 // 4. Rebuild and watch it hot reload!
+
+// main is required for package main but unused when built as a plugin (-buildmode=plugin).
+func main() {}

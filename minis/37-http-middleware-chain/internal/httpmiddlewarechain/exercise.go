@@ -4,16 +4,16 @@ package httpmiddlewarechain
 
 import (
 	"context"
-	"log"
 	"net/http"
-	"runtime/debug"
-	"sync/atomic"
-	"time"
 )
 
 type contextKey string
 
 const (
+	requestIDKey contextKey = "request_id"
+	userKey      contextKey = "user"
+)
+
 // WithRequestID - TODO: implement this function
 func WithRequestID(ctx context.Context, id string) context.Context {
 	// TODO: Implement this function
@@ -25,7 +25,7 @@ func WithRequestID(ctx context.Context, id string) context.Context {
 func GetRequestID(ctx context.Context) (string, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", false
 }
 
 // WithUser - TODO: implement this function
@@ -39,7 +39,7 @@ func WithUser(ctx context.Context, user *User) context.Context {
 func GetUser(ctx context.Context) (*User, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil, false
 }
 
 type User struct {
@@ -65,28 +65,28 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 func (rw *ResponseWriter) WriteHeader(statusCode int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Write - TODO: implement this function
 func (rw *ResponseWriter) Write(b []byte) (int, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, nil
 }
 
 // StatusCode - TODO: implement this function
 func (rw *ResponseWriter) StatusCode() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // BytesWritten - TODO: implement this function
 func (rw *ResponseWriter) BytesWritten() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type Middleware func(http.Handler) http.Handler

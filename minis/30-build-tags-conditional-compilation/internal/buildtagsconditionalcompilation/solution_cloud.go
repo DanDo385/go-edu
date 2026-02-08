@@ -1,4 +1,4 @@
-//go:build reference
+//go:build reference && !local
 
 package buildtagsconditionalcompilation
 

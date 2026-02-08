@@ -2,14 +2,6 @@
 
 package proofofworkdemo
 
-import (
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"math"
-	"strings"
-)
-
 // CalculateBlockHashSolution - TODO: implement this function
 func CalculateBlockHashSolution(b Block) string {
 	// TODO: Implement this function
@@ -89,7 +81,7 @@ func SimulateSelfishMiningSolution(
 ) (honestBlocks int, selfishBlocks int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, 0
 }
 
 // randFloat - TODO: implement this function

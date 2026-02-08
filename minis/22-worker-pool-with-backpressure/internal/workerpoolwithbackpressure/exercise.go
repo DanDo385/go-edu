@@ -51,7 +51,7 @@ func NewWorkerPool(queueSize, numWorkers int) *WorkerPool {
 func (p *WorkerPool) Start(ctx context.Context, process func(Job) Result) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Submit - TODO: implement this function
@@ -65,7 +65,7 @@ func (p *WorkerPool) Submit(job Job) error {
 func (p *WorkerPool) SubmitWithTimeout(ctx context.Context, job Job, timeout time.Duration) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil
+	return nil
 }
 
 // Results - TODO: implement this function
@@ -79,21 +79,21 @@ func (p *WorkerPool) Results() <-chan Result {
 func (p *WorkerPool) Close() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // QueueDepth - TODO: implement this function
 func (p *WorkerPool) QueueDepth() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // QueueUtilization - TODO: implement this function
 func (p *WorkerPool) QueueUtilization() float64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 type RateLimiter struct {
@@ -122,14 +122,14 @@ func (rl *RateLimiter) Wait(ctx context.Context) error {
 func (rl *RateLimiter) TryAcquire() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Stop - TODO: implement this function
 func (rl *RateLimiter) Stop() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type QueueFullError struct{}
@@ -138,6 +138,6 @@ type QueueFullError struct{}
 func (e *QueueFullError) Error() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 

@@ -2,12 +2,6 @@
 
 package atomiccountersvsmutex
 
-import (
-	"math"
-	"sync/atomic"
-	"time"
-)
-
 // NewAtomicCounter - TODO: implement this function
 func NewAtomicCounter() *AtomicCounter {
 	// TODO: Implement this function
@@ -19,35 +13,35 @@ func NewAtomicCounter() *AtomicCounter {
 func (c *AtomicCounter) Increment() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Decrement - TODO: implement this function
 func (c *AtomicCounter) Decrement() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Add - TODO: implement this function
 func (c *AtomicCounter) Add(delta int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Value - TODO: implement this function
 func (c *AtomicCounter) Value() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Reset - TODO: implement this function
 func (c *AtomicCounter) Reset() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // NewAtomicFlag - TODO: implement this function
@@ -61,28 +55,28 @@ func NewAtomicFlag() *AtomicFlag {
 func (f *AtomicFlag) Set() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Clear - TODO: implement this function
 func (f *AtomicFlag) Clear() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // IsSet - TODO: implement this function
 func (f *AtomicFlag) IsSet() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // TestAndSet - TODO: implement this function
 func (f *AtomicFlag) TestAndSet() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // NewRateLimiter - TODO: implement this function
@@ -96,7 +90,7 @@ func NewRateLimiter(capacity, tokensPerSecond int64) *RateLimiter {
 func (rl *RateLimiter) Allow() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // NewAtomicMax - TODO: implement this function
@@ -110,14 +104,14 @@ func NewAtomicMax() *AtomicMax {
 func (am *AtomicMax) Update(value int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Max - TODO: implement this function
 func (am *AtomicMax) Max() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // NewSpinLock - TODO: implement this function
@@ -131,14 +125,14 @@ func NewSpinLock() *SpinLock {
 func (sl *SpinLock) Lock() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Unlock - TODO: implement this function
 func (sl *SpinLock) Unlock() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // NewAtomicState - TODO: implement this function
@@ -152,14 +146,14 @@ func NewAtomicState() *AtomicState {
 func (as *AtomicState) CurrentState() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // Transition - TODO: implement this function
 func (as *AtomicState) Transition(expectedCurrent, newState int64) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return false
 }
 
 // NewReferenceCounter - TODO: implement this function
@@ -173,21 +167,21 @@ func NewReferenceCounter() *ReferenceCounter {
 func (rc *ReferenceCounter) Acquire() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Release - TODO: implement this function
 func (rc *ReferenceCounter) Release() bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Count - TODO: implement this function
 func (rc *ReferenceCounter) Count() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // NewConfigManager - TODO: implement this function
@@ -201,7 +195,7 @@ func NewConfigManager() *ConfigManager {
 func (cm *ConfigManager) Update(newConfig *Config) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Get - TODO: implement this function
@@ -222,7 +216,7 @@ func NewLoadBalancer(numWorkers int) *LoadBalancer {
 func (lb *LoadBalancer) NextWorker() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
 // NewAtomicBitmap - TODO: implement this function
@@ -236,21 +230,21 @@ func NewAtomicBitmap() *AtomicBitmap {
 func (ab *AtomicBitmap) SetBit(bitIndex int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // ClearBit - TODO: implement this function
 func (ab *AtomicBitmap) ClearBit(bitIndex int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // TestBit - TODO: implement this function
 func (ab *AtomicBitmap) TestBit(bitIndex int) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // IncrementCounterNonAtomic - TODO: implement this function
@@ -276,13 +270,12 @@ func NewCircularBuffer(capacity int) *CircularBuffer {
 func (cb *CircularBuffer) Push(value int64) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Pop - TODO: implement this function
 func (cb *CircularBuffer) Pop() (int64, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
-

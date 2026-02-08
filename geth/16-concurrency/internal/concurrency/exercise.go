@@ -4,10 +4,6 @@ package concurrency
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"sync"
-	"time"
 )
 
 /*
@@ -20,4 +16,3 @@ func Run(ctx context.Context, p Prober, cfg Config) (*Result, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

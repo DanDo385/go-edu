@@ -7,9 +7,6 @@ package contextcancellationtimeouts
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"net/http"
 	"sync"
 	"time"
 )
@@ -38,7 +35,7 @@ func RetryWithTimeout(
 ) error {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil, nil, nil
+	return nil
 }
 
 type fetchResult struct {
@@ -58,7 +55,7 @@ func FetchAll(ctx context.Context, urls []string, timeout time.Duration) ([]stri
 func fetchURL(ctx context.Context, url string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // WorkerPool - TODO: implement this function
@@ -72,7 +69,7 @@ func WorkerPool(ctx context.Context, numWorkers int, jobs <-chan Job) <-chan Res
 func processJob(ctx context.Context, job Job) Result {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return Result{}
 }
 
 type Cache struct {
@@ -91,28 +88,28 @@ func NewCache() *Cache {
 func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Get - TODO: implement this function
 func (c *Cache) Get(key string) (interface{}, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return nil, false
 }
 
 // Cleanup - TODO: implement this function
 func (c *Cache) Cleanup(ctx context.Context) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // removeExpired - TODO: implement this function
 func (c *Cache) removeExpired() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 type RateLimiter struct {

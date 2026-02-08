@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"geth/02-rpc-basics/internal/rpcbasics"
+	"github.com/example/go-10x-minis/geth/02-rpc-basics/internal/rpcbasics"
 )
 
 /*

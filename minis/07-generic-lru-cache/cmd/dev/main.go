@@ -19,7 +19,7 @@ func main() {
 
 	// Demo 1: Basic operations
 	fmt.Println("--- Demo 1: Basic Operations ---")
-	cache := genericlrucache.New[string, string](3, time.Minute)
+	cache := genericlrucache.New[string, string](3)
 
 	cache.Set("user:1", "Alice")
 	cache.Set("user:2", "Bob")
@@ -49,7 +49,7 @@ func main() {
 
 	// Demo 3: TTL expiration
 	fmt.Println("--- Demo 3: TTL Expiration ---")
-	shortCache := genericlrucache.New[string, int](10, 100*time.Millisecond)
+	shortCache := genericlrucache.New[string, int](10)
 	shortCache.Set("temp", 42)
 	if val, ok := shortCache.Get("temp"); ok {
 		fmt.Printf("  Before TTL: temp = %d\n", val)
@@ -65,7 +65,7 @@ func main() {
 
 	// Demo 4: Generic types
 	fmt.Println("--- Demo 4: Different Types ---")
-	intCache := genericlrucache.New[int, string](5, time.Minute)
+	intCache := genericlrucache.New[int, string](5)
 	intCache.Set(1, "first")
 	intCache.Set(2, "second")
 	if val, ok := intCache.Get(1); ok {

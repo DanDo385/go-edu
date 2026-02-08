@@ -18,36 +18,36 @@ import (
 // SOLUTION 1: Basic Counting Semaphore
 // ============================================================================
 
-// SemaphoreSolution is a counting semaphore using buffered channels.
+// Semaphore is a counting semaphore using buffered channels.
 //
 // IMPLEMENTATION NOTES:
 // - Buffered channel capacity = max permits
 // - Send (sem <-) = acquire permit (blocks when full)
 // - Receive (<-sem) = release permit (makes space)
 // - Simple, idiomatic Go pattern
-type SemaphoreSolution struct {
+type Semaphore struct {
 	sem chan struct{}
 }
 
-// NewSemaphoreSolution creates a new counting semaphore.
-func NewSemaphoreSolution(maxPermits int) *SemaphoreSolution {
-	return &SemaphoreSolution{
+// NewSemaphore creates a new counting semaphore.
+func NewSemaphore(maxPermits int) *Semaphore {
+	return &Semaphore{
 		sem: make(chan struct{}, maxPermits),
 	}
 }
 
 // Acquire acquires a permit, blocking if none available.
-func (s *SemaphoreSolution) Acquire() {
+func (s *Semaphore) Acquire() {
 	s.sem <- struct{}{}
 }
 
 // Release releases a permit back to the semaphore.
-func (s *SemaphoreSolution) Release() {
+func (s *Semaphore) Release() {
 	<-s.sem
 }
 
 // TryAcquire attempts to acquire without blocking.
-func (s *SemaphoreSolution) TryAcquire() bool {
+func (s *Semaphore) TryAcquire() bool {
 	select {
 	case s.sem <- struct{}{}:
 		return true
@@ -57,7 +57,7 @@ func (s *SemaphoreSolution) TryAcquire() bool {
 }
 
 // AcquireWithContext acquires with timeout/cancellation support.
-func (s *SemaphoreSolution) AcquireWithContext(ctx context.Context) error {
+func (s *Semaphore) AcquireWithContext(ctx context.Context) error {
 	select {
 	case s.sem <- struct{}{}:
 		return nil
@@ -70,22 +70,22 @@ func (s *SemaphoreSolution) AcquireWithContext(ctx context.Context) error {
 // SOLUTION 2: Rate Limiter
 // ============================================================================
 
-// RateLimiterSolution implements token bucket rate limiting.
+// RateLimiter implements token bucket rate limiting.
 //
 // IMPLEMENTATION NOTES:
 // - Tokens channel holds available permits (buffered = maxBurst)
 // - Refill goroutine adds tokens at specified rate
 // - Wait() blocks until token available
 // - TryAcquire() non-blocking attempt
-type RateLimiterSolution struct {
+type RateLimiter struct {
 	tokens chan struct{}
 	rate   time.Duration
 	done   chan struct{}
 }
 
-// NewRateLimiterSolution creates a new rate limiter.
-func NewRateLimiterSolution(maxBurst int, rate time.Duration) *RateLimiterSolution {
-	rl := &RateLimiterSolution{
+// NewRateLimiter creates a new rate limiter.
+func NewRateLimiter(maxBurst int, rate time.Duration) *RateLimiter {
+	rl := &RateLimiter{
 		tokens: make(chan struct{}, maxBurst),
 		rate:   rate,
 		done:   make(chan struct{}),
@@ -103,7 +103,7 @@ func NewRateLimiterSolution(maxBurst int, rate time.Duration) *RateLimiterSoluti
 }
 
 // refill periodically adds tokens to the bucket.
-func (rl *RateLimiterSolution) refill() {
+func (rl *RateLimiter) refill() {
 	ticker := time.NewTicker(rl.rate)
 	defer ticker.Stop()
 
@@ -124,12 +124,12 @@ func (rl *RateLimiterSolution) refill() {
 }
 
 // Wait blocks until a token is available.
-func (rl *RateLimiterSolution) Wait() {
+func (rl *RateLimiter) Wait() {
 	<-rl.tokens
 }
 
 // TryAcquire attempts non-blocking token acquisition.
-func (rl *RateLimiterSolution) TryAcquire() bool {
+func (rl *RateLimiter) TryAcquire() bool {
 	select {
 	case <-rl.tokens:
 		return true
@@ -139,7 +139,7 @@ func (rl *RateLimiterSolution) TryAcquire() bool {
 }
 
 // Stop stops the rate limiter.
-func (rl *RateLimiterSolution) Stop() {
+func (rl *RateLimiter) Stop() {
 	close(rl.done)
 }
 
@@ -147,33 +147,33 @@ func (rl *RateLimiterSolution) Stop() {
 // SOLUTION 3: Weighted Semaphore
 // ============================================================================
 
-// WeightedSemaphoreSolution allows acquiring multiple permits at once.
+// WeightedSemaphore allows acquiring multiple permits at once.
 //
 // IMPLEMENTATION NOTES:
 // - Uses buffered channel where capacity = max total weight
 // - Acquire(n) sends n items to channel
 // - Release(n) receives n items from channel
 // - Context support requires careful cleanup on partial acquisition
-type WeightedSemaphoreSolution struct {
+type WeightedSemaphore struct {
 	permits chan struct{}
 }
 
-// NewWeightedSemaphoreSolution creates a weighted semaphore.
-func NewWeightedSemaphoreSolution(maxWeight int) *WeightedSemaphoreSolution {
-	return &WeightedSemaphoreSolution{
+// NewWeightedSemaphore creates a weighted semaphore.
+func NewWeightedSemaphore(maxWeight int) *WeightedSemaphore {
+	return &WeightedSemaphore{
 		permits: make(chan struct{}, maxWeight),
 	}
 }
 
 // Acquire acquires the specified weight of permits.
-func (ws *WeightedSemaphoreSolution) Acquire(weight int) {
+func (ws *WeightedSemaphore) Acquire(weight int) {
 	for i := 0; i < weight; i++ {
 		ws.permits <- struct{}{}
 	}
 }
 
 // Release releases the specified weight of permits.
-func (ws *WeightedSemaphoreSolution) Release(weight int) {
+func (ws *WeightedSemaphore) Release(weight int) {
 	for i := 0; i < weight; i++ {
 		<-ws.permits
 	}
@@ -183,7 +183,7 @@ func (ws *WeightedSemaphoreSolution) Release(weight int) {
 //
 // CRITICAL DETAIL: If context cancels during acquisition, we must
 // release the permits we already acquired to avoid leaks.
-func (ws *WeightedSemaphoreSolution) AcquireWithContext(ctx context.Context, weight int) error {
+func (ws *WeightedSemaphore) AcquireWithContext(ctx context.Context, weight int) error {
 	acquired := 0
 
 	// Acquire permits one at a time
@@ -207,14 +207,14 @@ func (ws *WeightedSemaphoreSolution) AcquireWithContext(ctx context.Context, wei
 // SOLUTION 4: Worker Pool
 // ============================================================================
 
-// WorkerPoolSolution processes jobs with bounded concurrency.
+// WorkerPool processes jobs with bounded concurrency.
 //
 // IMPLEMENTATION NOTES:
 // - Uses semaphore to limit concurrent workers
 // - Job queue channel for submitted jobs
 // - Results channel for processed results
 // - Graceful shutdown waits for all workers to finish
-type WorkerPoolSolution struct {
+type WorkerPool struct {
 	jobs       chan Job
 	results    chan Result
 	sem        chan struct{}
@@ -225,9 +225,30 @@ type WorkerPoolSolution struct {
 	mu         sync.Mutex
 }
 
-// NewWorkerPoolSolution creates a worker pool.
-func NewWorkerPoolSolution(numWorkers int, processor func(Job) Result) *WorkerPoolSolution {
-	return &WorkerPoolSolution{
+// DefaultProcessor simulates job processing with a delay
+func DefaultProcessor(job Job) Result {
+	// Simulate processing time
+	time.Sleep(10 * time.Millisecond)
+	
+	// Simulate occasional errors
+	if job.ID%10 == 0 {
+		return Result{
+			JobID:  job.ID,
+			Output: "",
+			Err:    fmt.Errorf("simulated error for job %d", job.ID),
+		}
+	}
+	
+	return Result{
+		JobID:  job.ID,
+		Output: fmt.Sprintf("processed: %s", job.Data),
+		Err:    nil,
+	}
+}
+
+// NewWorkerPool creates a worker pool.
+func NewWorkerPool(numWorkers int, processor func(Job) Result) *WorkerPool {
+	return &WorkerPool{
 		jobs:       make(chan Job, numWorkers*2), // Buffered job queue
 		results:    make(chan Result, numWorkers*2),
 		sem:        make(chan struct{}, numWorkers),
@@ -237,12 +258,12 @@ func NewWorkerPoolSolution(numWorkers int, processor func(Job) Result) *WorkerPo
 }
 
 // Submit submits a job to the pool.
-func (wp *WorkerPoolSolution) Submit(job Job) {
+func (wp *WorkerPool) Submit(job Job) {
 	wp.jobs <- job
 }
 
 // Start starts processing jobs.
-func (wp *WorkerPoolSolution) Start() {
+func (wp *WorkerPool) Start() {
 	wp.mu.Lock()
 	if wp.started {
 		wp.mu.Unlock()
@@ -277,12 +298,12 @@ func (wp *WorkerPoolSolution) Start() {
 }
 
 // Results returns the results channel.
-func (wp *WorkerPoolSolution) Results() <-chan Result {
+func (wp *WorkerPool) Results() <-chan Result {
 	return wp.results
 }
 
 // Stop gracefully stops the pool.
-func (wp *WorkerPoolSolution) Stop() {
+func (wp *WorkerPool) Stop() {
 	close(wp.jobs)
 	wp.wg.Wait()
 }
@@ -291,8 +312,8 @@ func (wp *WorkerPoolSolution) Stop() {
 // ADDITIONAL SOLUTIONS: Advanced Patterns
 // ============================================================================
 
-// MonitoredSemaphoreSolution tracks usage statistics.
-type MonitoredSemaphoreSolution struct {
+// MonitoredSemaphore tracks usage statistics.
+type MonitoredSemaphore struct {
 	sem           chan struct{}
 	acquired      int
 	capacity      int
@@ -302,16 +323,16 @@ type MonitoredSemaphoreSolution struct {
 	mu            sync.Mutex
 }
 
-// NewMonitoredSemaphoreSolution creates a semaphore with metrics.
-func NewMonitoredSemaphoreSolution(capacity int) *MonitoredSemaphoreSolution {
-	return &MonitoredSemaphoreSolution{
+// NewMonitoredSemaphore creates a semaphore with metrics.
+func NewMonitoredSemaphore(capacity int) *MonitoredSemaphore {
+	return &MonitoredSemaphore{
 		sem:      make(chan struct{}, capacity),
 		capacity: capacity,
 	}
 }
 
 // Acquire acquires a permit and updates metrics.
-func (ms *MonitoredSemaphoreSolution) Acquire() {
+func (ms *MonitoredSemaphore) Acquire() {
 	ms.sem <- struct{}{}
 
 	ms.mu.Lock()
@@ -326,7 +347,7 @@ func (ms *MonitoredSemaphoreSolution) Acquire() {
 }
 
 // Release releases a permit and updates metrics.
-func (ms *MonitoredSemaphoreSolution) Release() {
+func (ms *MonitoredSemaphore) Release() {
 	<-ms.sem
 
 	ms.mu.Lock()
@@ -337,7 +358,7 @@ func (ms *MonitoredSemaphoreSolution) Release() {
 }
 
 // GetStats returns current statistics.
-func (ms *MonitoredSemaphoreSolution) GetStats() Stats {
+func (ms *MonitoredSemaphore) GetStats() Stats {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
@@ -354,32 +375,32 @@ func (ms *MonitoredSemaphoreSolution) GetStats() Stats {
 // HELPER: Connection Pool Example
 // ============================================================================
 
-// ConnectionPoolSolution demonstrates real-world semaphore usage.
-type ConnectionPoolSolution struct {
+// ConnectionPool demonstrates real-world semaphore usage.
+type ConnectionPool struct {
 	sem      chan struct{}
 	maxConns int
 }
 
-// NewConnectionPoolSolution creates a connection pool.
-func NewConnectionPoolSolution(maxConns int) *ConnectionPoolSolution {
-	return &ConnectionPoolSolution{
+// NewConnectionPool creates a connection pool.
+func NewConnectionPool(maxConns int) *ConnectionPool {
+	return &ConnectionPool{
 		sem:      make(chan struct{}, maxConns),
 		maxConns: maxConns,
 	}
 }
 
 // Acquire acquires a connection permit.
-func (cp *ConnectionPoolSolution) Acquire() {
+func (cp *ConnectionPool) Acquire() {
 	cp.sem <- struct{}{}
 }
 
 // Release releases a connection permit.
-func (cp *ConnectionPoolSolution) Release() {
+func (cp *ConnectionPool) Release() {
 	<-cp.sem
 }
 
 // AcquireWithTimeout acquires with timeout.
-func (cp *ConnectionPoolSolution) AcquireWithTimeout(timeout time.Duration) error {
+func (cp *ConnectionPool) AcquireWithTimeout(timeout time.Duration) error {
 	select {
 	case cp.sem <- struct{}{}:
 		return nil
@@ -389,7 +410,7 @@ func (cp *ConnectionPoolSolution) AcquireWithTimeout(timeout time.Duration) erro
 }
 
 // ExecuteQuery simulates a database query with connection pooling.
-func (cp *ConnectionPoolSolution) ExecuteQuery(ctx context.Context, query string) error {
+func (cp *ConnectionPool) ExecuteQuery(ctx context.Context, query string) error {
 	// Acquire connection
 	select {
 	case cp.sem <- struct{}{}:
@@ -409,13 +430,13 @@ func (cp *ConnectionPoolSolution) ExecuteQuery(ctx context.Context, query string
 
 // BenchmarkHelper provides utilities for performance testing.
 type BenchmarkHelper struct {
-	sem *SemaphoreSolution
+	sem *Semaphore
 }
 
 // NewBenchmarkHelper creates a benchmark helper.
 func NewBenchmarkHelper(capacity int) *BenchmarkHelper {
 	return &BenchmarkHelper{
-		sem: NewSemaphoreSolution(capacity),
+		sem: NewSemaphore(capacity),
 	}
 }
 

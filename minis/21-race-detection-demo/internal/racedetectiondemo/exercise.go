@@ -3,198 +3,204 @@
 package racedetectiondemo
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 )
 
-type SafeCounterSolution struct {
+type SafeCounter struct {
 	value atomic.Int64
 }
 
-// NewSafeCounterSolution - TODO: implement this function
-func NewSafeCounterSolution() *SafeCounterSolution {
+// NewSafeCounter - TODO: implement this function
+func NewSafeCounter() *SafeCounter {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Increment - TODO: implement this function
-func (c *SafeCounterSolution) Increment() {
+func (c *SafeCounter) Increment() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Value - TODO: implement this function
-func (c *SafeCounterSolution) Value() int64 {
+func (c *SafeCounter) Value() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
-type SafeCounterMutexSolution struct {
+type SafeCounterMutex struct {
 	value int64
 	mu    sync.Mutex
 }
 
-// NewSafeCounterMutexSolution - TODO: implement this function
-func NewSafeCounterMutexSolution() *SafeCounterMutexSolution {
+// NewSafeCounterMutex - TODO: implement this function
+func NewSafeCounterMutex() *SafeCounterMutex {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Increment - TODO: implement this function
-func (c *SafeCounterMutexSolution) Increment() {
+func (c *SafeCounterMutex) Increment() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Value - TODO: implement this function
-func (c *SafeCounterMutexSolution) Value() int64 {
+func (c *SafeCounterMutex) Value() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
-type SafeMapSolution struct {
+type SafeMap struct {
 	data map[string]int
 	mu   sync.RWMutex
 }
 
-// NewSafeMapSolution - TODO: implement this function
-func NewSafeMapSolution() *SafeMapSolution {
+// NewSafeMap - TODO: implement this function
+func NewSafeMap() *SafeMap {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Set - TODO: implement this function
-func (m *SafeMapSolution) Set(key string, value int) {
+func (m *SafeMap) Set(key string, value int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Get - TODO: implement this function
-func (m *SafeMapSolution) Get(key string) (int, bool) {
+func (m *SafeMap) Get(key string) (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
 
 // Len - TODO: implement this function
-func (m *SafeMapSolution) Len() int {
+func (m *SafeMap) Len() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
-type SafeMapSyncMapSolution struct {
+type SafeMapSyncMap struct {
 	data sync.Map
 }
 
-// NewSafeMapSyncMapSolution - TODO: implement this function
-func NewSafeMapSyncMapSolution() *SafeMapSyncMapSolution {
+// NewSafeMapSyncMap - TODO: implement this function
+func NewSafeMapSyncMap() *SafeMapSyncMap {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Set - TODO: implement this function
-func (m *SafeMapSyncMapSolution) Set(key string, value int) {
+func (m *SafeMapSyncMap) Set(key string, value int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return
 }
 
 // Get - TODO: implement this function
-func (m *SafeMapSyncMapSolution) Get(key string) (int, bool) {
+func (m *SafeMapSyncMap) Get(key string) (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
 
 // Len - TODO: implement this function
-func (m *SafeMapSyncMapSolution) Len() int {
+func (m *SafeMapSyncMap) Len() int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return 0
 }
 
-type LazyInitSolution struct {
+type LazyInit struct {
 	once  sync.Once
 	value interface{}
 }
 
-// NewLazyInitSolution - TODO: implement this function
-func NewLazyInitSolution() *LazyInitSolution {
+// NewLazyInit - TODO: implement this function
+func NewLazyInit() *LazyInit {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // GetOrInit - TODO: implement this function
-func (l *LazyInitSolution) GetOrInit(init func() interface{}) interface{} {
+func (l *LazyInit) GetOrInit(init func() interface{}) interface{} {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-type SafeSliceSolution struct {
+type SafeSlice struct {
 	data []int
 	mu   sync.RWMutex
 }
 
-// NewSafeSliceSolution - TODO: implement this function
-func NewSafeSliceSolution() *SafeSliceSolution {
+// NewSafeSlice - TODO: implement this function
+func NewSafeSlice() *SafeSlice {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Append - TODO: implement this function
-func (s *SafeSliceSolution) Append(value int) {
+func (s *SafeSlice) Append(value int) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Get - TODO: implement this function
-func (s *SafeSliceSolution) Get(index int) (int, bool) {
+func (s *SafeSlice) Get(index int) (int, bool) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, false
 }
 
 // Len - TODO: implement this function
-func (s *SafeSliceSolution) Len() int {
+func (s *SafeSlice) Len() int {
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return 0
+}
+
+// ProcessIDs - TODO: implement this function
+func ProcessIDs(ids []int, process func(int) int) []int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-// ProcessIDsSolution - TODO: implement this function
-func ProcessIDsSolution(ids []int, process func(int) int) []int {
+// ProcessIDsShadow - TODO: implement this function
+func ProcessIDsShadow(ids []int, process func(int) int) []int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-// ProcessIDsSolutionShadow - TODO: implement this function
-func ProcessIDsSolutionShadow(ids []int, process func(int) int) []int {
+// NewURLCache - TODO: implement this function
+func NewURLCache(fetcher func(url string) (string, error)) *URLCache {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-// FetchSolution - TODO: implement this function
-func (c *URLCache) FetchSolution(url string) (string, error) {
+// Fetch - TODO: implement this function
+func (c *URLCache) Fetch(url string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 type URLCacheAdvanced struct {
@@ -210,105 +216,105 @@ type URLCacheAdvanced struct {
 func NewURLCacheAdvanced(fetcher func(url string) (string, error)) *URLCacheAdvanced {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return nil
 }
 
 // Fetch - TODO: implement this function
 func (c *URLCacheAdvanced) Fetch(url string) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
-type MetricsSolution struct {
+type Metrics struct {
 	requests atomic.Int64
 	errors   atomic.Int64
 }
 
-// NewMetricsSolution - TODO: implement this function
-func NewMetricsSolution() *MetricsSolution {
+// NewMetrics - TODO: implement this function
+func NewMetrics() *Metrics {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // IncrementRequests - TODO: implement this function
-func (m *MetricsSolution) IncrementRequests() {
+func (m *Metrics) IncrementRequests() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // IncrementErrors - TODO: implement this function
-func (m *MetricsSolution) IncrementErrors() {
+func (m *Metrics) IncrementErrors() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // GetStats - TODO: implement this function
-func (m *MetricsSolution) GetStats() (requests int64, errors int64) {
+func (m *Metrics) GetStats() (requests int64, errors int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, 0
 }
 
-type BankAccountSolution struct {
+type BankAccount struct {
 	balance int64
 	mu      sync.Mutex
 }
 
-// NewBankAccountSolution - TODO: implement this function
-func NewBankAccountSolution(initialBalance int64) *BankAccountSolution {
+// NewBankAccount - TODO: implement this function
+func NewBankAccount(initialBalance int64) *BankAccount {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
 // Deposit - TODO: implement this function
-func (b *BankAccountSolution) Deposit(amount int64) {
+func (b *BankAccount) Deposit(amount int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Withdraw - TODO: implement this function
-func (b *BankAccountSolution) Withdraw(amount int64) bool {
+func (b *BankAccount) Withdraw(amount int64) bool {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return false
 }
 
 // Balance - TODO: implement this function
-func (b *BankAccountSolution) Balance() int64 {
-	// TODO: Implement this function
-	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
-}
-
-// PipelineSolution - TODO: implement this function
-func PipelineSolution(numbers []int) int {
+func (b *BankAccount) Balance() int64 {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return 0
 }
 
-// PipelineSolutionComposable - TODO: implement this function
-func PipelineSolutionComposable(numbers []int) int {
+// Pipeline - TODO: implement this function
+func Pipeline(numbers []int) int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return 0
 }
 
-// WorkerPoolSolution - TODO: implement this function
-func WorkerPoolSolution(numWorkers int, jobs []int, process func(int) int) []int {
+// PipelineComposable - TODO: implement this function
+func PipelineComposable(numbers []int) int {
+	// TODO: Implement this function
+	// Refer to solution.reference.go for the complete implementation with detailed explanations
+	return 0
+}
+
+// WorkerPool - TODO: implement this function
+func WorkerPool(numWorkers int, jobs []int, process func(int) int) []int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
 }
 
-// WorkerPoolSolutionOrdered - TODO: implement this function
-func WorkerPoolSolutionOrdered(numWorkers int, jobs []int, process func(int) int) []int {
+// WorkerPoolOrdered - TODO: implement this function
+func WorkerPoolOrdered(numWorkers int, jobs []int, process func(int) int) []int {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil
@@ -336,41 +342,41 @@ func NewServerMetrics() *ServerMetrics {
 func (m *ServerMetrics) RecordRequest() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // RecordError - TODO: implement this function
 func (m *ServerMetrics) RecordError() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // RecordResponseTime - TODO: implement this function
 func (m *ServerMetrics) RecordResponseTime(ms int64) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // ConnOpened - TODO: implement this function
 func (m *ServerMetrics) ConnOpened() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // ConnClosed - TODO: implement this function
 func (m *ServerMetrics) ConnClosed() {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return
 }
 
 // Snapshot - TODO: implement this function
 func (m *ServerMetrics) Snapshot() string {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil
+	return ""
 }
 

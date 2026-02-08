@@ -4,17 +4,11 @@ package smartcontracts
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"math/big"
-
-	ethereum "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 /*
-*/
+ */
 
 // Run - TODO: implement this function
 func Run(ctx context.Context, client ContractCaller, cfg Config) (*Result, error) {
@@ -34,14 +28,14 @@ func selector(sig string) []byte {
 func decodeString(data []byte) (string, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return "", nil
 }
 
 // decodeUint8 - TODO: implement this function
 func decodeUint8(data []byte) (uint8, error) {
 	// TODO: Implement this function
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
-	return nil, nil
+	return 0, nil
 }
 
 // decodeUint256 - TODO: implement this function
@@ -50,4 +44,3 @@ func decodeUint256(data []byte) (*big.Int, error) {
 	// Refer to solution.reference.go for the complete implementation with detailed explanations
 	return nil, nil
 }
-

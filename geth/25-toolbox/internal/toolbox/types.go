@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -23,7 +24,7 @@ type ToolboxClient interface {
 
 	// From module 24: block/tx lookups
 	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
-	TransactionByHash(ctx context.Context, hash string) (*types.Transaction, bool, error)
+	TransactionByHash(ctx context.Context, hash common.Hash) (*types.Transaction, bool, error)
 }
 
 // Config allows configuration for different toolbox commands.

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"geth/20-node/internal/node"
+	"github.com/example/go-10x-minis/geth/20-node/internal/node"
 )
 
 /*
