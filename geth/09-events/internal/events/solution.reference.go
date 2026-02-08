@@ -20,25 +20,33 @@ var (
 )
 
 /*
-Reference Solution
-==================
+Reference Solution - Contract Event Logs (Transfer)
+==================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates querying ERC20 Transfer event logs via eth_getLogs.
+Events are emitted as logs: topic0 = event signature hash, topics[1..n] =
+indexed args, Data = non-indexed args. Transfer(address,address,uint256) has
+indexed from/to and non-indexed value.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- Keccak256Hash of full signature: topic0 identifies the event type
+- FilterQuery: Addresses, FromBlock, ToBlock, Topics (OR within each, AND across)
+- topics[1], topics[2]: indexed addresses left-padded to 32 bytes; addr in last 20
+- log.Data: ABI-encoded non-indexed value (32 bytes for uint256)
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Event layout: indexed vs non-indexed (topics vs Data)
+- addressTopic: LeftPadBytes(addr.Bytes(), 32) then BytesToHash for topic format
+- Optional filters: cfg.FromHolder, cfg.ToHolder add topic1/topic2 when set
+- Defensive copy: new(big.Int).SetBytes for value
+
+Teaching notes (per .cursorrules):
+- topics layout: [topic0, topic1?, topic2?] — nil in a slot means "any" for that
+  indexed param. topics = append(topics, nil) for "match topic0 only" when
+  filtering by one holder.
+- Slice sharing: FilterQuery holds references; we copy decoded values into
+  TransferEvent, not the raw log.
 */
-
 func Run(ctx context.Context, client LogClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -47,6 +55,7 @@ func Run(ctx context.Context, client LogClient, cfg Config) (*Result, error) {
 		return nil, errors.New("token address is required")
 	}
 
+	// topic0 = event sig; topic1/topic2 = indexed from/to when filtering
 	topics := [][]common.Hash{{transferSigHash}}
 	if cfg.FromHolder != nil || cfg.ToHolder != nil {
 		if cfg.FromHolder != nil {
@@ -83,22 +92,12 @@ func Run(ctx context.Context, client LogClient, cfg Config) (*Result, error) {
 	return &Result{Events: events}, nil
 }
 
-// addressTopic implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// addressTopic encodes address as 32-byte topic: left-pad to 32, then BytesToHash.
 func addressTopic(addr common.Address) common.Hash {
 	return common.BytesToHash(common.LeftPadBytes(addr.Bytes(), 32))
 }
 
-// decodeTransferLog implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// decodeTransferLog extracts from (topics[1]), to (topics[2]), value (Data[:32]) from a Transfer log.
 func decodeTransferLog(lg types.Log) (TransferEvent, error) {
 	if len(lg.Topics) < 3 {
 		return TransferEvent{}, errors.New("transfer log requires at least 3 topics")

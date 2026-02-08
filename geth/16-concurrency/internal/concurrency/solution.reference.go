@@ -13,25 +13,29 @@ import (
 var errNilProber = errors.New("nil prober")
 
 /*
-Reference Solution
-==================
+Reference Solution - Concurrent Endpoint Probing
+=================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates a worker-pool pattern for probing multiple RPC endpoints
+concurrently. Bounded workers pull jobs from a channel; results collected with
+mutex protection. Context for cancellation; per-probe timeout.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- Typical pattern: wallet/node lists probe endpoints to find healthy ones
+- sync.WaitGroup: wait for all workers to drain jobs before returning
+- context.WithTimeout: per-probe deadline; cancel() to release timer
+- sync.Mutex: protect shared Result maps from concurrent writes
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Worker pool: N goroutines, single jobs channel, close to signal done
+- jobs <- endpoint: send work; workers range over channel
+- mu.Lock/Unlock around res.Successes/Failures: map not concurrent-safe
+
+Teaching notes (per .cursorrules):
+- close(jobs): signals workers to exit after range; must close after all sent.
+- cancel() after Probe: releases WithTimeout resources; defer would be after
+  err check but we call immediately since we're done with probeCtx.
 */
-
 func Run(ctx context.Context, p Prober, cfg Config) (*Result, error) {
 	if p == nil {
 		return nil, errNilProber

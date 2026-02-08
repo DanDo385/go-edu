@@ -24,25 +24,40 @@ var (
 )
 
 /*
-Reference Solution
-==================
+Reference Solution - eth_call for ERC20 Metadata
+================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates read-only contract calls (eth_call) to query ERC20
+metadata: name, symbol, decimals, totalSupply. No gas is spent, no transaction
+is signed — we simulate execution at a block and read the return value.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- Keccak256 of function signature: first 4 bytes = selector
+- CallContract: simulates execution, returns hex-encoded bytes
+- ABI encoding: dynamic types (string) use offset + length layout
+- cfg.BlockNumber: nil = latest, or specific block for historical queries
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Function selectors: deterministic 4-byte identifier for method dispatch
+- ABI layout: first 32 bytes = offset to dynamic data; at offset, 32 bytes =
+  length, then raw bytes
+- &cfg.Contract: CallMsg.To expects *common.Address
+- Read-only vs state-changing: eth_call never persists changes
+
+Teaching notes (per .cursorrules):
+- Pointer semantics: cfg.BlockNumber can be nil (latest). &cfg.Contract passes
+  address of the config's Contract.
+- Memory: package-level selectors are computed once; we copy via append for
+  independence from Keccak256's internal buffer.
 */
 
+/*
+Run - Query ERC20 Metadata via eth_call
+
+Parameters: ctx, client (CallClient), cfg (contract, optional block).
+Returns *Result with Name, Symbol, Decimals, TotalSupply.
+Algorithm: validate, call each selector, decode ABI response.
+*/
 func Run(ctx context.Context, client CallClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -51,6 +66,7 @@ func Run(ctx context.Context, client CallClient, cfg Config) (*Result, error) {
 		return nil, errors.New("contract address is required")
 	}
 
+	// call wraps CallContract: To = contract addr, Data = selector + encoded args (none here)
 	call := func(sel []byte) ([]byte, error) {
 		out, err := client.CallContract(ctx, ethereum.CallMsg{To: &cfg.Contract, Data: sel}, cfg.BlockNumber)
 		if err != nil {
@@ -103,23 +119,13 @@ func Run(ctx context.Context, client CallClient, cfg Config) (*Result, error) {
 	}, nil
 }
 
-// selector implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// selector computes ABI function selector: Keccak256(sig)[:4]. Copy via append for independence.
 func selector(sig string) []byte {
 	h := crypto.Keccak256([]byte(sig))
 	return append([]byte(nil), h[:4]...)
 }
 
-// decodeString implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// decodeString decodes ABI dynamic string: offset at [0:32], length at [off:off+32], data at [off+32:...]
 func decodeString(data []byte) (string, error) {
 	if len(data) < 64 {
 		return "", errShortABIValue
@@ -147,12 +153,7 @@ func decodeString(data []byte) (string, error) {
 	return string(data[start:end]), nil
 }
 
-// decodeUint8 implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// decodeUint8 decodes first 32 bytes as uint256, then checks 0–255 range.
 func decodeUint8(data []byte) (uint8, error) {
 	v, err := decodeUint256(data)
 	if err != nil {
@@ -164,12 +165,7 @@ func decodeUint8(data []byte) (uint8, error) {
 	return uint8(v.Uint64()), nil
 }
 
-// decodeUint256 implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// decodeUint256 decodes first 32 bytes as big-endian uint256; returns defensive copy.
 func decodeUint256(data []byte) (*big.Int, error) {
 	if len(data) < 32 {
 		return nil, errShortABIValue

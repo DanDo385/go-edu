@@ -3,23 +3,18 @@
 package errorwrappingsentinelerrors
 
 /*
-Reference Solution
-==================
+Reference Solution - Error Wrapping, Sentinel Errors, Custom Error Types
+======================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates Go's error handling idioms: sentinel errors, error
+wrapping with %w, errors.Is/errors.As for unwrapping, and custom error types
+that implement Unwrap for error chains.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+Key concepts:
+- Sentinel errors: package-level vars (ErrUserNotFound) for comparison with errors.Is
+- fmt.Errorf("...: %w", err): wraps err so errors.Is/As can unwrap
+- Unwrap(): return inner error; errors.Is walks the chain; errors.As extracts type
+- MultiError: Unwrap() []error for multiple wrapped errors (Go 1.20+)
 */
 
 import (
@@ -27,6 +22,7 @@ import (
 	"fmt"
 )
 
+// Sentinel errors: compare with errors.Is(err, ErrUserNotFound)
 var (
 	ErrUserNotFound  = errors.New("user not found")
 	ErrUserExists    = errors.New("user already exists")
@@ -53,12 +49,7 @@ type RetryableError struct {
 	Retries int
 }
 
-// FindUser implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// FindUser - Returns sentinel errors for validation/lookup failures.
 func FindUser(id int) (string, error) {
 	if id <= 0 {
 		return "", ErrInvalidUserID
@@ -69,12 +60,7 @@ func FindUser(id int) (string, error) {
 	return fmt.Sprintf("user_%d", id), nil
 }
 
-// CreateUser implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// CreateUser - Returns sentinel errors; note reused ErrInvalidUserID for empty username.
 func CreateUser(username string) error {
 	if username == "" {
 		return ErrInvalidUserID
@@ -85,12 +71,7 @@ func CreateUser(username string) error {
 	return nil
 }
 
-// ReadConfig implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// ReadConfig - Wraps FindUser error with %w so errors.Is still finds ErrUserNotFound.
 func ReadConfig(id int) (string, error) {
 	username, err := FindUser(id)
 	if err != nil {
@@ -99,12 +80,7 @@ func ReadConfig(id int) (string, error) {
 	return username, nil
 }
 
-// LoadUserData implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// LoadUserData - Wraps again; chain: LoadUserData -> ReadConfig -> FindUser.
 func LoadUserData(id int) (string, error) {
 	username, err := ReadConfig(id)
 	if err != nil {
@@ -113,12 +89,7 @@ func LoadUserData(id int) (string, error) {
 	return username, nil
 }
 
-// IsNotFoundError implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// IsNotFoundError - errors.Is walks unwrap chain; finds ErrUserNotFound even when wrapped.
 func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
@@ -126,12 +97,7 @@ func IsNotFoundError(err error) bool {
 	return errors.Is(err, ErrUserNotFound)
 }
 
-// GetUserWithFallback implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// GetUserWithFallback - If ErrUserNotFound, return "guest" instead of error.
 func GetUserWithFallback(id int) (string, error) {
 	username, err := FindUser(id)
 	if err != nil {
@@ -143,22 +109,12 @@ func GetUserWithFallback(id int) (string, error) {
 	return username, nil
 }
 
-// Error implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Error - ValidationError has no Unwrap; errors.As won't find wrapped sentinels through it.
 func (e ValidationError) Error() string {
 	return fmt.Sprintf("validation error on %s: %s", e.Field, e.Message)
 }
 
-// ValidateUsername implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// ValidateUsername - Returns ValidationError (custom type) for different validation failures.
 func ValidateUsername(username string) error {
 	if username == "" {
 		return ValidationError{Field: "username", Message: "cannot be empty"}
@@ -172,12 +128,7 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
-// GetValidationField implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// GetValidationField - errors.As extracts ValidationError from chain; returns Field.
 func GetValidationField(err error) (string, bool) {
 	if err == nil {
 		return "", false
@@ -199,17 +150,12 @@ func (e DatabaseError) Error() string {
 	return fmt.Sprintf("database error: %s on %s: %v", e.Operation, e.Table, e.Err)
 }
 
-// Unwrap implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Unwrap - DatabaseError wraps inner error; errors.Is(err, ErrUserNotFound) works through it.
 func (e DatabaseError) Unwrap() error {
 	return e.Err
 }
 
-// QueryUser implements the reference behavior for this exercise.
+// QueryUser - Wraps FindUser in DatabaseError; chain preserves ErrUserNotFound.
 //
 // Algorithm steps:
 // 1. Validate prerequisites and invariants before mutating state.
@@ -223,12 +169,7 @@ func QueryUser(id int) (string, error) {
 	return username, nil
 }
 
-// Error implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Error - MultiError: format first error + count for readability.
 func (m MultiError) Error() string {
 	if len(m.Errors) == 0 {
 		return "no errors"
@@ -239,17 +180,12 @@ func (m MultiError) Error() string {
 	return fmt.Sprintf("multiple errors: %v (and %d more)", m.Errors[0], len(m.Errors)-1)
 }
 
-// Unwrap implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Unwrap - MultiError implements Unwrap() []error (Go 1.20+); errors.Join uses this.
 func (m MultiError) Unwrap() []error {
 	return m.Errors
 }
 
-// ValidateUsers implements the reference behavior for this exercise.
+// ValidateUsers - Collects all validation errors; returns MultiError if any.
 //
 // Algorithm steps:
 // 1. Validate prerequisites and invariants before mutating state.
@@ -268,12 +204,7 @@ func ValidateUsers(usernames []string) error {
 	return nil
 }
 
-// ProcessUser implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// ProcessUser - Chains ValidateUsername and CreateUser with %w; full trace preserved.
 func ProcessUser(username string) error {
 	if err := ValidateUsername(username); err != nil {
 		return fmt.Errorf("validate username: %w", err)
@@ -287,32 +218,17 @@ func ProcessUser(username string) error {
 	return nil
 }
 
-// Error implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Error - RetryableError carries attempt count for logging.
 func (e RetryableError) Error() string {
 	return fmt.Sprintf("retryable error (attempt %d): %v", e.Retries, e.Err)
 }
 
-// Unwrap implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Unwrap - RetryableError wraps inner error.
 func (e RetryableError) Unwrap() error {
 	return e.Err
 }
 
-// IsRetryable implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// IsRetryable - errors.As extracts RetryableError; retries < 3 means still retryable.
 func IsRetryable(err error) bool {
 	if err == nil {
 		return false

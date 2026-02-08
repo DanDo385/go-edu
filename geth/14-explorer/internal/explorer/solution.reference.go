@@ -13,25 +13,28 @@ import (
 var errNilClient = errors.New("nil explorer rpc client")
 
 /*
-Reference Solution
-==================
+Reference Solution - Block Explorer (eth_getBlockByNumber)
+==========================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates fetching block metadata for explorer-style UIs: number,
+hash, parent, transaction count, gas used/limit. Optionally includes tx summaries.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- BlockByNumber(ctx, number): nil = latest, or *big.Int for specific block
+- block.NumberU64(), Hash(), ParentHash(), Transactions(), GasUsed, GasLimit
+- tx.To(): returns *common.Address; nil for contract creation txs
+- Defensive copy: v := *to; toCopy = &v for To field so we own the address
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Block structure: header fields + transaction list
+- IncludeTxs: when true, build TxSummary slice with Hash, To, Gas
+- Pointer copy: tx.To() may point to internal; we copy before storing
+
+Teaching notes (per .cursorrules):
+- tx.To() returns *common.Address; nil means contract creation. We copy via
+  v := *to; toCopy = &v so Result doesn't share pointers with block internals.
+- block is from RPC; we extract value types and copy references we store.
 */
-
 func Run(ctx context.Context, client RPCClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

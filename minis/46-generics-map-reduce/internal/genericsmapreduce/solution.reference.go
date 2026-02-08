@@ -3,23 +3,12 @@
 package genericsmapreduce
 
 /*
-Reference Solution
-==================
+Reference Solution - Generics Map, Filter, Reduce
+=================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
-
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+Generic Map[T,U], Filter[T], Reduce[T,U]: type parameters for slice elements.
+Map: transform each; Filter: predicate; Reduce: fold with accumulator. Comparable
+constraint for maps. Demonstrates Go 1.18+ generics for collection operations.
 */
 
 import (

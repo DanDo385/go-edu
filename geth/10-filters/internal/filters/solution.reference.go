@@ -18,25 +18,31 @@ const defaultPollInterval = time.Second
 var errNilClient = errors.New("nil head client")
 
 /*
-Reference Solution
-==================
+Reference Solution - New Block Head Filter (Subscribe vs Poll)
+==============================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates two patterns for watching new block headers: subscription
+(via websocket, push-based) and polling (periodic RPC calls). Both collect up to
+MaxHeads headers and return them with context-aware cancellation.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- SubscribeNewHead: real-time push; returns subscription with channel
+- Polling: HeaderByNumber(ctx, nil) for latest; ticker for interval
+- sub.Unsubscribe(): must call to release resources; defer for cleanup
+- Context: ctx.Done() for cancellation during select
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Subscription vs poll: subscription is lower latency; poll works over HTTP
+- select: multiplex ctx.Done(), sub.Err(), channel receives
+- Deduplication: poll mode uses seen map to skip same block if no new block yet
+- appendHeadInfo: shared helper to build HeadInfo from Header
+
+Teaching notes (per .cursorrules):
+- Channel ownership: client sends to ch; we receive. sub.Err() closed when
+  subscription ends. We defer sub.Unsubscribe() so we always release.
+- cfg mutation: we modify cfg.MaxHeads, cfg.PollInterval in place for defaults;
+  Config is typically passed by value, so caller's copy is unchanged.
 */
-
 func Run(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -55,12 +61,7 @@ func Run(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 	return subscribeHeads(ctx, client, cfg)
 }
 
-// subscribeHeads implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// subscribeHeads uses SubscribeNewHead; receives headers until MaxHeads or ctx/sub error.
 func subscribeHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 	ch := make(chan *types.Header, cfg.MaxHeads)
 	sub, err := client.SubscribeNewHead(ctx, ch)
@@ -92,12 +93,7 @@ func subscribeHeads(ctx context.Context, client HeadClient, cfg Config) (*Result
 	return &Result{Heads: heads, Mode: "subscription"}, nil
 }
 
-// pollHeads implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// pollHeads uses HeaderByNumber in a ticker loop; deduplicates by block hash.
 func pollHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, error) {
 	ticker := time.NewTicker(cfg.PollInterval)
 	defer ticker.Stop()
@@ -131,12 +127,7 @@ func pollHeads(ctx context.Context, client HeadClient, cfg Config) (*Result, err
 	return &Result{Heads: heads, Mode: "polling"}, nil
 }
 
-// appendHeadInfo implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// appendHeadInfo builds HeadInfo from header; sets Reorg if parent differs from previous block hash.
 func appendHeadInfo(existing []HeadInfo, h *types.Header) []HeadInfo {
 	info := HeadInfo{
 		Number:     h.Number.Uint64(),

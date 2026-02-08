@@ -15,25 +15,29 @@ import (
 var errNilClient = errors.New("nil storage client")
 
 /*
-Reference Solution
-==================
+Reference Solution - Contract Storage Slots
+===========================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates reading contract storage via eth_getStorageAt. Storage
+is organized in 32-byte slots. Simple variables use sequential slots; mappings
+use keccak256(abi.encode(key, slot)) to derive the storage slot.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- StorageAt(ctx, contract, slotHash, block): raw 32-byte value at slot
+- Slot encoding: big.Int → common.Hash for simple slots
+- mappingSlotHash: keccak256(leftPad32(key) || slot) for mapping lookups
+- cfg.BlockNumber: nil = latest, or historical state
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Solidity storage layout: packed variables, mappings, nested mappings
+- append([]byte(nil), value...): defensive copy of RPC response
+- cfg.MappingKey: when non-empty, we use mapping slot derivation
+
+Teaching notes (per .cursorrules):
+- *big.Int for slot: cfg.Slot is optional pointer; we validate non-nil.
+  slotToHash handles nil by returning zero hash (caller should validate).
+- Memory: StorageAt may return reused buffers; we copy with append.
 */
-
 func Run(ctx context.Context, client StorageClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -61,12 +65,7 @@ func Run(ctx context.Context, client StorageClient, cfg Config) (*Result, error)
 	}, nil
 }
 
-// slotToHash implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// slotToHash converts slot number to 32-byte hash; returns zero hash if slot is nil.
 func slotToHash(slot *big.Int) common.Hash {
 	if slot == nil {
 		return common.Hash{}
@@ -74,12 +73,7 @@ func slotToHash(slot *big.Int) common.Hash {
 	return common.BigToHash(slot)
 }
 
-// mappingSlotHash implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// mappingSlotHash computes keccak256(abi.encode(key, slot)): leftPad(key,32) || slot.Bytes().
 func mappingSlotHash(key []byte, slot common.Hash) common.Hash {
 	buf := make([]byte, 0, 64)
 	buf = append(buf, common.LeftPadBytes(key, 32)...)

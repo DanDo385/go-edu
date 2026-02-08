@@ -3,26 +3,15 @@
 package atomiccountersvsmutex
 
 /*
-Reference Solution
-==================
+Reference Solution - sync/atomic: Counters, CAS, SpinLock, Config
+================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
-
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+atomic.AddInt64/LoadInt64/StoreInt64/SwapInt64: lock-free for single values.
+CompareAndSwap (CAS): optimistic locking; retry loop on failure (AtomicMax,
+RateLimiter, AtomicBitmap). atomic.Value for pointer-sized values (ConfigManager).
+SpinLock: SwapInt64(1) to acquire; spins until 0. Atomic preferred over mutex
+for hot-path counters when contention is low.
 */
-
-// Package exercise contains hands-on exercises for atomic operations.
 
 import (
 	"math"

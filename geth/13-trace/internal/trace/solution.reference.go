@@ -13,25 +13,26 @@ import (
 var errNilClient = errors.New("nil trace client")
 
 /*
-Reference Solution
-==================
+Reference Solution - debug_traceTransaction
+===========================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates debug_traceTransaction: returns execution trace (call
+frames, opcodes, gas) for a transaction. Requires a node with debug API enabled.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- TraceTransaction(txHash): raw trace output (format depends on tracer type)
+- Use cases: debugging failed txs, gas profiling, internal call analysis
+- append([]byte(nil), raw...): defensive copy of trace bytes
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Trace as opaque bytes: geth supports multiple tracer types (callTracer, etc.)
+- cfg.TxHash: common.Hash, zero value = invalid
+- Debug API: not all nodes expose it; often disabled on public RPCs
+
+Teaching notes (per .cursorrules):
+- Trace output format varies; we preserve raw bytes for caller to interpret.
+- Memory: RPC client may reuse buffer; we copy to ensure Result outlives call.
 */
-
 func Run(ctx context.Context, client TraceClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

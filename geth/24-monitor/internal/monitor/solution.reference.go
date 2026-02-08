@@ -12,25 +12,21 @@ import (
 var errNilClient = errors.New("nil monitor client")
 
 /*
-Reference Solution
-==================
+Reference Solution - Block Lag Monitor
+======================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates a block lag monitor: compare latest block timestamp to
+now. Lag > MaxLagSeconds = STALE. Used for alerting when node falls behind.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- HeaderByNumber(ctx, cfg.BlockNumber): nil = latest
+- header.Time: Unix timestamp; time.Unix(sec, 0) for time.Time
+- time.Since(blockTime).Seconds(): lag in seconds; negative clamped to 0
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Block freshness: stale = sync issues, clock drift, or node overload
+- cfg.MaxLagSeconds: default 60; configurable threshold
 */
-
 func Run(ctx context.Context, client MonitorClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

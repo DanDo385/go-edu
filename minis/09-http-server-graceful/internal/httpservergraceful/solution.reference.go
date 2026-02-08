@@ -3,23 +3,24 @@
 package httpservergraceful
 
 /*
-Reference Solution
-==================
+Reference Solution - HTTP Key-Value Server with Graceful Shutdown
+================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file implements an in-memory key-value HTTP API (GET/POST) and demonstrates
+graceful shutdown: on SIGINT/SIGTERM or context cancel, the server stops accepting
+new connections but allows in-flight requests to complete before exiting.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to:
+- net/http: ServeMux, Handler, JSON encoding, request/response lifecycle
+- os/signal: capture SIGINT (Ctrl+C) and SIGTERM for graceful exit
+- sync.RWMutex: concurrent read access, exclusive write for map
+- atomic: lock-free request counter for X-Req-Count header
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise teaches:
+- Graceful shutdown: Shutdown() stops listener, waits for active handlers
+- Signal handling: signal.Notify, buffered channel (size 1) for sigCh
+- Context: RunGracefulServer accepts ctx for programmatic cancellation
+- Concurrency: MemStore protected by RWMutex; multiple readers, single writer
 */
 
 import (
@@ -40,34 +41,19 @@ type MemStore struct {
 	data map[string]string
 }
 
-// NewMemStore implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// NewMemStore - In-memory key-value store, thread-safe.
 func NewMemStore() *MemStore {
 	return &MemStore{data: make(map[string]string)}
 }
 
-// Set implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Set - Write key-value. Uses Lock (exclusive) for writes.
 func (s *MemStore) Set(key, val string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[key] = val
 }
 
-// Get implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// Get - Read value by key. Uses RLock (shared) so multiple readers can run concurrently.
 func (s *MemStore) Get(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -75,12 +61,13 @@ func (s *MemStore) Get(key string) (string, bool) {
 	return val, ok
 }
 
-// RegisterRoutes implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+/*
+RegisterRoutes - Mount /kv Handler with Request Counter
+
+POST /kv: JSON body {key, val} - stores key-value
+GET /kv?k=key - returns {"val": "..."} or 404
+X-Req-Count header: atomic counter of requests (teaching atomic operations)
+*/
 func RegisterRoutes(mux *http.ServeMux, store *MemStore) {
 	var reqCount uint64
 	kv := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,12 +112,17 @@ func RegisterRoutes(mux *http.ServeMux, store *MemStore) {
 	}))
 }
 
-// RunGracefulServer implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+/*
+RunGracefulServer - Run Server Until Signal or Context Cancel
+
+1. Start server in goroutine (ListenAndServe blocks)
+2. Wait for: startup error, SIGINT/SIGTERM, or ctx.Done()
+3. Call Shutdown with 5s timeout - stops listener, waits for active requests
+4. Return Shutdown error (or nil if clean)
+
+Signal channel must be buffered (size 1) so signal.Notify doesn't block
+when we're not reading. signal.Stop on defer prevents further delivery.
+*/
 func RunGracefulServer(ctx context.Context, srv *http.Server) error {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)

@@ -2,6 +2,39 @@
 
 package workerpoolwordcount
 
+/*
+Reference Solution - Worker Pool for Parallel URL Word Count
+==========================================================
+
+This file demonstrates the classic worker-pool concurrency pattern: a fixed
+number of goroutines process items from a job channel and send results to an
+output channel. Applied to word counting across multiple URLs fetched in parallel.
+
+This connects to the Go concurrency model:
+- Goroutines: lightweight threads, spawned with `go fn()`
+- Channels: typed conduits for communication between goroutines
+- Context: cancellation and timeout propagation across goroutines
+- sync.WaitGroup: coordination for "wait until all workers finish"
+
+The exercise teaches:
+- Worker pool architecture: bounded parallelism to avoid overwhelming resources
+- Fan-out: distribute URLs to workers via channel
+- Fan-in: merge results from workers into single map
+- Context-aware cancellation: workers exit when context is done
+- Channel lifecycle: who closes what, and when
+
+Teaching notes:
+- Memory/ownership: each worker owns its local counts map; we merge into a single
+  map in the main goroutine. No shared mutable state between workers.
+- Invariants: Channel ownership (per .cursorrules). Only the SENDER closes a channel.
+  We have one producer (sends URLs to jobs) — it closes jobs. Workers are receivers.
+  Results: workers send; a dedicated goroutine closes results after wg.Wait(). The
+  main goroutine ranges over results until close. Never close a channel you didn't
+  create or that has multiple senders — that causes panic.
+- Error surfaces: first worker error cancels context; all workers exit; we return
+  that error. Alternative: collect all errors, return partial results.
+*/
+
 import (
 	"bufio"
 	"context"
@@ -14,43 +47,42 @@ import (
 )
 
 /*
-Reference Solution
-==================
+WordCount - Parallel Word Count Across URLs
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+Fetches each URL, tokenizes content into words, counts occurrences, and merges
+counts across all URLs. Uses a worker pool for bounded parallelism.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+Parameters:
+  - ctx: cancellation/timeout context; when done, all workers exit
+  - urls: list of HTTP URLs to fetch and process
+  - workers: number of concurrent workers (defaults to 1 if <= 0)
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+Returns merged word counts, or error on first fetch/parse failure.
 */
-
-// WordCount is the main function you will implement.
 func WordCount(ctx context.Context, urls []string, workers int) (map[string]int, error) {
+	// Guard against invalid worker count
 	if workers <= 0 {
 		workers = 1
 	}
 
+	// result carries either counts + nil, or nil + error
 	type result struct {
 		counts map[string]int
 		err    error
 	}
 
+	// Derive cancellable context so we can cancel on first error
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	// Unbuffered channels: send blocks until receive
+	// jobs: URLs to process; results: per-URL counts or errors
 	jobs := make(chan string)
 	results := make(chan result)
 
 	var wg sync.WaitGroup
+
+	// Worker goroutine: pulls URLs from jobs, fetches, counts, sends result
 	workerFn := func() {
 		defer wg.Done()
 		for {
@@ -59,9 +91,11 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 				return
 			case url, ok := <-jobs:
 				if !ok {
+					// Channel closed - no more jobs, exit
 					return
 				}
 				counts, err := fetchAndCount(ctx, url)
+				// Send result, but respect cancellation (don't block forever if ctx done)
 				select {
 				case results <- result{counts: counts, err: err}:
 				case <-ctx.Done():
@@ -71,11 +105,13 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 		}
 	}
 
+	// Start worker pool
 	wg.Add(workers)
 	for i := 0; i < workers; i++ {
 		go workerFn()
 	}
 
+	// Producer: send URLs to jobs channel, close when done
 	go func() {
 		defer close(jobs)
 		for _, url := range urls {
@@ -87,11 +123,14 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 		}
 	}()
 
+	// Closer: wait for all workers to finish, then close results
+	// This allows the range over results to terminate
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
 
+	// Merge results from all workers
 	merged := make(map[string]int)
 	for res := range results {
 		if res.err != nil {
@@ -103,13 +142,20 @@ func WordCount(ctx context.Context, urls []string, workers int) (map[string]int,
 		}
 	}
 
+	// If context was canceled (timeout, etc.) vs our explicit cancel, surface it
 	if err := ctx.Err(); err != nil && err != context.Canceled {
 		return nil, err
 	}
 	return merged, nil
 }
 
-// fetchAndCount fetches the content of a URL and counts the words.
+/*
+fetchAndCount - Fetch URL and Count Words
+
+Creates an HTTP GET request with context (for cancellation/timeout), executes it,
+validates status, reads body, and tokenizes/counts words. Returns (counts, nil)
+or (nil, err) on failure.
+*/
 func fetchAndCount(ctx context.Context, url string) (map[string]int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -133,12 +179,18 @@ func fetchAndCount(ctx context.Context, url string) (map[string]int, error) {
 	return tokenizeAndCount(string(body)), nil
 }
 
-// tokenizeAndCount takes a string, tokenizes it into words, and counts them.
+/*
+tokenizeAndCount - Split Text into Words and Count
+
+Uses bufio.Scanner with ScanWords to tokenize. ScanWords splits on whitespace.
+Each token is normalized (lowercase, alphanumeric only) and counted.
+*/
 func tokenizeAndCount(text string) map[string]int {
 	counts := make(map[string]int)
 	scanner := bufio.NewScanner(strings.NewReader(text))
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
+		// ScanWords yields each whitespace-separated token
 		token := normalizeToken(scanner.Text())
 		if token == "" {
 			continue
@@ -148,12 +200,13 @@ func tokenizeAndCount(text string) map[string]int {
 	return counts
 }
 
-// normalizeToken implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+/*
+normalizeToken - Normalize Word for Consistent Counting
+
+Keeps only letters and digits, converts to lowercase.
+"Hello!" -> "hello", "CAN'T" -> "cant" (apostrophe stripped).
+Empty string returned if no valid chars (e.g. "---").
+*/
 func normalizeToken(word string) string {
 	var b strings.Builder
 	for _, r := range word {

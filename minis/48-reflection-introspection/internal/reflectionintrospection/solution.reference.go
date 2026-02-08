@@ -3,23 +3,12 @@
 package reflectionintrospection
 
 /*
-Reference Solution
-==================
+Reference Solution - reflect Package: Introspection and Dynamic Dispatch
+=======================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
-
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+reflect.TypeOf, ValueOf; Kind(); NumField, Field; NumMethod, Method. Get/Set
+with Value. Interface() to recover. Tag lookup for struct tags (json, etc).
+reflect.Call for dynamic method invocation. Use sparingly; prefer generics.
 */
 
 // Package exercise contains complete solutions for reflection exercises.

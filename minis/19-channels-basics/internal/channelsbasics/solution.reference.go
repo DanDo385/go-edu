@@ -3,23 +3,23 @@
 package channelsbasics
 
 /*
-Reference Solution
-==================
+Reference Solution - Channel Patterns: Ping-Pong, Merge, Filter, Map, Tee, Bridge
+==============================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
-
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This file demonstrates fundamental channel patterns used in Go concurrency:
+- Buffered vs unbuffered channels
+- Directional types (chan<- send-only, <-chan receive-only)
+- Fan-out (one-to-many), fan-in (many-to-one), pipeline stages
+- OrDone: context-aware receive with cancellation
+- Tee: split one stream to two; Bridge: flatten chan-of-chans
+- Debounce: forward only after quiet period
+- BoundedQueue: buffered channel as queue with TryEnqueue/TryDequeue
+- Broadcaster: pub/sub over channels; Barrier: rendezvous for n goroutines
 
 Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+- Who closes: typically the producer. Merge/Bridge close output when all
+  inputs drained (use WaitGroup). Consumers range over channel until closed.
+- Blocking: unbuffered send blocks until receive; select+default for non-blocking.
 */
 
 import (
@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-// Ping creates a channel and sends a single value, then closes it.
+// Ping - Buffered chan (cap 1) so send doesn't block; close signals no more values.
 func Ping(value int) <-chan int {
 	ch := make(chan int, 1)
 	ch <- value
@@ -36,7 +36,7 @@ func Ping(value int) <-chan int {
 	return ch
 }
 
-// PingPong creates two channels that play ping-pong n times.
+// PingPong - Goroutine receives from ping, sends to pong n times; closes pong when done.
 func PingPong(n int) (chan<- int, <-chan int) {
 	ping := make(chan int)
 	pong := make(chan int)
@@ -52,7 +52,7 @@ func PingPong(n int) (chan<- int, <-chan int) {
 	return ping, pong
 }
 
-// Merge combines multiple input channels into a single output channel.
+// Merge - Fan-in: one goroutine per input forwards to shared output; WaitGroup, then close.
 func Merge(channels ...<-chan int) <-chan int {
 	output := make(chan int)
 	var wg sync.WaitGroup
@@ -152,7 +152,7 @@ func OrDone(ctx context.Context, input <-chan int) <-chan int {
 	return output
 }
 
-// Tee splits an input channel into two output channels.
+// Tee - Each value goes to both outputs. val1, val2 := v, v avoids loop variable capture.
 func Tee(input <-chan int) (<-chan int, <-chan int) {
 	out1 := make(chan int)
 	out2 := make(chan int)
@@ -186,7 +186,7 @@ func Tee(input <-chan int) (<-chan int, <-chan int) {
 	return out1, out2
 }
 
-// Bridge flattens a channel of channels into a single channel.
+// Bridge - chan (<-chan int) -> single stream; drain each inner chan as it arrives.
 func Bridge(input <-chan (<-chan int)) <-chan int {
 	output := make(chan int)
 
@@ -203,8 +203,7 @@ func Bridge(input <-chan (<-chan int)) <-chan int {
 	return output
 }
 
-// Debounce creates a channel that only forwards values if no new value
-// arrives within the specified duration.
+// Debounce - Forward value only after duration passes with no new value. time.AfterFunc for reset.
 func Debounce(input <-chan int, duration time.Duration) <-chan int {
 	output := make(chan int)
 

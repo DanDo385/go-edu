@@ -3,23 +3,23 @@
 package methodsvaluevspointerreceivers
 
 /*
-Reference Solution
-==================
+Reference Solution - Value vs Pointer Receivers
+==============================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+Deep explanation of (b *BankAccount) vs (r Rectangle) (per .cursorrules):
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+(b *BankAccount): b is a POINTER to a BankAccount. When we write b.balance += amount,
+Go automatically dereferences: b.balance is (*b).balance — we read/write the
+balance in the struct that b points to. The caller's BankAccount is mutated.
+If b is nil, b.balance would panic (dereference nil). Hence the nil check.
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+(r Rectangle): r is a COPY of the Rectangle. The method receives a full copy.
+r.Width * r.Height reads from our copy. Mutating r would not affect the caller's
+original. Value receiver = pass-by-value; pointer receiver = pass-by-reference.
+
+Before call: caller has acct (a BankAccount). acct.Deposit(10) passes &acct.
+Inside Deposit, b holds that address. b.balance += 10 writes to acct's balance.
+After: acct.balance has changed. The same memory location was modified.
 */
 
 func (b *BankAccount) DepositSolution(amount int) {
@@ -29,12 +29,7 @@ func (b *BankAccount) DepositSolution(amount int) {
 	b.balance += amount
 }
 
-// BalanceSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// BalanceSolution - Pointer receiver for consistency with Deposit/Withdraw; nil-safe.
 func (b *BankAccount) BalanceSolution() int {
 	if b == nil {
 		return 0
@@ -42,12 +37,7 @@ func (b *BankAccount) BalanceSolution() int {
 	return b.balance
 }
 
-// WithdrawSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// WithdrawSolution - Pointer receiver: mutates balance. Nil check prevents panic.
 func (b *BankAccount) WithdrawSolution(amount int) {
 	if b == nil {
 		return
@@ -55,22 +45,12 @@ func (b *BankAccount) WithdrawSolution(amount int) {
 	b.balance -= amount
 }
 
-// AreaSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// AreaSolution - Value receiver: Rectangle is small, read-only. No mutation.
 func (r Rectangle) AreaSolution() float64 {
 	return r.Width * r.Height
 }
 
-// AreaSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// AreaSolution - Pointer receiver for Circle (may be part of interface); nil-safe.
 func (c *Circle) AreaSolution() float64 {
 	if c == nil {
 		return 0
@@ -78,12 +58,7 @@ func (c *Circle) AreaSolution() float64 {
 	return 3.14159 * c.Radius * c.Radius
 }
 
-// TotalAreaSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// TotalAreaSolution - Uses Shape interface; both (Rectangle) and (*Circle) satisfy it.
 func TotalAreaSolution(shapes []Shape) float64 {
 	total := 0.0
 	for _, shape := range shapes {
@@ -92,12 +67,7 @@ func TotalAreaSolution(shapes []Shape) float64 {
 	return total
 }
 
-// AppendSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// AppendSolution - Pointer receiver: mutates list. Nil list: create new head.
 func (l *StringList) AppendSolution(value string) *StringList {
 	if l == nil {
 		return &StringList{value: value}
@@ -110,12 +80,7 @@ func (l *StringList) AppendSolution(value string) *StringList {
 	return l
 }
 
-// ContainsSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// ContainsSolution - Pointer receiver for linked list; recursive with nil base case.
 func (l *StringList) ContainsSolution(value string) bool {
 	if l == nil {
 		return false
@@ -126,12 +91,7 @@ func (l *StringList) ContainsSolution(value string) bool {
 	return l.next.ContainsSolution(value)
 }
 
-// FirstSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// FirstSolution - Read-only but pointer receiver for consistency with list API.
 func (l *StringList) FirstSolution() string {
 	if l == nil {
 		return ""
@@ -139,22 +99,12 @@ func (l *StringList) FirstSolution() string {
 	return l.value
 }
 
-// ValidateSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// ValidateSolution - Value receiver: SmallConfig is small, read-only validation.
 func (c SmallConfig) ValidateSolution() bool {
 	return c.ID > 0 && c.Name != ""
 }
 
-// SumSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// SumSolution - Pointer receiver: LargeConfig has slice, avoid copying. Nil-safe.
 func (l *LargeConfig) SumSolution() int {
 	if l == nil {
 		return 0
@@ -166,12 +116,7 @@ func (l *LargeConfig) SumSolution() int {
 	return total
 }
 
-// SetNameSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// SetNameSolution - Pointer receiver: mutates User.Name.
 func (u *User) SetNameSolution(name string) {
 	if u == nil {
 		return
@@ -179,12 +124,7 @@ func (u *User) SetNameSolution(name string) {
 	u.Name = name
 }
 
-// SetEmailSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// SetEmailSolution - Pointer receiver: mutates User.Email.
 func (u *User) SetEmailSolution(email string) {
 	if u == nil {
 		return
@@ -192,12 +132,7 @@ func (u *User) SetEmailSolution(email string) {
 	u.Email = email
 }
 
-// GetNameSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// GetNameSolution - Read-only but pointer for consistency with setters; nil-safe.
 func (u *User) GetNameSolution() string {
 	if u == nil {
 		return ""
@@ -205,12 +140,7 @@ func (u *User) GetNameSolution() string {
 	return u.Name
 }
 
-// IsAdultSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// IsAdultSolution - Read-only; pointer for API consistency.
 func (u *User) IsAdultSolution() bool {
 	if u == nil {
 		return false
@@ -218,12 +148,7 @@ func (u *User) IsAdultSolution() bool {
 	return u.Age >= 18
 }
 
-// EqualsSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// EqualsSolution - Value receiver; Point is small. Type switch for Point vs *Point.
 func (p Point) EqualsSolution(other Comparable) bool {
 	switch v := other.(type) {
 	case Point:
@@ -238,22 +163,12 @@ func (p Point) EqualsSolution(other Comparable) bool {
 	}
 }
 
-// NewSafeCounterMapSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// NewSafeCounterMapSolution - Returns value (struct); mutex/counters embedded.
 func NewSafeCounterMapSolution() SafeCounterMap {
 	return SafeCounterMap{counters: make(map[string]int)}
 }
 
-// IncrementSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// IncrementSolution - Pointer receiver: mutates map. Nil-safe, lazy-init map.
 func (m *SafeCounterMap) IncrementSolution(key string) {
 	if m == nil {
 		return
@@ -264,12 +179,7 @@ func (m *SafeCounterMap) IncrementSolution(key string) {
 	m.counters[key]++
 }
 
-// GetSolution implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// GetSolution - Pointer receiver for consistency; nil-safe.
 func (m *SafeCounterMap) GetSolution(key string) int {
 	if m == nil || m.counters == nil {
 		return 0
@@ -277,12 +187,7 @@ func (m *SafeCounterMap) GetSolution(key string) int {
 	return m.counters[key]
 }
 
-// AppendIterative implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// AppendIterative - Same as AppendSolution but iterative (no recursion).
 func (l *StringList) AppendIterative(value string) *StringList {
 	if l == nil {
 		return &StringList{value: value}

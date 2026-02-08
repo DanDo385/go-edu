@@ -11,25 +11,17 @@ import (
 var errNilClient = errors.New("nil peer client")
 
 /*
-Reference Solution
-==================
+Reference Solution - net_peerCount
+==================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates net_peerCount: number of connected P2P peers. Simple
+RPC wrapper for node health and connectivity monitoring.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+This connects to the Ethereum ecosystem by showing:
+- PeerCount(ctx): hex-encoded count from net_peerCount RPC
+- Use case: health checks, "is node connected to network?"
+- cfg unused: interface placeholder for future (e.g. timeout)
 */
-
 func Run(ctx context.Context, client PeerClient, cfg Config) (*Result, error) {
 	_ = cfg
 	if client == nil {

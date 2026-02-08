@@ -9,14 +9,23 @@ import (
 )
 
 /*
-Reference Solution
-==================
+Reference Solution - Strings, Runes, and UTF-8
+==============================================
 
-This file is the canonical reference for this exercise. It keeps error paths
-explicit when an operation can fail, so callers decide how to handle failure.
+First principles (per .cursorrules):
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, boundary checks, and invariants.
+Strings in Go are immutable: the bytes cannot be changed. Any "modification"
+creates a new string. Think of a string like a fixed placard — you can read it,
+but to "change" it you make a new placard.
+
+Runes vs bytes: A rune is a Unicode code point (int32). " café" has 4 runes
+but 5 bytes — é is 2 bytes in UTF-8. len(s) counts bytes; RuneCount counts
+logical characters. We use []rune(s) to get a slice of code points for
+character-level manipulation.
+
+[]rune(s): Converts string to slice of runes. This COPIES the data — the slice
+has its own backing array. Mutating runes[i] does not affect s. string(runes)
+creates a new string from the (possibly mutated) slice.
 */
 
 // TitleCase capitalizes the first rune in each whitespace-delimited word.
@@ -61,23 +70,19 @@ func coreTitleCase(s string) string {
 }
 
 // coreReverse demonstrates core logic of reversing strings
-// with explicit error handling where failures can occur
 //
-// Algorithm steps:
-// 1. Convert string to runes (for proper Unicode handling)
-// 2. Use two-pointer technique to swap characters from both ends
-// 3. Convert runes back to string
+// Memory and mutability (per .cursorrules):
+// s is immutable — we cannot modify s[i]. []rune(s) creates a NEW slice with
+// a backing array that holds a copy of the runes. We mutate runes[i], runes[j]
+// in place — that's our copy, not the original. string(runes) allocates a new
+// string from the mutated slice. The original s is never touched.
 func coreReverse(s string) string {
-	// Step 1 - Convert input string to slice of runes
-	runes := []rune(s)
+	runes := []rune(s) // Copy: runes has its own backing array
 
-	// Step 2 - Use two-pointer technique (i starts at 0, j at len-1)
-	//          Swap elements and move pointers until they meet
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
-	// Step 3 - Convert runes slice back to string
 	return string(runes)
 }
 

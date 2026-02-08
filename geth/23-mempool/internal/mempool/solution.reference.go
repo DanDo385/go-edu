@@ -11,25 +11,17 @@ import (
 var errNilClient = errors.New("nil mempool client")
 
 /*
-Reference Solution
-==================
+Reference Solution - txpool_status / PendingTransactionCount
+============================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates txpool_status: count of pending transactions in the
+mempool. Optional limit caps the returned count for backpressure signals.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+This connects to the Ethereum ecosystem by showing:
+- PendingTransactionCount(ctx): from txpool_status RPC
+- cfg.Limit > 0: cap count for "is mempool overloaded?" checks
+- Use case: delay sends when pending count exceeds threshold
 */
-
 func Run(ctx context.Context, client MempoolClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

@@ -3,25 +3,21 @@
 package node
 
 /*
-Reference Solution
-==================
+Reference Solution - Node State Machine
+=======================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates a minimal node lifecycle state machine: stopped →
+booting → ready. Foundation for node startup and lifecycle management.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- Node states: stopped (idle), booting (startup), ready (synced/serving)
+- type state string: simple enum pattern; const for each state
+- current = stateX: state transitions; in real impl, guard by current state
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- String-backed enum: type state string prevents mixing with plain strings
+- State transitions: sequential here; production would validate valid transitions
 */
-
 func Run() {
 	type state string
 	const (

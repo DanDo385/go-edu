@@ -3,23 +3,16 @@
 package syncmutexvsrwmutex
 
 /*
-Reference Solution
-==================
+Reference Solution - Mutex vs RWMutex, Caches, Sharding
+======================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+sync.Mutex: exclusive lock for read-write access (Counter, Set/Delete).
+sync.RWMutex: RLock for concurrent reads, Lock for writes (Cache.Get vs Set).
+Use RWMutex when reads dominate; Mutex when reads/writes are similar.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+ExpiringCache: RLock for Get, then Lock only when deleting expired entry.
+ShardedMap: hash key to shard, each shard has own RWMutex (reduces contention).
+Metrics: RLock for GetCounter/GetGauge/Snapshot; Lock for Increment/SetGauge.
 */
 
 import (

@@ -18,25 +18,51 @@ const defaultDynamicGasLimit = 21000
 var errNilClient = errors.New("nil fee client")
 
 /*
-Reference Solution
-==================
+Reference Solution - EIP-1559 Dynamic Fee Transaction
+=====================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates building an EIP-1559 (London) transaction. EIP-1559
+replaced the single gas price with a two-part fee: base fee (burned, set by
+protocol) and priority tip (to miner). Users specify maxFeePerGas and
+maxPriorityFeePerGas.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- types.DynamicFeeTx: ChainID, GasTipCap, GasFeeCap instead of GasPrice
+- HeaderByNumber: fetch block header for current base fee
+- SuggestGasTipCap: node's suggested priority fee for inclusion
+- Fee cap formula: maxFeePerGas >= baseFee + maxPriorityFeePerGas
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Base fee: protocol-determined, varies by block; burned (not to miner)
+- Priority tip: goes to miner; user-controlled for inclusion speed
+- GasFeeCap: maximum total per gas user will pay
+- Defensive copying: header.BaseFee, chainID, tip are *big.Int — copy before use
+
+Teaching notes (per .cursorrules):
+- Pointer semantics: cfg.Nonce, cfg.MaxPriorityFee, cfg.MaxFee, cfg.BlockNumber
+  are optional; nil means "fetch or compute." *cfg.Nonce dereference when non-nil.
+- Memory/ownership: new(big.Int).Set(x) copies; we never share library internals.
+  &cfg.To passes address of the config's To — types expects *common.Address.
 */
 
+/*
+Run - Build, Sign, and Optionally Send EIP-1559 Transaction
+
+Parameters:
+  - ctx: cancellation and timeout for RPC calls
+  - client: FeeClient (HeaderByNumber, SuggestGasTipCap, etc.)
+  - cfg: tx parameters; nil pointers mean "fetch or compute"
+
+Returns *Result with FromAddress, Nonce, Tx, BaseFee; error on RPC/validation failure.
+
+Algorithm:
+  1. Validate inputs, derive from address
+  2. Resolve nonce (override or PendingNonceAt)
+  3. Fetch chain ID and block header for base fee
+  4. Resolve tip (MaxPriorityFee or SuggestGasTipCap)
+  5. Compute fee cap if not provided: 2*baseFee + tip
+  6. Build DynamicFeeTx, sign, optionally send
+*/
 func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -69,6 +95,7 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 		return nil, errors.New("chain id: nil response")
 	}
 
+	// Fetch header for base fee — EIP-1559 base fee is in the block header
 	header, err := client.HeaderByNumber(ctx, cfg.BlockNumber)
 	if err != nil {
 		return nil, fmt.Errorf("header by number: %w", err)
@@ -76,8 +103,9 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 	if header == nil || header.BaseFee == nil {
 		return nil, errors.New("header missing base fee")
 	}
-	baseFee := new(big.Int).Set(header.BaseFee)
+	baseFee := new(big.Int).Set(header.BaseFee) // Defensive copy
 
+	// Priority tip: goes to miner; user or node suggestion
 	tip := cfg.MaxPriorityFee
 	if tip == nil {
 		t, err := client.SuggestGasTipCap(ctx)
@@ -90,6 +118,7 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 		tip = t
 	}
 
+	// Fee cap: max total per gas. Default: 2*baseFee + tip (room for next block)
 	feeCap := cfg.MaxFee
 	if feeCap == nil {
 		feeCap = new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), tip)
@@ -108,7 +137,7 @@ func Run(ctx context.Context, client FeeClient, cfg Config) (*Result, error) {
 	txData := &types.DynamicFeeTx{
 		ChainID:   new(big.Int).Set(chainID),
 		Nonce:     nonce,
-		To:        &cfg.To,
+		To:        &cfg.To, // types expects *common.Address; nil To = contract creation
 		Value:     amount,
 		Gas:       gasLimit,
 		GasTipCap: new(big.Int).Set(tip),

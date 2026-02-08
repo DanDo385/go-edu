@@ -3,23 +3,30 @@
 package httpmiddlewarechain
 
 /*
-Reference Solution
-==================
+Reference Solution - HTTP Middleware Chain
+=========================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates HTTP middleware: func(http.Handler) http.Handler.
+Middleware wraps the next handler to add cross-cutting behavior. Chain order:
+outer runs first on request, last on response (e.g. logging sees full round-trip).
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to Go's HTTP stack by showing:
+- ResponseWriter wrapper: embed http.ResponseWriter, intercept Write/WriteHeader
+  to capture status and bytes for logging
+- context.WithValue: request-scoped data (request ID, user) passed down the chain
+- Recovery: defer recover(), log stack, return 500 — prevents panic from crashing server
+- Chain(m, A, B, C): apply in reverse so A(B(C(h))) — A is outermost
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Middleware signature: receive next, return new Handler that calls next
+- r.WithContext(ctx): request is immutable; we pass new context down
+- type contextKey string: custom key type prevents context key collisions
+
+Teaching notes (per .cursorrules):
+- ResponseWriter embedding: we embed http.ResponseWriter and override Write/
+  WriteHeader. Caller gets our wrapper; we delegate to embedded w.
+- Chain order: Recovery innermost (catches panics from handler), Logging
+  outermost (sees request in, response out). Order matters for semantics.
 */
 
 import (
@@ -195,12 +202,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 // RequestIDMiddleware assigns a unique ID to each request
 var requestCounter uint64
 
-// RequestIDMiddleware implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// RequestIDMiddleware assigns unique ID per request; stores in context and X-Request-ID header.
 func RequestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check if request ID already exists in header

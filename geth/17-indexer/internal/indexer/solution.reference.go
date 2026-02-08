@@ -3,25 +3,25 @@
 package indexer
 
 /*
-Reference Solution
-==================
+Reference Solution - Chain Indexing (Hash->Height, Activity)
+============================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates in-memory chain indexing: build hash→height map and
+address→blockHeights activity map. Foundation for block explorers and analytics.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- indexByHash: block hash → height for O(1) lookup
+- activity: address → []blockHeights for "blocks this address participated in"
+- Per block: index hash; append height to both TxFrom and TxTo activity lists
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Map growth: activity[addr] = append(activity[addr], h) — slice grows dynamically
+- make(map[string][]uint64): map to slices; nil slice append works (allocates)
+
+Teaching notes (per .cursorrules):
+- activity[b.TxFrom] = append(activity[b.TxFrom], b.Height): when key absent,
+  activity[b.TxFrom] is nil; append(nil, x) returns new slice. Map stores it.
 */
-
 func Run() {
 	type block struct {
 		Height uint64

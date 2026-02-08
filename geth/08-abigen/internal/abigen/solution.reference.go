@@ -19,25 +19,32 @@ const erc20ABI = `[{"constant":true,"inputs":[],"name":"name","outputs":[{"name"
 var errNilBackend = errors.New("nil contract backend")
 
 /*
-Reference Solution
-==================
+Reference Solution - abigen-Style Contract Binding
+==================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates contract interaction using go-ethereum's abi package
+and bind.BoundContract. Unlike eth_call with manual selector/decode, we use
+abi.JSON to parse the ABI, then contract.Call which packs, calls, and unpacks
+for us. This is how abigen-generated bindings work under the hood.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- abi.JSON: parse JSON ABI into go-ethereum ABI struct
+- bind.NewBoundContract: wraps address + ABI + caller for method invocation
+- bind.CallOpts: Context, BlockNumber for eth_call parameters
+- contract.Call(opts, &out, method, args...): pack, call, unpack in one step
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- BoundContract: no codegen — dynamic method dispatch by name
+- Type assertions: out[0].(string), out[0].(*big.Int) — ABI returns []interface{}
+- cfg.Holder: optional *common.Address; nil means skip balanceOf
+- Defensive copy: new(big.Int).Set(v) for *big.Int returns
+
+Teaching notes (per .cursorrules):
+- Pointer semantics: cfg.Holder is *common.Address; *cfg.Holder dereferences when
+  calling balanceOf. cfg.BlockNumber can be nil (latest).
+- Memory: BoundContract.Call writes into &out; we don't share those interface{}
+  values with caller without copying (e.g. *big.Int).
 */
-
 func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, error) {
 	if backend == nil {
 		return nil, errNilBackend
@@ -46,6 +53,7 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 		return nil, errors.New("contract address is required")
 	}
 
+	// Use provided ABI or default ERC20 metadata subset
 	abiJSON := cfg.ABI
 	if abiJSON == "" {
 		abiJSON = erc20ABI
@@ -56,7 +64,7 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 	}
 
 	contract := bind.NewBoundContract(cfg.Contract, parsedABI, backend, nil, nil)
-	opts := &bind.CallOpts{Context: ctx, BlockNumber: cfg.BlockNumber}
+	opts := &bind.CallOpts{Context: ctx, BlockNumber: cfg.BlockNumber} // nil BlockNumber = latest
 
 	name, err := callString(contract, opts, "name")
 	if err != nil {
@@ -83,7 +91,7 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 	}
 
 	if cfg.Holder != nil {
-		balance, err := callUint256(contract, opts, "balanceOf", *cfg.Holder)
+		balance, err := callUint256(contract, opts, "balanceOf", *cfg.Holder) // *cfg.Holder = deref optional addr
 		if err != nil {
 			return nil, fmt.Errorf("call balanceOf: %w", err)
 		}
@@ -93,12 +101,7 @@ func Run(ctx context.Context, backend ContractCaller, cfg Config) (*Result, erro
 	return res, nil
 }
 
-// callString implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// callString invokes a view method returning string; type-asserts single output.
 func callString(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (string, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {
@@ -114,12 +117,7 @@ func callString(contract *bind.BoundContract, opts *bind.CallOpts, method string
 	return s, nil
 }
 
-// callUint8 implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// callUint8 invokes a view method returning uint8; type-asserts single output.
 func callUint8(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (uint8, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {
@@ -135,12 +133,7 @@ func callUint8(contract *bind.BoundContract, opts *bind.CallOpts, method string,
 	return v, nil
 }
 
-// callUint256 implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// callUint256 invokes a view method returning uint256; returns defensive copy of *big.Int.
 func callUint256(contract *bind.BoundContract, opts *bind.CallOpts, method string, params ...interface{}) (*big.Int, error) {
 	var out []interface{}
 	if err := contract.Call(opts, &out, method, params...); err != nil {

@@ -3,26 +3,31 @@
 package slicesinternalscapacitygrowth
 
 /*
-Reference Solution
-==================
+Reference Solution - Slice Internals: Capacity, Growth, Backing Arrays
+=====================================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+First principles (per .cursorrules):
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+A slice is a header: (ptr, len, cap). ptr points to the backing array.
+Copying a slice copies the header — both slices share the SAME backing array.
+Mutating s1[i] changes s2[i] if they share. "Think of the slice as a business
+card that says 'data starts here, length X, capacity Y' — the card is cheap to
+copy, but the building (array) is shared."
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+append(s, x): If cap permits, writes x into the existing array, increments len.
+If len==cap, append allocates a NEW array (typically 2x), copies old data, then
+appends. The returned slice may have a different ptr. Old slice still points to
+old array — they no longer share.
+
+s[low:high:max] — 3-index slice: cap = max-low. Future append cannot overwrite
+parent's elements beyond high, because cap limits growth.
 */
 
-// GrowSlice appends elem and reports the old/new capacities.
+// GrowSlice - Append Element and Report Capacity Change
+//
+// When len(s) < cap(s), append reuses the backing array; oldCap == newCap.
+// When len(s) == cap(s), append allocates a new larger array (Go typically doubles);
+// the returned slice has a different backing array.
 func GrowSlice(s []int, elem int) (newSlice []int, oldCap, newCap int) {
 	oldCap = cap(s)
 	newSlice = append(s, elem)
@@ -30,27 +35,41 @@ func GrowSlice(s []int, elem int) (newSlice []int, oldCap, newCap int) {
 	return newSlice, oldCap, newCap
 }
 
-// SharesBackingArray returns true when a and b share underlying storage.
+// SharesBackingArray - Detect If Two Slices Share Storage
+//
+// Mutates each a[i] to a sentinel, checks if b contains it, restores a[i].
+// We must try all indices in a because b might be a sub-slice (e.g. b = a[1:4])
+// that doesn't include a[0]. Empty slices can't share. Teaching trick; production
+// would use reflect or unsafe.
 func SharesBackingArray(a, b []int) bool {
 	if len(a) == 0 || len(b) == 0 {
 		return false
 	}
-	original := a[0]
-	sentinel := original + 999999
-	a[0] = sentinel
+	for i := range a {
+		original := a[i]
+		sentinel := original + 999999
+		a[i] = sentinel
 
-	shared := false
-	for i := range b {
-		if b[i] == sentinel {
-			shared = true
-			break
+		shared := false
+		for j := range b {
+			if b[j] == sentinel {
+				shared = true
+				break
+			}
+		}
+		a[i] = original
+		if shared {
+			return true
 		}
 	}
-	a[0] = original
-	return shared
+	return false
 }
 
-// SafeTruncate returns an independent copy of s[:n].
+// SafeTruncate - Truncate Without Aliasing
+//
+// s[:n] shares the backing array with s. Caller could append to the result and
+// overwrite s's elements. SafeTruncate returns a copy so the result is independent.
+// Clamps n to [0, len(s)] for safety.
 func SafeTruncate(s []int, n int) []int {
 	if n < 0 {
 		n = 0
@@ -66,7 +85,11 @@ func SafeTruncate(s []int, n int) []int {
 	return out
 }
 
-// PreallocateVsDynamic compares capacity growth counts.
+// PreallocateVsDynamic - Count Allocations
+//
+// Dynamic: append to nil slice; capacity grows as needed (1,2,4,8,...).
+// Prealloc: make([]int, 0, n) reserves capacity upfront; append never reallocates
+// until n elements. Returns number of times capacity changed in each case.
 func PreallocateVsDynamic(n int) (dynamicAllocs, preallocAllocs int) {
 	var dynamic []int
 	prevCap := 0
@@ -91,7 +114,11 @@ func PreallocateVsDynamic(n int) (dynamicAllocs, preallocAllocs int) {
 	return dynamicAllocs, preallocAllocs
 }
 
-// ReSliceWithCapLimit uses a 3-index slice to cap capacity at len.
+// ReSliceWithCapLimit - 3-Index Slice Expression
+//
+// s[low:high:max] creates a slice with len=high-low, cap=max-low.
+// By using end for both high and max: s[start:end:end], we set cap = end-start = len.
+// Future append must allocate; the new slice won't overwrite s's elements beyond end.
 func ReSliceWithCapLimit(s []int, start, end int) []int {
 	return s[start:end:end]
 }

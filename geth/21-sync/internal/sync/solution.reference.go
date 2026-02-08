@@ -11,25 +11,22 @@ import (
 var errNilClient = errors.New("nil sync client")
 
 /*
-Reference Solution
-==================
+Reference Solution - eth_syncing / SyncProgress
+================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates eth_syncing: check if node is syncing and optionally
+return progress (CurrentBlock, HighestBlock). nil progress = fully synced.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- SyncProgress(ctx): nil when synced; non-nil with CurrentBlock, HighestBlock
+- copyProgress := *progress: defensive copy so caller can't mutate our Result
+- IsSyncing: progress != nil
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Defensive copy: *progress dereferences; copyProgress is a value copy. We
+  store &copyProgress so Result owns independent data.
+- progress may be reused by RPC client; we don't share the pointer.
 */
-
 func Run(ctx context.Context, client SyncClient, cfg Config) (*Result, error) {
 	_ = cfg
 	if client == nil {

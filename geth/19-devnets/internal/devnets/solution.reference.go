@@ -3,25 +3,21 @@
 package devnets
 
 /*
-Reference Solution
-==================
+Reference Solution - Devnet Profiles (ChainID, RPC, WS)
+========================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates devnet profile configuration: map of named profiles
+with ChainID, RPC/WS URLs, block time. Used for switching local/dev/testnet.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- local/anvil: common dev chain IDs (1337, 31337)
+- RPC vs WS: HTTP for one-off calls, WebSocket for subscriptions
+- profiles["local"]: map lookup; selected is a copy of the struct
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Map of structs: value is copied on read; selected is independent
+- profiles["local"]: returns profile value; modifying selected doesn't affect map
 */
-
 func Run() {
 	type profile struct {
 		Name      string

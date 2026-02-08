@@ -14,25 +14,28 @@ import (
 var errNilClient = errors.New("nil proof client")
 
 /*
-Reference Solution
-==================
+Reference Solution - eth_getProof (Account and Storage)
+======================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates eth_getProof: Merkle-Patricia proof for an account and
+optional storage slots at a block. Used by light clients and bridges to verify
+state without full node data.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- GetProof(account, slots, block): account proof + per-slot storage proofs
+- AccountProof: balance, nonce, codeHash, storageHash, accountProof nodes
+- StorageProof: key, value, proof nodes for each requested slot
+- Defensive copies: Balance, StorageProof[].Value, Proof nodes — RPC may reuse
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Merkle proofs: verify account/storage inclusion using block state root
+- append([]string(nil), sp.Proof...): copy string slices from response
+- Slots as hex strings: geth expects []string of slot hashes
+
+Teaching notes (per .cursorrules):
+- resp.Balance, sp.Value: *big.Int from RPC; new(big.Int).Set() for copy.
+- resp may be reused by client; we copy all nested data into Result.
 */
-
 func Run(ctx context.Context, client ProofClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient

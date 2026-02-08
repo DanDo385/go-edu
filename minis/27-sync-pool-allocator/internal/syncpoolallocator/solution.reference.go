@@ -3,23 +3,14 @@
 package syncpoolallocator
 
 /*
-Reference Solution
-==================
+Reference Solution - sync.Pool for Allocation Reuse
+==================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
-
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
-
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+sync.Pool reduces GC pressure by reusing objects. Get() returns pooled or New().
+Put() returns to pool; always Reset/clear before Put. BufferPool: bytes.Buffer.
+SlicePool: *[]byte with capacity. Pool[T]: generic with reset func. SizeClassedPool:
+multiple pools by size (1K/4K/16K/64K). BoundedPool: semaphore limits total in use.
+WorkerPool pattern: Get worker, use, Put. Must not retain references after Put.
 */
 
 import (

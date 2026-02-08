@@ -9,6 +9,8 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var errNilClient = errors.New("nil toolbox client")
@@ -41,25 +43,26 @@ type txOutput struct {
 }
 
 /*
-Reference Solution
-==================
+Reference Solution - Node Toolbox (status, block, tx)
+=====================================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates a CLI-style node toolbox: status (ChainID, block, sync,
+peers), block <n>, tx <hash>. Combines multiple RPCs for introspection.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- status: ChainID, NetworkID, latest block/hash, sync progress, peer count
+- block <n>: BlockByNumber, metadata (hash, parent, txCount, gas)
+- tx <hash>: TransactionByHash, pending flag, value (defensive copy)
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Command dispatch: switch on cfg.Command; args in cfg.Args
+- common.HexToHash(args[0]): parse hex hash for tx lookup
+- new(big.Int).Set for Value: defensive copy of *big.Int
+
+Teaching notes (per .cursorrules):
+- progress != nil means syncing; nil = fully synced.
+- tx.To() nil = contract creation; we use empty string for output.
 */
-
 func Run(ctx context.Context, client ToolboxClient, cfg Config) (*Result, error) {
 	if client == nil {
 		return nil, errNilClient
@@ -80,12 +83,7 @@ func Run(ctx context.Context, client ToolboxClient, cfg Config) (*Result, error)
 	}
 }
 
-// handleStatus implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// handleStatus aggregates ChainID, NetworkID, latest header, sync progress, peer count.
 func handleStatus(ctx context.Context, client ToolboxClient) (*Result, error) {
 	chainID, err := client.ChainID(ctx)
 	if err != nil {
@@ -133,12 +131,7 @@ func handleStatus(ctx context.Context, client ToolboxClient) (*Result, error) {
 	return &Result{Command: "status", Output: out, Status: "ok"}, nil
 }
 
-// handleBlock implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// handleBlock fetches block by number (args[0]), returns metadata.
 func handleBlock(ctx context.Context, client ToolboxClient, args []string) (*Result, error) {
 	if len(args) < 1 {
 		return nil, errors.New("block command requires block number argument")
@@ -169,12 +162,7 @@ func handleBlock(ctx context.Context, client ToolboxClient, args []string) (*Res
 	return &Result{Command: "block", Output: out, Status: "ok"}, nil
 }
 
-// handleTx implements the reference behavior for this exercise.
-//
-// Algorithm steps:
-// 1. Validate prerequisites and invariants before mutating state.
-// 2. Execute the core operation while keeping ownership/aliasing explicit.
-// 3. Return explicit values/errors so callers control failure behavior.
+// handleTx fetches tx by hash (args[0]), returns summary; Value copied via new(big.Int).Set.
 func handleTx(ctx context.Context, client ToolboxClient, args []string) (*Result, error) {
 	if len(args) < 1 {
 		return nil, errors.New("tx command requires transaction hash argument")

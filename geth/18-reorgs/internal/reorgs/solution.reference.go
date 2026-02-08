@@ -3,25 +3,27 @@
 package reorgs
 
 /*
-Reference Solution
-==================
+Reference Solution - Chain Reorg Handling
+=========================================
 
-This file is the canonical reference for this exercise. It keeps failure paths
-explicit when an operation can fail, so callers can decide how to handle
-errors at API boundaries.
+This file demonstrates reorg logic: when a longer chain arrives, find common
+ancestor, prune canonical back to it, append incoming. Simulates blockchain
+consensus reorg handling.
 
-Read this alongside exercise.go and the tests to understand the intended data
-flow, ownership boundaries, and invariants that keep behavior deterministic.
+This connects to the Ethereum ecosystem by showing:
+- Reorg: canonical chain replaced by chain with higher total difficulty
+- Common ancestor: incoming[0].Parent must exist in canonical
+- canonical = canonical[:len(canonical)-1]: prune from tip until we hit ancestor
 
-Teaching notes:
-- Memory/ownership: make copies when returning mutable data that should not
-  alias internal state; share references only when aliasing is intentional.
-- Invariants: establish assumptions close to construction, and rely on them in
-  smaller helper functions to keep logic easy to audit.
-- Error surfaces: prefer explicit returns over hidden panics so learners can
-  reason about control flow in production-style code.
+The exercise builds understanding of:
+- Slice truncation: canonical[:len(canonical)-1] removes last element
+- append(canonical, incoming...): append all incoming blocks
+- Loop invariant: we stop when canonical tip hash matches incoming's parent
+
+Teaching notes (per .cursorrules):
+- for len(canonical) > 0 && canonical[len(canonical)-1].Hash != incoming[0].Parent:
+  prune while tip isn't the ancestor. len(canonical) > 0 prevents index out of range.
 */
-
 func Run() {
 	type head struct {
 		Hash   string
